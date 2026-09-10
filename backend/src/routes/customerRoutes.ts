@@ -93,4 +93,13 @@ router.post('/login', (req: Request, res: Response) => {
   }
 });
 
+// GET all customers for Admin Panel
+router.get('/', (req: Request, res: Response) => {
+  try {
+    res.json(getCustomers());
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch customers.' });
+  }
+});
+
 export default router;
