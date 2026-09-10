@@ -15,9 +15,9 @@ export const Dashboard: React.FC = () => {
 
   // Dynamically compute store metrics from active local state according to selected date filter
   const metrics = React.useMemo(() => {
-    const todayOrders = orders.filter((o) => (o.date || '').includes('Sep 04'));
-    const todaySales = todayOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0) || 2557;
-    const weekSales = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+    const todayOrders = orders.filter((o) => (o.createdAt || '').includes(new Date().toISOString().slice(0, 10)));
+    const todaySales = todayOrders.reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0) || 0;
+    const weekSales = orders.reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0);
 
     if (activeDateFilter === 'today') {
       return {

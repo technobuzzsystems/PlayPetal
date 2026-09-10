@@ -243,27 +243,28 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .then(data => {
         if (Array.isArray(data)) {
           setOrders(data.map((o: any) => ({
-
-            id: o.id,
-            orderNumber: o.orderNumber,
+            id: o.id || '',
+            orderNumber: o.orderNumber || `#ORD-${o.id}`,
+            customerName: o.customerName || 'Customer',
+            customerEmail: o.customerEmail || '',
+            customerPhone: o.customerPhone || '',
             customer: { name: o.customerName || 'Customer', email: o.customerEmail || '', phone: o.customerPhone || '' },
             items: o.items || [],
-            subtotal: o.totalAmount,
+            productSummary: o.productSummary || (o.items?.[0]?.productName) || '',
+            subtotal: o.subtotal || o.totalAmount || 0,
+            shippingFee: o.shippingFee || 0,
+            discount: o.discount || 0,
             tax: 0,
             shippingTotal: 0,
-            total: o.totalAmount,
+            totalAmount: Number(o.totalAmount) || 0,
+            total: Number(o.totalAmount) || 0,
             status: o.status || 'pending',
             paymentStatus: o.paymentStatus || 'pending',
             paymentMethod: o.paymentMethod || 'card',
-            shippingAddress: {
-              street: o.shippingAddress || '',
-              city: '', state: '', zipCode: '', country: ''
-            },
-            billingAddress: {
-              street: o.shippingAddress || '',
-              city: '', state: '', zipCode: '', country: ''
-            },
-            createdAt: o.date || new Date().toISOString()
+            shippingAddress: o.shippingAddress || { street: '', city: '', state: '', postalCode: '', country: '' },
+            billingAddress: o.shippingAddress || { street: '', city: '', state: '', postalCode: '', country: '' },
+            date: o.date || o.createdAt || new Date().toISOString(),
+            createdAt: o.createdAt || o.date || new Date().toISOString()
           })));
         }
       }).catch(err => console.error(err));
