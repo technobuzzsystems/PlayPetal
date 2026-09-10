@@ -289,72 +289,6 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
 
-  // Fetch real data from backend
-  React.useEffect(() => {
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    
-    // Fetch products
-    fetch(`${API_BASE}/products?allStatus=true`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          setProducts(data);
-        }
-      }).catch(err => console.error(err));
-
-    // Fetch orders
-    fetch(`${API_BASE}/orders`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setOrders(data.map(o => ({
-            id: o.id,
-            orderNumber: o.orderNumber,
-            customer: { name: o.customerName || 'Customer', email: o.customerEmail || '', phone: o.customerPhone || '' },
-            items: o.items || [],
-            subtotal: o.totalAmount,
-            tax: 0,
-            shippingTotal: 0,
-            total: o.totalAmount,
-            status: o.status || 'pending',
-            paymentStatus: o.paymentStatus || 'pending',
-            paymentMethod: o.paymentMethod || 'card',
-            shippingAddress: {
-              street: o.shippingAddress || '',
-              city: '', state: '', zipCode: '', country: ''
-            },
-            billingAddress: {
-              street: o.shippingAddress || '',
-              city: '', state: '', zipCode: '', country: ''
-            },
-            createdAt: o.date || new Date().toISOString()
-          })));
-        }
-      }).catch(err => console.error(err));
-
-    // Fetch customers
-    fetch(`${API_BASE}/customers`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setCustomers(data.map(c => ({
-            id: c.id,
-            name: c.name,
-            email: c.email,
-            phone: c.phone || '',
-            avatar: '',
-            status: 'active',
-            totalOrders: c.totalOrders || 0,
-            totalSpent: c.totalSpent || 0,
-            lastOrderDate: '',
-            createdAt: c.createdAt || new Date().toISOString(),
-            addresses: []
-          })));
-        }
-      }).catch(err => console.error(err));
-  }, []);
-
-
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -473,21 +407,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .catch((err) => console.error('Failed to persist product to backend:', err));
   };
 
-  const updateProduct = async (id: string, updated: Partial<Product>) => {
-    try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      await fetch(`${API_BASE}/products/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated)
-      });
-      setProducts((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, ...updated } : item))
-      );
-    } catch (err) {
-      console.error('Failed to update product', err);
-    }
-  };
+  const updateProduct = (id: string, updated: Partial<Product>) => {
+    setProducts((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, ...updated } : item))
+    );
+
+    // Persist updates to backend database
+    const backendUpdates: any = { ...updated };
     if (updated.isActive !== undefined) backendUpdates.isActive = updated.isActive;
     if (updated.price !== undefined) backendUpdates.basePrice = updated.price;
     if (updated.salePrice !== undefined) backendUpdates.salePrice = updated.salePrice;
