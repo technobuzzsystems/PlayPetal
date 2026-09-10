@@ -248,23 +248,20 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             customerName: o.customerName || 'Customer',
             customerEmail: o.customerEmail || '',
             customerPhone: o.customerPhone || '',
-            customer: { name: o.customerName || 'Customer', email: o.customerEmail || '', phone: o.customerPhone || '' },
+            shippingAddress: typeof o.shippingAddress === 'object' && o.shippingAddress
+              ? o.shippingAddress
+              : { street: o.shippingAddress || '', city: '', state: '', postalCode: '', country: '' },
+            productSummary: o.productSummary || '',
             items: o.items || [],
-            productSummary: o.productSummary || (o.items?.[0]?.productName) || '',
-            subtotal: o.subtotal || o.totalAmount || 0,
-            shippingFee: o.shippingFee || 0,
-            discount: o.discount || 0,
-            tax: 0,
-            shippingTotal: 0,
+            subtotal: Number(o.subtotal) || Number(o.totalAmount) || 0,
+            shippingFee: Number(o.shippingFee) || 0,
+            discount: Number(o.discount) || 0,
             totalAmount: Number(o.totalAmount) || 0,
-            total: Number(o.totalAmount) || 0,
-            status: o.status || 'pending',
-            paymentStatus: o.paymentStatus || 'pending',
+            status: o.status || 'Pending',
+            paymentStatus: o.paymentStatus || 'Pending',
             paymentMethod: o.paymentMethod || 'card',
-            shippingAddress: o.shippingAddress || { street: '', city: '', state: '', postalCode: '', country: '' },
-            billingAddress: o.shippingAddress || { street: '', city: '', state: '', postalCode: '', country: '' },
             date: o.date || o.createdAt || new Date().toISOString(),
-            createdAt: o.createdAt || o.date || new Date().toISOString()
+            timeline: o.timeline || [],
           })));
         }
       }).catch(err => console.error(err));
@@ -275,18 +272,16 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .then(data => {
         if (Array.isArray(data)) {
           setCustomers(data.map((c: any) => ({
-
             id: c.id,
-            name: c.name,
-            email: c.email,
+            name: c.name || '',
+            email: c.email || '',
             phone: c.phone || '',
-            avatar: '',
-            status: 'active',
+            avatar: c.avatar || '',
+            status: c.status || 'Active',
             totalOrders: c.totalOrders || 0,
             totalSpent: c.totalSpent || 0,
-            lastOrderDate: '',
-            createdAt: c.createdAt || new Date().toISOString(),
-            addresses: []
+            joinedDate: c.joinedDate || c.createdAt || new Date().toISOString(),
+            address: c.address || '',
           })));
         }
       }).catch(err => console.error(err));
