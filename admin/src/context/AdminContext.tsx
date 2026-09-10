@@ -232,6 +232,63 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [settings, setSettings] = useState<StoreSettings>(initialSettings);
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
 
+  // Fetch orders and customers
+  React.useEffect(() => {
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    
+    // Fetch orders
+    fetch(`${API_BASE}/orders`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setOrders(data.map(o => ({
+            id: o.id,
+            orderNumber: o.orderNumber,
+            customer: { name: o.customerName || 'Customer', email: o.customerEmail || '', phone: o.customerPhone || '' },
+            items: o.items || [],
+            subtotal: o.totalAmount,
+            tax: 0,
+            shippingTotal: 0,
+            total: o.totalAmount,
+            status: o.status || 'pending',
+            paymentStatus: o.paymentStatus || 'pending',
+            paymentMethod: o.paymentMethod || 'card',
+            shippingAddress: {
+              street: o.shippingAddress || '',
+              city: '', state: '', zipCode: '', country: ''
+            },
+            billingAddress: {
+              street: o.shippingAddress || '',
+              city: '', state: '', zipCode: '', country: ''
+            },
+            createdAt: o.date || new Date().toISOString()
+          })));
+        }
+      }).catch(err => console.error(err));
+
+    // Fetch customers
+    fetch(`${API_BASE}/customers`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setCustomers(data.map(c => ({
+            id: c.id,
+            name: c.name,
+            email: c.email,
+            phone: c.phone || '',
+            avatar: '',
+            status: 'active',
+            totalOrders: c.totalOrders || 0,
+            totalSpent: c.totalSpent || 0,
+            lastOrderDate: '',
+            createdAt: c.createdAt || new Date().toISOString(),
+            addresses: []
+          })));
+        }
+      }).catch(err => console.error(err));
+  }, []);
+
+
   // Fetch real data from backend
   React.useEffect(() => {
     const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -431,6 +488,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       console.error('Failed to update product', err);
     }
   };
+    if (updated.isActive !== undefined) backendUpdates.isActive = updated.isActive;
     if (updated.price !== undefined) backendUpdates.basePrice = updated.price;
     if (updated.salePrice !== undefined) backendUpdates.salePrice = updated.salePrice;
     if (updated.stock !== undefined) backendUpdates.stock = updated.stock;
