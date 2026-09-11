@@ -59,21 +59,39 @@ export const Sidebar: React.FC = () => {
     products,
   } = useAdmin();
 
-  // Keep track of which menu groups are open
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    Catalog: true,
-    Marketing: false,
-    Content: false,
-  });
-
-  const toggleGroup = (name: string) => {
-    setOpenGroups((prev) => ({ ...prev, [name]: !prev[name] }));
-  };
-
   const pendingOrdersCount = orders.filter((o) => o.status === 'Pending').length;
   const pendingReviewsCount = reviews.filter((r) => r.status === 'Pending').length;
   const bestSellersCount = products.filter((p) => p.isBestSeller).length;
   const newArrivalsCount = products.filter((p) => p.isNewArrival).length;
+
+  const isLinkActive = (path: string) => {
+    if (isVendor) {
+      if (path.includes('tab=products')) return location.search.includes('tab=products');
+      if (path.includes('tab=add')) return location.search.includes('tab=add');
+      if (path.includes('tab=orders')) return location.search.includes('tab=orders');
+      if (path.includes('tab=profile')) return location.search.includes('tab=profile');
+      if (path === '/vendor-portal') {
+        return location.pathname === '/vendor-portal' && (!location.search || location.search === '' || location.search === '?tab=products');
+      }
+    }
+    if (path === '/admin/dashboard' && (location.pathname === '/' || location.pathname === '/admin' || location.pathname === '/admin/dashboard')) {
+      return true;
+    }
+    if (path === '/admin/products') {
+      return (
+        location.pathname === '/admin/products' ||
+        location.pathname === '/products' ||
+        (location.pathname.startsWith('/admin/products/') &&
+          !['best-sellers', 'new-arrivals'].some((sub) => location.pathname.includes(sub)))
+      );
+    }
+    return location.pathname === path;
+  };
+
+  const isGroupActive = (children?: NavSubItem[]) => {
+    if (!children) return false;
+    return children.some((c) => isLinkActive(c.path));
+  };
 
   // 🏬 SHOPKEEPER ONLY NAVIGATION
   const vendorNavItems: NavGroup[] = [
@@ -124,7 +142,6 @@ export const Sidebar: React.FC = () => {
       icon: <Package className="w-4.5 h-4.5 text-[#2196F3]" />,
       children: [
         { name: 'All Products', path: '/admin/products', icon: <Package className="w-4 h-4 text-slate-400" /> },
-        { name: 'Add New Product', path: '/admin/products/new', icon: <PackagePlus className="w-4 h-4 text-[#D90429]" /> },
         { name: 'Best Sellers', path: '/admin/products/best-sellers', icon: <Flame className="w-4 h-4 text-[#FF9800]" />, badge: bestSellersCount },
         { name: 'New Arrivals', path: '/admin/products/new-arrivals', icon: <Sparkles className="w-4 h-4 text-[#2196F3]" />, badge: newArrivalsCount },
         { name: 'Categories', path: '/admin/categories', icon: <FolderTree className="w-4 h-4 text-slate-400" /> },
@@ -180,28 +197,39 @@ export const Sidebar: React.FC = () => {
 
   const navItems = isVendor ? vendorNavItems : adminNavItems;
 
-  const isLinkActive = (path: string) => {
-    if (isVendor) {
-      if (path.includes('tab=products')) return location.search.includes('tab=products');
-      if (path.includes('tab=add')) return location.search.includes('tab=add');
-      if (path.includes('tab=orders')) return location.search.includes('tab=orders');
-      if (path.includes('tab=profile')) return location.search.includes('tab=profile');
-      if (path === '/vendor-portal') {
-        return location.pathname === '/vendor-portal' && (!location.search || location.search === '' || location.search === '?tab=products');
+  // Keep track of which menu groups are open
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {
+      Catalog: true,
+      Marketing: false,
+      'Content & CMS': false,
+    };
+    adminNavItems.forEach((item) => {
+      if (item.children && isGroupActive(item.children)) {
+        initial[item.name] = true;
       }
-    }
-    if (path === '/admin/dashboard' && (location.pathname === '/' || location.pathname === '/admin' || location.pathname === '/admin/dashboard')) {
-      return true;
-    }
-    if (path === '/admin/products') {
-      return location.pathname === '/admin/products' || location.pathname === '/products';
-    }
-    return location.pathname === path;
-  };
+    });
+    return initial;
+  });
 
-  const isGroupActive = (children?: NavSubItem[]) => {
-    if (!children) return false;
-    return children.some((c) => isLinkActive(c.path));
+  // Track route changes: auto-expand the parent group when a child route is visited
+  const prevPathnameRef = React.useRef(location.pathname);
+  React.useEffect(() => {
+    if (prevPathnameRef.current !== location.pathname) {
+      prevPathnameRef.current = location.pathname;
+      adminNavItems.forEach((item) => {
+        if (item.children && isGroupActive(item.children)) {
+          setOpenGroups((prev) => ({ ...prev, [item.name]: true }));
+        }
+      });
+    }
+  }, [location.pathname]);
+
+  const toggleGroup = (name: string) => {
+    setOpenGroups((prev) => ({
+      ...prev,
+      [name]: !prev[name],
+    }));
   };
 
   return (
@@ -254,13 +282,17 @@ export const Sidebar: React.FC = () => {
           {navItems.map((item) => {
             if (item.children) {
               const groupActive = isGroupActive(item.children);
-              const isOpen = openGroups[item.name] || groupActive;
+              const isOpen = !!openGroups[item.name];
 
               if (sidebarCollapsed) {
                 return (
                   <div key={item.name} className="relative group py-1">
                     <button
-                      onClick={() => setSidebarCollapsed(false)}
+                      type="button"
+                      onClick={() => {
+                        setSidebarCollapsed(false);
+                        setOpenGroups((prev) => ({ ...prev, [item.name]: true }));
+                      }}
                       className={`w-full h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
                         groupActive
                           ? 'bg-[#D90429] text-white shadow-xs'
@@ -277,23 +309,24 @@ export const Sidebar: React.FC = () => {
               return (
                 <div key={item.name} className="space-y-1">
                   <button
+                    type="button"
                     onClick={() => toggleGroup(item.name)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${
                       groupActive
                         ? 'text-[#202124] bg-slate-50 border border-slate-200'
                         : 'text-slate-600 hover:bg-slate-50 hover:text-[#202124]'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 pointer-events-none">
                       <span className={groupActive ? 'text-[#D90429]' : 'text-slate-400'}>
                         {item.icon}
                       </span>
                       <span>{item.name}</span>
                     </div>
                     {isOpen ? (
-                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                      <ChevronDown className="w-4 h-4 text-slate-400 pointer-events-none" />
                     ) : (
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                      <ChevronRight className="w-4 h-4 text-slate-400 pointer-events-none" />
                     )}
                   </button>
 
@@ -305,6 +338,7 @@ export const Sidebar: React.FC = () => {
                           <NavLink
                             key={sub.name}
                             to={sub.path}
+                            onClick={() => setMobileSidebarOpen(false)}
                             className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs transition-all relative ${
                               active
                                 ? 'bg-[#D90429] text-white font-bold shadow-xs'
@@ -340,6 +374,7 @@ export const Sidebar: React.FC = () => {
               <NavLink
                 key={item.name}
                 to={item.path || '#'}
+                onClick={() => setMobileSidebarOpen(false)}
                 className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all relative ${
                   active
                     ? 'bg-[#D90429] text-white shadow-xs'

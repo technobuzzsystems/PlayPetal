@@ -104,11 +104,11 @@ export const Settings: React.FC = () => {
       />
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="px-6 pt-2 bg-slate-50/50 border-b border-slate-200 overflow-x-auto">
+        <div className="px-3 sm:px-6 pt-2 bg-slate-50/50 border-b border-slate-200 overflow-x-auto max-w-full scrollbar-none">
           <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
         </div>
 
-        <div className="p-6 sm:p-8 max-w-3xl">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-3xl">
           {/* Store Info */}
           {activeTab === 'store' && (
             <form onSubmit={handleSave} className="space-y-4">

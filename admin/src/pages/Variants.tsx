@@ -140,9 +140,9 @@ export const Variants: React.FC = () => {
 
       {/* Matrix Generator Controls */}
       <Card>
-        <CardHeader className="flex-row items-center justify-between pb-3">
+        <CardHeader className="flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-pink-50 text-indigo-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-pink-50 text-indigo-600 flex items-center justify-center shrink-0">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
@@ -154,6 +154,7 @@ export const Variants: React.FC = () => {
           </div>
           <Button
             size="sm"
+            className="w-full sm:w-auto"
             onClick={handleGenerateCombinations}
             leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
           >
@@ -232,12 +233,12 @@ export const Variants: React.FC = () => {
 
       {/* Generated Variants Table */}
       <Card>
-        <CardHeader className="flex-row items-center justify-between pb-3">
+        <CardHeader className="flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-indigo-600" />
             <CardTitle>Active Variants ({variants.length})</CardTitle>
           </div>
-          <Button size="xs" variant="secondary" onClick={addNewCustomVariant} leftIcon={<Plus className="w-3 h-3" />}>
+          <Button size="xs" variant="secondary" className="w-full sm:w-auto" onClick={addNewCustomVariant} leftIcon={<Plus className="w-3 h-3" />}>
             Add Custom Variant
           </Button>
         </CardHeader>

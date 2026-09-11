@@ -3,18 +3,15 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { Card, CardContent } from '../components/ui/Card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
 import { StatusBadge } from '../components/ui/Badge';
-import { Dropdown } from '../components/ui/Dropdown';
 import { Pagination } from '../components/ui/Pagination';
 import { EmptyState } from '../components/ui/EmptyState';
 import { OrderDetailsModal } from './OrderDetailsModal';
 import { useAdmin } from '../context/AdminContext';
-import { useToast } from '../context/ToastContext';
-import { Search, Filter, MoreVertical, Eye, CheckCircle2, Truck, XCircle, CreditCard, Flame, Sparkles } from 'lucide-react';
-import type { Order, OrderStatus } from '../types';
+import { Search, Filter, Eye, Flame, Sparkles } from 'lucide-react';
+import type { Order } from '../types';
 
 export const Orders: React.FC = () => {
-  const { orders, updateOrderStatus, updateOrderPayment, products } = useAdmin();
-  const { showToast } = useToast();
+  const { orders, products } = useAdmin();
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -42,21 +39,11 @@ export const Orders: React.FC = () => {
     currentPage * itemsPerPage
   );
 
-  const handleStatusChange = (orderId: string, orderNumber: string, newStatus: OrderStatus) => {
-    updateOrderStatus(orderId, newStatus);
-    showToast(`Order ${orderNumber} updated to ${newStatus}`, 'success');
-  };
-
-  const handlePaymentChange = (orderId: string, orderNumber: string, newPayment: any) => {
-    updateOrderPayment(orderId, newPayment);
-    showToast(`Order ${orderNumber} payment marked as ${newPayment}`, 'info');
-  };
-
   return (
     <div className="space-y-5">
       <PageHeader
         title="Customer Orders"
-        description="Track purchase orders, verify payments, manage shipping status, and view delivery details"
+        description="View customer orders, check payment status, and inspect delivery and toy item details"
         breadcrumbs={[{ label: 'Orders' }]}
       />
 
@@ -141,18 +128,22 @@ export const Orders: React.FC = () => {
                   <TableHead>Total (₹)</TableHead>
                   <TableHead>Payment</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedOrders.map((order) => (
-                  <TableRow key={order.id}>
+                  <TableRow
+                    key={order.id}
+                    onClick={() => setSelectedOrder(order)}
+                    className="cursor-pointer hover:bg-slate-50/80 transition-colors group"
+                  >
                     <TableCell className="font-mono font-bold text-slate-900 text-xs">
                       {order.orderNumber}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-semibold text-slate-800 text-xs">
+                        <span className="font-semibold text-slate-800 text-xs group-hover:text-sky-600 transition-colors">
                           {order.customerName}
                         </span>
                         <span className="text-[11px] text-slate-400">{order.customerEmail}</span>
@@ -196,52 +187,17 @@ export const Orders: React.FC = () => {
                     <TableCell>
                       <StatusBadge status={order.status} />
                     </TableCell>
-                    <TableCell className="text-right">
-                      <Dropdown
-                        trigger={
-                          <button className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-                        }
-                        items={[
-                          {
-                            label: 'View Order Details',
-                            icon: <Eye className="w-3.5 h-3.5" />,
-                            onClick: () => setSelectedOrder(order),
-                          },
-                          {
-                            label: 'Mark as Confirmed',
-                            icon: <CheckCircle2 className="w-3.5 h-3.5" />,
-                            onClick: () => handleStatusChange(order.id, order.orderNumber, 'Confirmed'),
-                          },
-                          {
-                            label: 'Mark as Processing',
-                            icon: <CheckCircle2 className="w-3.5 h-3.5" />,
-                            onClick: () => handleStatusChange(order.id, order.orderNumber, 'Processing'),
-                          },
-                          {
-                            label: 'Mark as Shipped',
-                            icon: <Truck className="w-3.5 h-3.5" />,
-                            onClick: () => handleStatusChange(order.id, order.orderNumber, 'Shipped'),
-                          },
-                          {
-                            label: 'Mark as Delivered',
-                            icon: <CheckCircle2 className="w-3.5 h-3.5" />,
-                            onClick: () => handleStatusChange(order.id, order.orderNumber, 'Delivered'),
-                          },
-                          {
-                            label: 'Mark Payment as Paid',
-                            icon: <CreditCard className="w-3.5 h-3.5" />,
-                            onClick: () => handlePaymentChange(order.id, order.orderNumber, 'Paid'),
-                          },
-                          {
-                            label: 'Cancel Order',
-                            icon: <XCircle className="w-3.5 h-3.5 text-rose-500" />,
-                            danger: true,
-                            onClick: () => handleStatusChange(order.id, order.orderNumber, 'Cancelled'),
-                          },
-                        ]}
-                      />
+                    <TableCell className="text-right whitespace-nowrap">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedOrder(order);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 hover:text-sky-800 transition-colors cursor-pointer border border-sky-200/60 shadow-2xs"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-sky-600" />
+                        <span>View Details</span>
+                      </button>
                     </TableCell>
                   </TableRow>
                 ))}

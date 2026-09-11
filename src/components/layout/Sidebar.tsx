@@ -61,16 +61,7 @@ export const Sidebar: React.FC = () => {
     products,
   } = useAdmin();
 
-  // Keep track of which menu groups are open
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    Catalog: true,
-    Marketing: false,
-    Content: false,
-  });
 
-  const toggleGroup = (name: string) => {
-    setOpenGroups((prev) => ({ ...prev, [name]: !prev[name] }));
-  };
 
   const pendingOrdersCount = orders.filter((o) => o.status === 'Pending').length;
   const pendingReviewsCount = reviews.filter((r) => r.status === 'Pending').length;
@@ -215,6 +206,41 @@ export const Sidebar: React.FC = () => {
     return children.some((c) => isLinkActive(c.path));
   };
 
+  // Keep track of which menu groups are open
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {
+      Catalog: true,
+      Marketing: false,
+      'Content & CMS': false,
+    };
+    adminNavItems.forEach((item) => {
+      if (item.children && isGroupActive(item.children)) {
+        initial[item.name] = true;
+      }
+    });
+    return initial;
+  });
+
+  // Track route changes: auto-expand the parent group when a child route is visited
+  const prevPathnameRef = React.useRef(location.pathname);
+  React.useEffect(() => {
+    if (prevPathnameRef.current !== location.pathname) {
+      prevPathnameRef.current = location.pathname;
+      adminNavItems.forEach((item) => {
+        if (item.children && isGroupActive(item.children)) {
+          setOpenGroups((prev) => ({ ...prev, [item.name]: true }));
+        }
+      });
+    }
+  }, [location.pathname]);
+
+  const toggleGroup = (name: string) => {
+    setOpenGroups((prev) => ({
+      ...prev,
+      [name]: !prev[name],
+    }));
+  };
+
   return (
     <>
       {/* Mobile backdrop */}
@@ -277,14 +303,18 @@ export const Sidebar: React.FC = () => {
           {navItems.map((item) => {
             if (item.children) {
               const groupActive = isGroupActive(item.children);
-              const isOpen = openGroups[item.name] || groupActive;
+              const isOpen = !!openGroups[item.name];
 
               if (sidebarCollapsed) {
                 // Collapsed view with tooltip
                 return (
                   <div key={item.name} className="relative group py-1">
                     <button
-                      onClick={() => setSidebarCollapsed(false)}
+                      type="button"
+                      onClick={() => {
+                        setSidebarCollapsed(false);
+                        setOpenGroups((prev) => ({ ...prev, [item.name]: true }));
+                      }}
                       className={`w-full h-10 rounded-xl flex items-center justify-center transition-colors ${
                         groupActive
                           ? 'bg-[#ff91db] text-white shadow-xs'
@@ -302,23 +332,24 @@ export const Sidebar: React.FC = () => {
               return (
                 <div key={item.name} className="space-y-1">
                   <button
+                    type="button"
                     onClick={() => toggleGroup(item.name)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${
                       groupActive
                         ? 'text-[#451630] bg-[#ffe0f1]/60 font-black'
                         : 'text-[#733557] hover:bg-[#ffe0f1]/40 hover:text-[#451630]'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 pointer-events-none">
                       <span className={groupActive ? 'text-[#ff91db]' : 'text-[#ff91db]/70'}>
                         {item.icon}
                       </span>
                       <span>{item.name}</span>
                     </div>
                     {isOpen ? (
-                      <ChevronDown className="w-4 h-4 text-[#9c537b]" />
+                      <ChevronDown className="w-4 h-4 text-[#9c537b] pointer-events-none" />
                     ) : (
-                      <ChevronRight className="w-4 h-4 text-[#9c537b]" />
+                      <ChevronRight className="w-4 h-4 text-[#9c537b] pointer-events-none" />
                     )}
                   </button>
 
@@ -330,6 +361,7 @@ export const Sidebar: React.FC = () => {
                           <NavLink
                             key={sub.name}
                             to={sub.path}
+                            onClick={() => setMobileSidebarOpen(false)}
                             className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs transition-all relative ${
                               active
                                 ? 'bg-[#ff91db] text-white font-bold shadow-xs'

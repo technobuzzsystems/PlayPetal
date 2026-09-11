@@ -46,39 +46,39 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
       <div
         className="fixed inset-0"
         onClick={onClose}
         aria-hidden="true"
       />
       <div
-        className={`relative w-full ${sizeClasses[size]} bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-10 animate-in zoom-in-95 duration-200 text-[#202124]`}
+        className={`relative w-full ${sizeClasses[size]} bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-10 animate-in zoom-in-95 duration-200 text-[#202124] my-auto`}
         role="dialog"
         aria-modal="true"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <div>
-            <h3 className="text-lg font-bold text-[#202124]">{title}</h3>
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100">
+          <div className="pr-2">
+            <h3 className="text-base sm:text-lg font-bold text-[#202124] leading-tight">{title}</h3>
             {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-xl transition-colors cursor-pointer"
+            className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-xl transition-colors cursor-pointer shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="px-6 py-5 max-h-[75vh] overflow-y-auto text-slate-700">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 max-h-[calc(100dvh-130px)] sm:max-h-[75vh] overflow-y-auto text-slate-700 scrollbar-thin">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 bg-slate-50 border-t border-slate-100">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 bg-slate-50 border-t border-slate-100">
             {footer}
           </div>
         )}
@@ -115,10 +115,10 @@ export const ConfirmModal: React.FC<{
       title={title}
       size="sm"
       footer={
-        <>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 w-full">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+            className="px-4 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer text-center"
           >
             {cancelText}
           </button>
@@ -127,7 +127,7 @@ export const ConfirmModal: React.FC<{
               onConfirm();
               onClose();
             }}
-            className={`px-4 py-2 text-xs font-bold text-white rounded-xl transition-colors cursor-pointer ${
+            className={`px-4 py-2 text-xs font-bold text-white rounded-xl transition-colors cursor-pointer text-center ${
               isDanger
                 ? 'bg-red-600 hover:bg-red-700'
                 : 'bg-[#D90429] hover:bg-[#B7092B]'
@@ -135,7 +135,7 @@ export const ConfirmModal: React.FC<{
           >
             {confirmText}
           </button>
-        </>
+        </div>
       }
     >
       <p className="text-sm text-slate-600 leading-relaxed">{message}</p>

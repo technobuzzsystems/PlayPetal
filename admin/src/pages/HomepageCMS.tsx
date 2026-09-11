@@ -49,7 +49,7 @@ export const HomepageCMS: React.FC = () => {
       />
 
       <Card>
-        <CardHeader className="flex-row items-center justify-between pb-3">
+        <CardHeader className="flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3">
           <div className="flex items-center gap-2">
             <LayoutTemplate className="w-4 h-4 text-indigo-600" />
             <CardTitle>Front Page Section Hierarchy</CardTitle>
@@ -63,7 +63,7 @@ export const HomepageCMS: React.FC = () => {
           {cmsSections.map((sec, idx) => (
             <div
               key={sec.id}
-              className={`p-4 rounded-xl border transition-all flex items-center justify-between gap-4 ${
+              className={`p-3.5 sm:p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 ${
                 sec.enabled
                   ? 'bg-white border-slate-200/90 shadow-2xs'
                   : 'bg-slate-50/70 border-dashed border-slate-200 opacity-60'
@@ -76,7 +76,7 @@ export const HomepageCMS: React.FC = () => {
                   {sec.order}
                 </span>
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h4 className="text-xs font-bold text-slate-900">{sec.name}</h4>
                     <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
                       {sec.type}
@@ -87,7 +87,7 @@ export const HomepageCMS: React.FC = () => {
               </div>
 
               {/* Controls */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                 {/* Reorder up/down buttons */}
                 <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200/60">
                   <button

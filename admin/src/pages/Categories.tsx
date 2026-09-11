@@ -258,7 +258,7 @@ export const Categories: React.FC = () => {
 
       <Card>
         {/* Toolbar */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between gap-4">
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="relative w-full sm:w-80">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
@@ -270,10 +270,11 @@ export const Categories: React.FC = () => {
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <Button
               variant="outline"
               size="sm"
+              className="flex-1 sm:flex-initial"
               onClick={() => {
                 const allOpen: Record<string, boolean> = {};
                 const openAll = (list: Category[]) => {
@@ -291,6 +292,7 @@ export const Categories: React.FC = () => {
             <Button
               variant="secondary"
               size="sm"
+              className="flex-1 sm:flex-initial"
               onClick={() => setExpandedIds({})}
             >
               Collapse All
@@ -308,8 +310,8 @@ export const Categories: React.FC = () => {
               onAction={() => openAddModal()}
             />
           ) : (
-            <div className="w-full overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+            <div className="w-full overflow-x-auto scrollbar-thin">
+              <table className="w-full min-w-[650px] text-left border-collapse">
                 <thead className="bg-slate-50/80 border-b border-slate-200/80">
                   <tr>
                     <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -349,15 +351,15 @@ export const Categories: React.FC = () => {
         description="Configure category naming, parent nesting, and display images"
         size="lg"
         footer={
-          <div className="flex items-center justify-end gap-3 w-full">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 w-full">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer text-center"
             >
               Cancel
             </button>
-            <Button size="sm" onClick={handleSaveCategory}>
+            <Button size="sm" className="w-full sm:w-auto" onClick={handleSaveCategory}>
               {editingCategory ? 'Save Changes' : 'Create Category'}
             </Button>
           </div>

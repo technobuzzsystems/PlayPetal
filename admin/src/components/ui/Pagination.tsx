@@ -36,13 +36,13 @@ export const Pagination: React.FC<PaginationProps> = ({
   }
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 bg-white border-t border-slate-200 text-slate-700">
-      <div className="text-xs text-slate-500 font-medium">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 bg-white border-t border-slate-200 text-slate-700">
+      <div className="text-xs text-slate-500 font-medium text-center sm:text-left">
         Showing <span className="font-bold text-slate-900">{start}</span>–<span className="font-bold text-slate-900">{end}</span> of{' '}
         <span className="font-bold text-slate-900">{totalItems}</span> results
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-wrap justify-center">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}

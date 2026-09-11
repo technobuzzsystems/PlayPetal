@@ -14,5 +14,21 @@
     "password": "1234",
     "playPoints": 50,
     "createdAt": "2026-09-10T11:22:05.978Z"
+  },
+  {
+    "id": "cst-1789112979278",
+    "name": "Sudarshan Bangar",
+    "email": "bangarsudarshan87@gmail.com",
+    "password": "uvZsvwkU95EYYbq",
+    "playPoints": 50,
+    "createdAt": "2026-09-11T07:49:39.278Z"
+  },
+  {
+    "id": "cst-1789124864361",
+    "name": "Sudarshan Bangar",
+    "email": "bangarsudarshan88@gmail.com",
+    "password": "B2uZt97m54TkxcU",
+    "playPoints": 50,
+    "createdAt": "2026-09-11T11:07:44.361Z"
   }
 ]

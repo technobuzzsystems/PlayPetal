@@ -84,12 +84,12 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ dateFilter, onFilter
 
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="flex-row items-center justify-between pb-2 border-b-0">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b-0">
         <div>
           <CardTitle>Revenue Overview</CardTitle>
           <p className="text-xs text-slate-500 mt-0.5 font-medium">Sales trends and gross volume</p>
         </div>
-        <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+        <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 overflow-x-auto max-w-full scrollbar-none">
           {(
             [
               { id: 'today', label: 'Today' },
@@ -109,7 +109,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ dateFilter, onFilter
                   else if (item.id === 'monthly') onFilterChange('month');
                 }
               }}
-              className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer capitalize ${
+              className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer capitalize whitespace-nowrap ${
                 timeframe === item.id
                   ? 'bg-[#D90429] text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900'

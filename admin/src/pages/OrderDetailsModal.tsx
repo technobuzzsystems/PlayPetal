@@ -1,10 +1,8 @@
 import React from 'react';
 import { Modal } from '../components/ui/Modal';
 import { StatusBadge } from '../components/ui/Badge';
-import { Select } from '../components/ui/Select';
 import { useAdmin } from '../context/AdminContext';
-import { useToast } from '../context/ToastContext';
-import type { Order, OrderStatus } from '../types';
+import type { Order } from '../types';
 import { Mail, Phone, MapPin, Calendar, CreditCard, CheckCircle2, Flame, Sparkles } from 'lucide-react';
 
 interface OrderDetailsModalProps {
@@ -18,14 +16,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { updateOrderStatus, products } = useAdmin();
-  const { showToast } = useToast();
-
-  const handleStatusUpdate = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newStatus = e.target.value as OrderStatus;
-    updateOrderStatus(order.id, newStatus);
-    showToast(`Order status changed to ${newStatus}`, 'success');
-  };
+  const { products } = useAdmin();
 
   return (
     <Modal
@@ -36,21 +27,9 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       size="2xl"
       footer={
         <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-500">Update Status:</span>
-            <Select
-              value={order.status}
-              onChange={handleStatusUpdate}
-              className="py-1 text-xs w-36"
-              options={[
-                { value: 'Pending', label: 'Pending' },
-                { value: 'Confirmed', label: 'Confirmed' },
-                { value: 'Processing', label: 'Processing' },
-                { value: 'Shipped', label: 'Shipped' },
-                { value: 'Delivered', label: 'Delivered' },
-                { value: 'Cancelled', label: 'Cancelled' },
-              ]}
-            />
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <span className="font-semibold">Order Status:</span>
+            <StatusBadge status={order.status} />
           </div>
           <button
             onClick={onClose}
@@ -153,8 +132,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               const isNewArrival = (item as any).isNewArrival ?? matchedProduct?.isNewArrival;
 
               return (
-                <div key={item.id} className="p-4 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
+                <div key={item.id} className="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start sm:items-center gap-3">
                     <img
                       src={item.image}
                       alt={item.productName}
@@ -183,9 +162,12 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       </p>
                     </div>
                   </div>
-                  <span className="text-sm font-bold text-slate-900">
-                    ₹{(item.price * item.quantity).toLocaleString()}
-                  </span>
+                  <div className="flex justify-between sm:block text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
+                    <span className="sm:hidden text-xs text-slate-500 font-medium">Subtotal:</span>
+                    <span className="text-sm font-bold text-slate-900">
+                      ₹{(item.price * item.quantity).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               );
             })}

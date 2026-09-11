@@ -44,13 +44,13 @@ export const Reviews: React.FC = () => {
 
       <Card>
         {/* Filter bar */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg w-full sm:w-auto overflow-x-auto max-w-full scrollbar-none">
             {(['All', 'Pending', 'Approved', 'Rejected', 'Hidden'] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors shrink-0 whitespace-nowrap cursor-pointer ${
                   statusFilter === s ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >

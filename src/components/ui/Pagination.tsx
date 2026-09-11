@@ -36,17 +36,17 @@ export const Pagination: React.FC<PaginationProps> = ({
   }
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 bg-white border-t border-slate-100">
-      <div className="text-xs text-slate-500 font-medium">
-        Showing <span className="font-semibold text-slate-700">{start}</span>–<span className="font-semibold text-slate-700">{end}</span> of{' '}
-        <span className="font-semibold text-slate-700">{totalItems}</span> results
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 bg-white border-t border-slate-200 text-slate-700">
+      <div className="text-xs text-slate-500 font-medium text-center sm:text-left">
+        Showing <span className="font-bold text-slate-900">{start}</span>–<span className="font-bold text-slate-900">{end}</span> of{' '}
+        <span className="font-bold text-slate-900">{totalItems}</span> results
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-wrap justify-center">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
-          className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           aria-label="Previous Page"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -56,10 +56,10 @@ export const Pagination: React.FC<PaginationProps> = ({
           <button
             key={p}
             onClick={() => onPageChange(p)}
-            className={`min-w-8 h-8 px-2 rounded-lg text-xs font-medium transition-colors ${
+            className={`min-w-8 h-8 px-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
               currentPage === p
-                ? 'bg-[#ff91db] text-white shadow-xs'
-                : 'border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                ? 'bg-[#D90429] text-white shadow-xs'
+                : 'border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
             }`}
           >
             {p}
@@ -69,7 +69,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
-          className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           aria-label="Next Page"
         >
           <ChevronRight className="w-4 h-4" />

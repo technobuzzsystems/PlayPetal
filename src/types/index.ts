@@ -27,6 +27,11 @@ export interface Product {
   featured: boolean;
   isBestSeller?: boolean;
   isNewArrival?: boolean;
+  isActive?: boolean;
+  vendorId?: string;
+  vendorName?: string;
+  brand?: string;
+  ageGroup?: string;
   image: string;
   galleryImages: string[];
   shortDescription: string;

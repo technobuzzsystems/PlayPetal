@@ -408,10 +408,10 @@ export const VendorPortal: React.FC = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="space-y-6">
       
       {/* Header Banner */}
-      <div className={`p-6 rounded-3xl shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6 text-white ${
+      <div className={`p-4 sm:p-6 rounded-3xl shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6 text-white ${
         isVendor
           ? 'bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600'
           : 'bg-gradient-to-r from-slate-900 to-indigo-950'
@@ -420,7 +420,7 @@ export const VendorPortal: React.FC = () => {
           <div className="flex items-center gap-2 mb-1 text-amber-200 text-xs font-black uppercase tracking-wider">
             <Store size={16} /> {isVendor ? 'Shopkeeper Partner Dashboard' : 'Admin Preview: Vendor Dashboard'}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black">{currentShopName}</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-black">{currentShopName}</h1>
           <p className="text-amber-100 text-xs mt-1">
             Shop Owner: <span className="font-bold text-white">{user?.name || 'Vendor'}</span> • Email: <span className="font-semibold text-white">{user?.email || 'vendor@example.com'}</span>
           </p>
@@ -439,11 +439,11 @@ export const VendorPortal: React.FC = () => {
                   onClick={() => switchVendor(ven.id)}
                   className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all ${
                     currentVendorId === ven.id
-                      ? 'bg-sky-500 text-white shadow-sm'
-                      : 'bg-white/20 text-slate-200 hover:bg-white/30'
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'bg-white/10 hover:bg-white/20 text-white'
                   }`}
                 >
-                  {ven.shopName.split(' ')[0]} ({ven.id})
+                  {ven.shopName}
                 </button>
               ))}
             </div>
@@ -461,10 +461,10 @@ export const VendorPortal: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto max-w-full scrollbar-none">
         <button
           onClick={() => setActiveTab('products')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-2 cursor-pointer ${
             activeTab === 'products'
               ? 'bg-indigo-600 text-white shadow-xs'
               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -475,7 +475,7 @@ export const VendorPortal: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('add')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-2 cursor-pointer ${
             activeTab === 'add'
               ? 'bg-amber-600 text-white shadow-xs'
               : 'text-slate-600 hover:bg-amber-50 hover:text-amber-800'
@@ -486,7 +486,7 @@ export const VendorPortal: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('orders')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-2 cursor-pointer ${
             activeTab === 'orders'
               ? 'bg-indigo-600 text-white shadow-xs'
               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -497,7 +497,7 @@ export const VendorPortal: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('profile')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-2 cursor-pointer ${
             activeTab === 'profile'
               ? 'bg-indigo-600 text-white shadow-xs'
               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -508,7 +508,7 @@ export const VendorPortal: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('reviews')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-2 cursor-pointer ${
             activeTab === 'reviews'
               ? 'bg-indigo-600 text-white shadow-xs'
               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'

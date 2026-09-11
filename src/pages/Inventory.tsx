@@ -1,27 +1,18 @@
 import React, { useState } from 'react';
 import { PageHeader } from '../components/ui/PageHeader';
-import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
 import { StatusBadge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
-import { Input } from '../components/ui/Input';
 import { useAdmin } from '../context/AdminContext';
-import { useToast } from '../context/ToastContext';
-import { Boxes, CheckCircle2, AlertTriangle, XCircle, Sliders, History, Search } from 'lucide-react';
+import { Boxes, CheckCircle2, AlertTriangle, XCircle, History, Search } from 'lucide-react';
 import type { InventoryItem } from '../types';
 
 export const Inventory: React.FC = () => {
-  const { inventory, stockHistory, adjustStock } = useAdmin();
-  const { showToast } = useToast();
+  const { inventory, stockHistory } = useAdmin();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'In Stock' | 'Low Stock' | 'Out of Stock'>('All');
-
-  // Adjustment Modal
-  const [selectedItemForAdjust, setSelectedItemForAdjust] = useState<InventoryItem | null>(null);
-  const [newStockInput, setNewStockInput] = useState<number>(0);
-  const [adjustReason, setAdjustReason] = useState<string>('Restocked from warehouse shipment');
 
   // History Modal
   const [selectedItemForHistory, setSelectedItemForHistory] = useState<InventoryItem | null>(null);
@@ -40,26 +31,12 @@ export const Inventory: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const openAdjustModal = (item: InventoryItem) => {
-    setSelectedItemForAdjust(item);
-    setNewStockInput(item.currentStock);
-    setAdjustReason('Physical stock audit count');
-  };
-
-  const handleConfirmAdjust = () => {
-    if (selectedItemForAdjust) {
-      adjustStock(selectedItemForAdjust.id, Number(newStockInput), adjustReason);
-      showToast(`Stock for ${selectedItemForAdjust.productName} updated to ${newStockInput}`, 'success');
-      setSelectedItemForAdjust(null);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Inventory Management"
-        description="Monitor warehouse inventory levels, manage stock adjustments and view audit history"
-        breadcrumbs={[{ label: 'Catalog', href: '/admin/products' }, { label: 'Inventory' }]}
+        title="Inventory Overview"
+        description="Monitor warehouse inventory levels and view stock audit history"
+        breadcrumbs={[{ label: 'Inventory' }]}
       />
 
       {/* 4 Summary Cards */}
@@ -194,77 +171,23 @@ export const Inventory: React.FC = () => {
                     <StatusBadge status={item.status} />
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <button
-                        onClick={() => openAdjustModal(item)}
-                        className="px-2.5 py-1 text-xs font-semibold text-[#ff91db] bg-pink-50 hover:bg-pink-100 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
-                      >
-                        <Sliders className="w-3.5 h-3.5" /> Adjust
-                      </button>
-                      <button
-                        onClick={() => setSelectedItemForHistory(item)}
-                        className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                        title="View stock history log"
-                      >
-                        <History className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* Adjust Stock Modal */}
-      {selectedItemForAdjust && (
-        <Modal
-          isOpen={!!selectedItemForAdjust}
-          onClose={() => setSelectedItemForAdjust(null)}
-          title="Adjust Inventory Stock"
-          description={`Update available inventory for ${selectedItemForAdjust.productName}`}
-          size="md"
-          footer={
-            <div className="flex items-center justify-end gap-3 w-full">
-              <button
-                type="button"
-                onClick={() => setSelectedItemForAdjust(null)}
-                className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <Button size="sm" onClick={handleConfirmAdjust}>
-                Save Stock Adjustment
-              </Button>
-            </div>
-          }
-        >
-          <div className="space-y-4">
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs">
-              <span className="text-slate-500">Current Stock Level:</span>
-              <span className="font-bold text-slate-900">{selectedItemForAdjust.currentStock} units</span>
-            </div>
-
-            <Input
-              type="number"
-              label="New Stock Count *"
-              value={newStockInput}
-              onChange={(e) => setNewStockInput(Number(e.target.value))}
-              min={0}
-              required
-            />
-
-            <Input
-              label="Reason for Adjustment *"
-              placeholder="e.g. Inbound PO shipment, Damaged stock, Cycle audit count"
-              value={adjustReason}
-              onChange={(e) => setAdjustReason(e.target.value)}
-              required
-            />
-          </div>
-        </Modal>
-      )}
+                      <div className="flex items-center justify-end">
+                        <button
+                          onClick={() => setSelectedItemForHistory(item)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 rounded-lg transition-colors cursor-pointer"
+                          title="View stock history log"
+                        >
+                          <History className="w-3.5 h-3.5 text-slate-500" />
+                          <span>History</span>
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
       {/* View History Modal */}
       {selectedItemForHistory && (

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Mail, Phone, MapPin, Star, RefreshCw, ExternalLink } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { ShieldCheck, Mail, Phone, MapPin, Star, RefreshCw, Package, ChevronRight } from 'lucide-react';
+import { VendorProductsModal } from './VendorProductsModal';
 
 interface VendorItem {
   id: string;
@@ -22,8 +21,7 @@ interface VendorItem {
 export const Vendors: React.FC = () => {
   const [vendors, setVendors] = useState<VendorItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const { switchVendor } = useAuth();
-  const navigate = useNavigate();
+  const [selectedVendor, setSelectedVendor] = useState<VendorItem | null>(null);
 
   const fetchVendors = async () => {
     setLoading(true);
@@ -44,11 +42,6 @@ export const Vendors: React.FC = () => {
     fetchVendors();
   }, []);
 
-  const handleSimulateVendor = (vendorId: string) => {
-    switchVendor(vendorId);
-    navigate('/admin/vendor-portal');
-  };
-
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
@@ -60,7 +53,7 @@ export const Vendors: React.FC = () => {
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Registered Shopkeepers &amp; Vendors</h1>
           <p className="text-slate-500 text-sm mt-0.5">
-            Manage partner toy stores, view their product counts, and test vendor view.
+            Manage partner toy stores and view registered vendor profiles.
           </p>
         </div>
         <button
@@ -81,11 +74,12 @@ export const Vendors: React.FC = () => {
           {vendors.map((v) => (
             <div
               key={v.id}
-              className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 flex flex-col justify-between hover:border-slate-300 transition-all space-y-4"
+              onClick={() => setSelectedVendor(v)}
+              className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 flex flex-col justify-between hover:border-sky-400 hover:shadow-md transition-all duration-200 space-y-4 cursor-pointer group"
             >
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0">
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0 group-hover:scale-105 transition-transform">
                     <img
                       src={v.logo || 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=120&h=120&fit=crop'}
                       alt={v.shopName}
@@ -93,7 +87,7 @@ export const Vendors: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 text-base leading-snug">{v.shopName}</h3>
+                    <h3 className="font-bold text-slate-900 text-base leading-snug group-hover:text-sky-600 transition-colors">{v.shopName}</h3>
                     <div className="text-xs font-medium text-slate-500 flex items-center gap-1">
                       <ShieldCheck size={13} className="text-sky-500" />
                       <span>{v.name}</span>
@@ -129,17 +123,42 @@ export const Vendors: React.FC = () => {
                   <span>{v.rating}</span>
                 </div>
 
-                <button
-                  onClick={() => handleSimulateVendor(v.id)}
-                  className="bg-sky-50 hover:bg-sky-100 text-sky-700 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1"
-                >
-                  <span>Open Vendor Portal</span>
-                  <ExternalLink size={12} />
-                </button>
+                <div className="flex items-center gap-2">
+                  {v.status && (
+                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                      v.status === 'ACTIVE'
+                        ? 'bg-emerald-50 text-emerald-700'
+                        : v.status === 'PENDING'
+                        ? 'bg-amber-50 text-amber-700'
+                        : 'bg-rose-50 text-rose-700'
+                    }`}>
+                      {v.status}
+                    </span>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedVendor(v);
+                    }}
+                    className="bg-sky-50 group-hover:bg-sky-600 text-sky-700 group-hover:text-white px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shadow-2xs"
+                  >
+                    <Package size={12} />
+                    <span>View Products</span>
+                    <ChevronRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
         </div>
+      )}
+
+      {selectedVendor && (
+        <VendorProductsModal
+          vendor={selectedVendor}
+          isOpen={!!selectedVendor}
+          onClose={() => setSelectedVendor(null)}
+        />
       )}
     </div>
   );

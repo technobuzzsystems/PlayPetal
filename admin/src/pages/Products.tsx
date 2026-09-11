@@ -157,10 +157,10 @@ export const Products: React.FC = () => {
       />
 
       {/* Quick View Filter Tabs */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-2 overflow-x-auto max-w-full pb-1 scrollbar-none">
         <button
           onClick={() => handleTabChange('All')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
             selectedBadge === 'All'
               ? 'bg-indigo-600 text-white shadow-xs'
               : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
@@ -179,7 +179,7 @@ export const Products: React.FC = () => {
 
         <button
           onClick={() => handleTabChange('bestSeller')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
             selectedBadge === 'bestSeller'
               ? 'bg-amber-500 text-white shadow-xs'
               : 'bg-white text-slate-600 hover:bg-amber-50 hover:text-amber-800 border border-slate-200'
@@ -198,7 +198,7 @@ export const Products: React.FC = () => {
 
         <button
           onClick={() => handleTabChange('newArrival')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
             selectedBadge === 'newArrival'
               ? 'bg-emerald-600 text-white shadow-xs'
               : 'bg-white text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 border border-slate-200'
@@ -237,15 +237,15 @@ export const Products: React.FC = () => {
           {/* Filters */}
           <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
             {/* Category filter */}
-            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600">
-              <Filter className="w-3.5 h-3.5 text-slate-400" />
+            <div className="flex-1 min-w-[130px] sm:flex-initial flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600">
+              <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <select
                 value={selectedCategory}
                 onChange={(e) => {
                   setSelectedCategory(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="bg-transparent border-none focus:outline-none text-xs text-slate-700 cursor-pointer font-medium"
+                className="w-full bg-transparent border-none focus:outline-none text-xs text-slate-700 cursor-pointer font-medium"
               >
                 {categories.map((c) => (
                   <option key={c} value={c}>
@@ -256,14 +256,14 @@ export const Products: React.FC = () => {
             </div>
 
             {/* Status filter */}
-            <div className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600">
+            <div className="flex-1 min-w-[120px] sm:flex-initial bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600">
               <select
                 value={selectedStatus}
                 onChange={(e) => {
                   setSelectedStatus(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="bg-transparent border-none focus:outline-none text-xs text-slate-700 cursor-pointer font-medium"
+                className="w-full bg-transparent border-none focus:outline-none text-xs text-slate-700 cursor-pointer font-medium"
               >
                 <option value="All">All Statuses</option>
                 <option value="Active">Active</option>
@@ -273,15 +273,15 @@ export const Products: React.FC = () => {
             </div>
 
             {/* Badge filter */}
-            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600">
-              <Flame className="w-3.5 h-3.5 text-slate-400" />
+            <div className="flex-1 min-w-[130px] sm:flex-initial flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600">
+              <Flame className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <select
                 value={selectedBadge}
                 onChange={(e) => {
                   setSelectedBadge(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="bg-transparent border-none focus:outline-none text-xs text-slate-700 cursor-pointer font-medium"
+                className="w-full bg-transparent border-none focus:outline-none text-xs text-slate-700 cursor-pointer font-medium"
               >
                 <option value="All">All Badges</option>
                 <option value="bestSeller">🔥 Best Sellers</option>
@@ -291,12 +291,12 @@ export const Products: React.FC = () => {
             </div>
 
             {/* Sort filter */}
-            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600">
-              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+            <div className="flex-1 min-w-[140px] sm:flex-initial flex items-center justify-between gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-600">
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-transparent border-none focus:outline-none text-xs text-slate-700 cursor-pointer font-medium"
+                className="w-full bg-transparent border-none focus:outline-none text-xs text-slate-700 cursor-pointer font-medium"
               >
                 <option value="sales">Sort: Best Selling</option>
                 <option value="name">Sort: Name</option>
@@ -305,7 +305,7 @@ export const Products: React.FC = () => {
               </select>
               <button
                 onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                className="text-[11px] font-bold text-slate-400 hover:text-slate-700 ml-1 px-1"
+                className="text-[11px] font-bold text-slate-400 hover:text-slate-700 ml-1 px-1 shrink-0"
                 title={`Current: ${sortOrder.toUpperCase()}`}
               >
                 {sortOrder === 'asc' ? '↑' : '↓'}

@@ -5,8 +5,8 @@ export const Table: React.FC<React.TableHTMLAttributes<HTMLTableElement>> = ({
   className = '',
   ...props
 }) => (
-  <div className="w-full overflow-x-auto border-t border-slate-200">
-    <table className={`w-full text-left border-collapse ${className}`} {...props}>
+  <div className="w-full overflow-x-auto border-t border-slate-200 scrollbar-thin scrollbar-thumb-slate-200">
+    <table className={`w-full min-w-[680px] text-left border-collapse ${className}`} {...props}>
       {children}
     </table>
   </div>
