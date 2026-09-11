@@ -53,32 +53,32 @@ export const Modal: React.FC<ModalProps> = ({
         aria-hidden="true"
       />
       <div
-        className={`relative w-full ${sizeClasses[size]} bg-white rounded-2xl shadow-xl border border-slate-200/80 overflow-hidden z-10 animate-in zoom-in-95 duration-200`}
+        className={`relative w-full ${sizeClasses[size]} bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-10 animate-in zoom-in-95 duration-200 text-[#202124]`}
         role="dialog"
         aria-modal="true"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <div>
-            <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+            <h3 className="text-lg font-bold text-[#202124]">{title}</h3>
             {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition-colors cursor-pointer"
+            className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-xl transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="px-6 py-5 max-h-[75vh] overflow-y-auto">
+        <div className="px-6 py-5 max-h-[75vh] overflow-y-auto text-slate-700">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 bg-slate-50/80 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-3 px-6 py-4 bg-slate-50 border-t border-slate-100">
             {footer}
           </div>
         )}
@@ -117,22 +117,20 @@ export const ConfirmModal: React.FC<{
       footer={
         <>
           <button
-            type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+            className="px-4 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
           >
             {cancelText}
           </button>
           <button
-            type="button"
             onClick={() => {
               onConfirm();
               onClose();
             }}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors cursor-pointer ${
+            className={`px-4 py-2 text-xs font-bold text-white rounded-xl transition-colors cursor-pointer ${
               isDanger
-                ? 'bg-rose-600 hover:bg-rose-700'
-                : 'bg-indigo-600 hover:bg-indigo-700'
+                ? 'bg-red-600 hover:bg-red-700'
+                : 'bg-[#D90429] hover:bg-[#B7092B]'
             }`}
           >
             {confirmText}
@@ -140,7 +138,7 @@ export const ConfirmModal: React.FC<{
         </>
       }
     >
-      <p className="text-sm text-slate-600">{message}</p>
+      <p className="text-sm text-slate-600 leading-relaxed">{message}</p>
     </Modal>
   );
 };

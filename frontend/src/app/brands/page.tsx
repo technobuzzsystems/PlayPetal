@@ -36,17 +36,17 @@ export default function BrandsPage() {
   };
 
   return (
-    <div className="w-full bg-[#0F1026] min-h-screen py-8 px-3 sm:px-4 md:px-5 lg:px-6 font-sans text-white">
+    <div className="w-full bg-[#FFFDF9] min-h-screen py-8 px-3 sm:px-4 md:px-5 lg:px-6 font-sans text-[#202124]">
       <div className="w-full">
         
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <span className="bg-[#20224A] text-[#FF4FA3] border border-[#3A3D70] text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider inline-block shadow-md">
+          <span className="bg-red-50 text-[#D90429] border border-red-200 text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider inline-block shadow-xs">
             Official Brand Partners 🌟
           </span>
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight mt-3 mb-2">
-            World-Famous <span className="text-[#FFD447]">Toy Brands</span>
+          <h1 className="text-3xl sm:text-4xl font-black text-[#202124] tracking-tight mt-3 mb-2">
+            World-Famous <span className="text-[#D90429]">Toy Brands</span>
           </h1>
-          <p className="text-[#D9DBF0] text-sm font-medium">
+          <p className="text-slate-600 text-sm font-medium">
             Explore authentic, certified collections from LEGO, Hot Wheels, Barbie, Melissa &amp; Doug, and Fisher-Price.
           </p>
         </div>
@@ -63,10 +63,10 @@ export default function BrandsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
                 whileHover={{ y: -5 }}
-                className="bg-[#20224A] hover:bg-[#282B59] rounded-3xl p-6 shadow-lg hover:shadow-[0_8px_30px_rgba(124,60,255,0.25)] border border-[#3A3D70] hover:border-[#7C3CFF] transition-all flex flex-col justify-between"
+                className="bg-white rounded-3xl p-6 shadow-sm hover:shadow-lg border border-slate-200 hover:border-[#D90429]/40 transition-all flex flex-col justify-between"
               >
                 <div>
-                  <div className="w-20 h-20 rounded-2xl overflow-hidden bg-white border border-[#3A3D70] mb-4 flex items-center justify-center p-2 shadow-sm">
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 mb-4 flex items-center justify-center p-2 shadow-xs">
                     <img 
                       src={getLogoSrc(brand)} 
                       alt={brand.name} 
@@ -78,19 +78,19 @@ export default function BrandsPage() {
                       }}
                     />
                   </div>
-                  <div className="flex items-center gap-1 text-[11px] font-extrabold text-[#28B8FF] mb-1">
-                    <ShieldCheck size={14} className="text-[#28B8FF]" />
+                  <div className="flex items-center gap-1 text-[11px] font-extrabold text-[#2196F3] mb-1">
+                    <ShieldCheck size={14} className="text-[#2196F3]" />
                     <span>Verified Official Brand</span>
                   </div>
-                  <h3 className="text-xl font-black text-white mb-2">{brand.name}</h3>
-                  <p className="text-[#D9DBF0] text-xs leading-relaxed mb-6 font-medium">
+                  <h3 className="text-xl font-black text-[#202124] mb-2">{brand.name}</h3>
+                  <p className="text-slate-500 text-xs leading-relaxed mb-6 font-medium">
                     {brand.description}
                   </p>
                 </div>
 
                 <Link
                   href={`/products?brand=${encodeURIComponent(brand.name)}`}
-                  className="w-full bg-gradient-to-r from-[#7C3CFF] to-[#9147FF] hover:from-[#9147FF] hover:to-[#FF4FA3] text-white py-3 rounded-2xl font-black text-xs transition-all flex items-center justify-center gap-2 text-center shadow-md shadow-[#7C3CFF]/30 active:scale-95"
+                  className="w-full bg-[#D90429] hover:bg-[#B7092B] text-white py-3 rounded-2xl font-black text-xs transition-all flex items-center justify-center gap-2 text-center shadow-md active:scale-95"
                 >
                   Shop {brand.name} Toys <ArrowRight size={14} />
                 </Link>
@@ -98,7 +98,6 @@ export default function BrandsPage() {
             );
           })}
         </div>
-
       </div>
     </div>
   );

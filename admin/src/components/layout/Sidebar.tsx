@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   ShieldAlert,
   Store,
-  Building2,
   Package,
   FolderTree,
   SlidersHorizontal,
@@ -26,7 +25,6 @@ import {
   X,
   Flame,
   PackagePlus,
-  UserCheck,
 } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 import { useAuth } from '../../context/AuthContext';
@@ -82,110 +80,101 @@ export const Sidebar: React.FC = () => {
     {
       name: 'Shop Dashboard',
       path: '/vendor-portal',
-      icon: <Store className="w-4.5 h-4.5 text-amber-500" />,
+      icon: <Store className="w-4.5 h-4.5 text-[#D90429]" />,
     },
     {
       name: 'My Products',
       path: '/vendor-portal?tab=products',
-      icon: <Package className="w-4.5 h-4.5 text-sky-500" />,
+      icon: <Package className="w-4.5 h-4.5 text-[#2196F3]" />,
     },
     {
       name: 'Add New Toy',
       path: '/vendor-portal?tab=add',
-      icon: <PackagePlus className="w-4.5 h-4.5 text-rose-500" />,
+      icon: <PackagePlus className="w-4.5 h-4.5 text-[#F7255A]" />,
       badge: 'Upload Photo',
     },
     {
       name: 'My Orders & Customers',
       path: '/vendor-portal?tab=orders',
-      icon: <ShoppingCart className="w-4.5 h-4.5 text-emerald-500" />,
+      icon: <ShoppingCart className="w-4.5 h-4.5 text-[#16803C]" />,
+      badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined,
     },
     {
-      name: 'Shop Profile',
+      name: 'Shop Profile & Settings',
       path: '/vendor-portal?tab=profile',
-      icon: <UserCheck className="w-4.5 h-4.5 text-pink-500" />,
+      icon: <Settings className="w-4.5 h-4.5 text-[#9C27B0]" />,
     },
   ];
 
-  // 🛡️ SUPER ADMIN ONLY NAVIGATION (No Vendor Portal here!)
+  // 👑 SUPER ADMIN NAVIGATION
   const adminNavItems: NavGroup[] = [
     {
       name: 'Dashboard',
       path: '/admin/dashboard',
-      icon: <LayoutDashboard className="w-4.5 h-4.5" />,
+      icon: <LayoutDashboard className="w-4.5 h-4.5 text-[#D90429]" />,
+    },
+    {
+      name: 'Approvals Queue',
+      path: '/admin/approvals',
+      icon: <ShieldAlert className="w-4.5 h-4.5 text-[#FF9800]" />,
+      badge: products.filter((p: any) => p.status === 'PENDING').length || undefined,
     },
     {
       name: 'Catalog',
-      icon: <Package className="w-4.5 h-4.5" />,
+      icon: <Package className="w-4.5 h-4.5 text-[#2196F3]" />,
       children: [
-        {
-          name: 'Product Approvals',
-          path: '/admin/approvals',
-          icon: <ShieldAlert className="w-4 h-4 text-amber-500" />,
-          badge: 'Review',
-        },
-        { name: 'Products', path: '/admin/products', icon: <Package className="w-4 h-4" /> },
-        {
-          name: 'Best Sellers',
-          path: '/admin/products/best-sellers',
-          icon: <Flame className="w-4 h-4 text-amber-500" />,
-          badge: bestSellersCount,
-        },
-        {
-          name: 'New Arrivals',
-          path: '/admin/products/new-arrivals',
-          icon: <Sparkles className="w-4 h-4 text-emerald-500" />,
-          badge: newArrivalsCount,
-        },
-        { name: 'Categories', path: '/admin/categories', icon: <FolderTree className="w-4 h-4" /> },
-        { name: 'Attributes', path: '/admin/attributes', icon: <SlidersHorizontal className="w-4 h-4" /> },
-        { name: 'Variants', path: '/admin/variants', icon: <Layers className="w-4 h-4" /> },
-        { name: 'Inventory', path: '/admin/inventory', icon: <Boxes className="w-4 h-4" /> },
+        { name: 'All Products', path: '/admin/products', icon: <Package className="w-4 h-4 text-slate-400" /> },
+        { name: 'Add New Product', path: '/admin/products/new', icon: <PackagePlus className="w-4 h-4 text-[#D90429]" /> },
+        { name: 'Best Sellers', path: '/admin/products/best-sellers', icon: <Flame className="w-4 h-4 text-[#FF9800]" />, badge: bestSellersCount },
+        { name: 'New Arrivals', path: '/admin/products/new-arrivals', icon: <Sparkles className="w-4 h-4 text-[#2196F3]" />, badge: newArrivalsCount },
+        { name: 'Categories', path: '/admin/categories', icon: <FolderTree className="w-4 h-4 text-slate-400" /> },
+        { name: 'Attributes', path: '/admin/attributes', icon: <SlidersHorizontal className="w-4 h-4 text-slate-400" /> },
+        { name: 'Variants', path: '/admin/variants', icon: <Layers className="w-4 h-4 text-slate-400" /> },
       ],
+    },
+    {
+      name: 'Inventory',
+      path: '/admin/inventory',
+      icon: <Boxes className="w-4.5 h-4.5 text-[#9C27B0]" />,
     },
     {
       name: 'Orders',
       path: '/admin/orders',
-      icon: <ShoppingCart className="w-4.5 h-4.5" />,
+      icon: <ShoppingCart className="w-4.5 h-4.5 text-[#16803C]" />,
       badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined,
     },
     {
-      name: 'Vendors',
+      name: 'Vendors / Sellers',
       path: '/admin/vendors',
-      icon: <Building2 className="w-4.5 h-4.5 text-sky-500" />,
+      icon: <Store className="w-4.5 h-4.5 text-[#2196F3]" />,
     },
     {
       name: 'Customers',
       path: '/admin/customers',
-      icon: <Users className="w-4.5 h-4.5" />,
+      icon: <Users className="w-4.5 h-4.5 text-[#43B94A]" />,
     },
     {
       name: 'Marketing',
-      icon: <Sparkles className="w-4.5 h-4.5" />,
+      icon: <Sparkles className="w-4.5 h-4.5 text-[#F7255A]" />,
       children: [
-        { name: 'Banners', path: '/admin/banners', icon: <ImageIcon className="w-4 h-4" /> },
-        { name: 'Collections', path: '/admin/collections', icon: <Sparkles className="w-4 h-4" /> },
-        { name: 'Coupons', path: '/admin/coupons', icon: <TicketPercent className="w-4 h-4" /> },
+        { name: 'Banners', path: '/admin/banners', icon: <ImageIcon className="w-4 h-4 text-slate-400" /> },
+        { name: 'Collections', path: '/admin/collections', icon: <Sparkles className="w-4 h-4 text-slate-400" /> },
+        { name: 'Coupons & Deals', path: '/admin/coupons', icon: <TicketPercent className="w-4 h-4 text-slate-400" /> },
       ],
     },
     {
-      name: 'Content',
-      icon: <LayoutTemplate className="w-4.5 h-4.5" />,
+      name: 'Content & CMS',
+      icon: <LayoutTemplate className="w-4.5 h-4.5 text-[#FF9800]" />,
       children: [
-        { name: 'Homepage', path: '/admin/homepage', icon: <LayoutTemplate className="w-4 h-4" /> },
-        { name: 'Media Library', path: '/admin/media', icon: <Images className="w-4 h-4" /> },
+        { name: 'Homepage Sections', path: '/admin/homepage', icon: <LayoutTemplate className="w-4 h-4 text-slate-400" /> },
+        { name: 'Media Library', path: '/admin/media', icon: <Images className="w-4 h-4 text-slate-400" /> },
+        { name: 'Reviews', path: '/admin/reviews', icon: <Star className="w-4 h-4 text-slate-400" />, badge: pendingReviewsCount },
       ],
-    },
-    {
-      name: 'Reviews',
-      path: '/admin/reviews',
-      icon: <Star className="w-4.5 h-4.5" />,
-      badge: pendingReviewsCount > 0 ? pendingReviewsCount : undefined,
     },
     {
       name: 'Settings',
       path: '/admin/settings',
-      icon: <Settings className="w-4.5 h-4.5" />,
+      icon: <Settings className="w-4.5 h-4.5 text-slate-500" />,
     },
   ];
 
@@ -193,10 +182,10 @@ export const Sidebar: React.FC = () => {
 
   const isLinkActive = (path: string) => {
     if (isVendor) {
-      if (path.includes('?tab=')) {
-        const tabVal = path.split('?tab=')[1];
-        return location.pathname === '/vendor-portal' && location.search.includes(`tab=${tabVal}`);
-      }
+      if (path.includes('tab=products')) return location.search.includes('tab=products');
+      if (path.includes('tab=add')) return location.search.includes('tab=add');
+      if (path.includes('tab=orders')) return location.search.includes('tab=orders');
+      if (path.includes('tab=profile')) return location.search.includes('tab=profile');
       if (path === '/vendor-portal') {
         return location.pathname === '/vendor-portal' && (!location.search || location.search === '' || location.search === '?tab=products');
       }
@@ -227,36 +216,24 @@ export const Sidebar: React.FC = () => {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 flex flex-col ${
-          isVendor ? 'bg-[#fffaf0] border-r border-amber-200' : 'bg-[#fff0f7] border-r border-slate-200'
-        } transition-all duration-300 ease-in-out select-none ${
+        className={`fixed top-0 bottom-0 left-0 z-40 flex flex-col bg-white border-r border-slate-200 text-[#202124] transition-all duration-300 ease-in-out select-none ${
           sidebarCollapsed ? 'w-20' : 'w-64'
         } ${
           mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Brand section */}
-        <div className={`h-16 flex items-center justify-between px-5 border-b ${
-          isVendor ? 'border-amber-200 bg-amber-50/80' : 'border-slate-200 bg-slate-50/80'
-        }`}>
+        <div className="h-16 flex items-center justify-between px-5 border-b border-slate-200 bg-white">
           <NavLink to={isVendor ? "/vendor-portal" : "/admin/dashboard"} className="flex items-center gap-3 overflow-hidden">
-            {isVendor ? (
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-white shrink-0 shadow-xs">
-                <Store className="w-5 h-5" />
-              </div>
-            ) : (
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white font-bold shrink-0 shadow-xs">
-                <span className="text-white text-base font-extrabold">K</span>
-              </div>
-            )}
+            <div className="w-9 h-9 rounded-xl bg-[#D90429] flex items-center justify-center text-white font-black shrink-0 shadow-xs">
+              <span className="text-white text-base font-extrabold">{isVendor ? "S" : "P"}</span>
+            </div>
             {!sidebarCollapsed && (
               <div className="flex flex-col">
-                <span className="text-sm font-black text-slate-900 tracking-tight leading-tight truncate max-w-[145px]">
-                  {isVendor ? (user?.shopName || 'Toy Shop') : 'KidsPlay'}
+                <span className="text-sm font-black text-[#202124] tracking-tight leading-tight truncate max-w-[145px]">
+                  {isVendor ? (user?.shopName || 'Toy Shop') : 'Play Petal Admin'}
                 </span>
-                <span className={`text-[9px] uppercase font-black tracking-widest ${
-                  isVendor ? 'text-amber-700' : 'text-indigo-600'
-                }`}>
+                <span className="text-[9px] uppercase font-black tracking-widest text-[#D90429]">
                   {isVendor ? 'Shopkeeper Portal' : 'Admin Panel'}
                 </span>
               </div>
@@ -266,7 +243,7 @@ export const Sidebar: React.FC = () => {
           {/* Close for mobile */}
           <button
             onClick={() => setMobileSidebarOpen(false)}
-            className="lg:hidden text-slate-500 hover:text-slate-800 p-1.5 rounded-lg cursor-pointer"
+            className="lg:hidden text-slate-400 hover:text-slate-700 p-1.5 rounded-lg cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -280,15 +257,14 @@ export const Sidebar: React.FC = () => {
               const isOpen = openGroups[item.name] || groupActive;
 
               if (sidebarCollapsed) {
-                // Collapsed view with tooltip
                 return (
                   <div key={item.name} className="relative group py-1">
                     <button
                       onClick={() => setSidebarCollapsed(false)}
                       className={`w-full h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
                         groupActive
-                          ? 'bg-indigo-600 text-white shadow-xs'
-                          : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-600'
+                          ? 'bg-[#D90429] text-white shadow-xs'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-[#202124]'
                       }`}
                       title={item.name}
                     >
@@ -298,19 +274,18 @@ export const Sidebar: React.FC = () => {
                 );
               }
 
-              // Expanded group
               return (
                 <div key={item.name} className="space-y-1">
                   <button
                     onClick={() => toggleGroup(item.name)}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       groupActive
-                        ? 'text-indigo-950 bg-indigo-50/80 font-black'
-                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                        ? 'text-[#202124] bg-slate-50 border border-slate-200'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-[#202124]'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className={groupActive ? 'text-indigo-600' : 'text-slate-400'}>
+                      <span className={groupActive ? 'text-[#D90429]' : 'text-slate-400'}>
                         {item.icon}
                       </span>
                       <span>{item.name}</span>
@@ -323,7 +298,7 @@ export const Sidebar: React.FC = () => {
                   </button>
 
                   {isOpen && (
-                    <div className="pl-6 pr-1 space-y-1 border-l-2 border-indigo-100 ml-4 my-1">
+                    <div className="pl-6 pr-1 space-y-1 border-l-2 border-slate-200 ml-4 my-1">
                       {item.children.map((sub) => {
                         const active = isLinkActive(sub.path);
                         return (
@@ -332,8 +307,8 @@ export const Sidebar: React.FC = () => {
                             to={sub.path}
                             className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs transition-all relative ${
                               active
-                                ? 'bg-indigo-600 text-white font-bold shadow-xs'
-                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                                ? 'bg-[#D90429] text-white font-bold shadow-xs'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-[#202124] font-medium'
                             }`}
                           >
                             <div className="flex items-center gap-2.5">
@@ -345,7 +320,7 @@ export const Sidebar: React.FC = () => {
                             {sub.badge !== undefined && (
                               <span
                                 className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                  active ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-700'
+                                  active ? 'bg-white/20 text-white' : 'bg-slate-100 text-[#D90429] border border-slate-200'
                                 }`}
                               >
                                 {sub.badge}
@@ -360,7 +335,6 @@ export const Sidebar: React.FC = () => {
               );
             }
 
-            // Single item (no children)
             const active = isLinkActive(item.path || '');
             return (
               <NavLink
@@ -368,17 +342,13 @@ export const Sidebar: React.FC = () => {
                 to={item.path || '#'}
                 className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all relative ${
                   active
-                    ? isVendor
-                      ? 'bg-amber-600 text-white shadow-xs'
-                      : 'bg-indigo-600 text-white shadow-xs'
-                    : isVendor
-                    ? 'text-slate-700 hover:bg-amber-50 hover:text-amber-800 font-semibold'
-                    : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 font-medium'
+                    ? 'bg-[#D90429] text-white shadow-xs'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-[#202124] font-semibold'
                 }`}
                 title={sidebarCollapsed ? item.name : undefined}
               >
                 <div className="flex items-center gap-3">
-                  <span className={active ? 'text-white' : isVendor ? 'text-amber-600' : 'text-indigo-600'}>
+                  <span className={active ? 'text-white' : 'text-[#D90429]'}>
                     {item.icon}
                   </span>
                   {!sidebarCollapsed && <span>{item.name}</span>}
@@ -388,29 +358,21 @@ export const Sidebar: React.FC = () => {
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                     active
                       ? 'bg-white/20 text-white'
-                      : isVendor
-                      ? 'bg-amber-100 text-amber-800'
-                      : 'bg-indigo-100 text-indigo-700'
+                      : 'bg-slate-100 text-[#D90429] border border-slate-200'
                   }`}>
                     {item.badge}
                   </span>
-                )}
-
-                {active && !sidebarCollapsed && (
-                  <span className="absolute left-0 top-2 bottom-2 w-1 bg-white rounded-r-full" />
                 )}
               </NavLink>
             );
           })}
         </div>
 
-        {/* Sidebar Footer / Collapse toggle button */}
-        <div className={`p-3 border-t hidden lg:flex items-center justify-between ${
-          isVendor ? 'border-amber-200 bg-amber-50/50' : 'border-slate-200 bg-slate-50/80'
-        }`}>
+        {/* Sidebar Footer */}
+        <div className="p-3 border-t border-slate-200 bg-white hidden lg:flex items-center justify-between">
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 transition-colors text-xs font-semibold cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-slate-500 hover:text-[#202124] hover:bg-slate-50 transition-colors text-xs font-bold cursor-pointer"
             title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {sidebarCollapsed ? (

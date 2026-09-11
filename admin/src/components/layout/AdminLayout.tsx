@@ -9,11 +9,11 @@ export const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children
   const { sidebarCollapsed } = useAdmin();
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col antialiased">
+    <div className="min-h-screen bg-[#FFFDF9] font-sans text-[#202124] flex flex-col antialiased">
       {/* Fixed Sidebar */}
       <Sidebar />
 
-      {/* Main Content Area (shifted by sidebar width on desktop) */}
+      {/* Main Content Area */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
           sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'

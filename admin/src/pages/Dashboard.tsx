@@ -69,7 +69,7 @@ export const Dashboard: React.FC = () => {
         title="Dashboard"
         description="Overview of your KidsPlay store performance, catalog & sales"
         actions={
-          <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+          <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200">
             <Calendar className="w-4 h-4 text-slate-400 ml-2 shrink-0" />
             <div className="flex items-center">
               {(
@@ -82,10 +82,10 @@ export const Dashboard: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => setActiveDateFilter(item.id)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
                     activeDateFilter === item.id
-                      ? 'bg-indigo-600 text-white shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      ? 'bg-[#D90429] text-white shadow-sm font-black'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                   }`}
                 >
                   {item.label}

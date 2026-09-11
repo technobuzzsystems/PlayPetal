@@ -17,17 +17,17 @@ export const LowStockWidget: React.FC = () => {
     <Card className="h-full flex flex-col">
       <CardHeader className="flex-row items-center justify-between pb-3 border-b-0">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
             <AlertTriangle className="w-4 h-4" />
           </div>
           <div>
             <CardTitle>Low Stock Products</CardTitle>
-            <p className="text-xs text-slate-500 mt-0.5">Items requiring warehouse replenishment</p>
+            <p className="text-xs text-slate-500 mt-0.5 font-medium">Items requiring warehouse replenishment</p>
           </div>
         </div>
         <Link
           to="/admin/inventory"
-          className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-0.5"
+          className="text-xs font-bold text-[#D90429] hover:text-[#B7092B] flex items-center gap-0.5"
         >
           Manage inventory <ChevronRight className="w-3.5 h-3.5" />
         </Link>
@@ -49,10 +49,10 @@ export const LowStockWidget: React.FC = () => {
                   <img
                     src={item.image}
                     alt={item.productName}
-                    className="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0"
+                    className="w-9 h-9 rounded-xl object-cover border border-slate-200 shrink-0"
                   />
                   <div className="min-w-0">
-                    <h4 className="text-xs font-semibold text-slate-900 truncate">
+                    <h4 className="text-xs font-bold text-slate-900 truncate">
                       {item.productName}
                     </h4>
                     <p className="text-[11px] text-slate-400 font-mono mt-0.5">
@@ -63,10 +63,10 @@ export const LowStockWidget: React.FC = () => {
 
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="text-right">
-                    <span className="text-xs font-extrabold text-slate-900">
+                    <span className="text-xs font-black text-slate-900">
                       {item.currentStock}
                     </span>
-                    <span className="text-[10px] text-slate-400 block">units left</span>
+                    <span className="text-[10px] text-slate-500 block">units left</span>
                   </div>
                   <StatusBadge status={item.status} />
                 </div>

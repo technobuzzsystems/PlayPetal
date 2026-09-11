@@ -15,21 +15,21 @@ export const Badge: React.FC<BadgeProps> = ({
   ...props
 }) => {
   const variantStyles = {
-    success: 'bg-emerald-50 text-emerald-700 border-emerald-200/80',
-    warning: 'bg-amber-50 text-amber-700 border-amber-200/80',
-    danger: 'bg-rose-50 text-rose-700 border-rose-200/80',
-    info: 'bg-sky-50 text-sky-700 border-sky-200/80',
-    purple: 'bg-violet-50 text-violet-700 border-violet-200/80',
-    neutral: 'bg-slate-100 text-slate-700 border-slate-200',
-    outline: 'bg-white text-slate-600 border-slate-300',
+    success: 'bg-emerald-50 text-[#16803C] border-emerald-200 font-bold',
+    warning: 'bg-amber-50 text-amber-800 border-amber-200 font-bold',
+    danger: 'bg-rose-50 text-rose-700 border-rose-200 font-bold',
+    info: 'bg-sky-50 text-sky-700 border-sky-200 font-bold',
+    purple: 'bg-purple-50 text-purple-700 border-purple-200 font-bold',
+    neutral: 'bg-slate-100 text-slate-700 border-slate-200 font-bold',
+    outline: 'bg-transparent text-slate-700 border-slate-300 font-bold',
   };
 
   const dotStyles = {
-    success: 'bg-emerald-500',
+    success: 'bg-[#16803C]',
     warning: 'bg-amber-500',
     danger: 'bg-rose-500',
     info: 'bg-sky-500',
-    purple: 'bg-violet-600',
+    purple: 'bg-purple-500',
     neutral: 'bg-slate-400',
     outline: 'bg-slate-400',
   };

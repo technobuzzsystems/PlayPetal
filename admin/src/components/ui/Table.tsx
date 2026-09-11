@@ -5,7 +5,7 @@ export const Table: React.FC<React.TableHTMLAttributes<HTMLTableElement>> = ({
   className = '',
   ...props
 }) => (
-  <div className="w-full overflow-x-auto border-t border-slate-100">
+  <div className="w-full overflow-x-auto border-t border-slate-200">
     <table className={`w-full text-left border-collapse ${className}`} {...props}>
       {children}
     </table>
@@ -17,7 +17,7 @@ export const TableHeader: React.FC<React.HTMLAttributes<HTMLTableSectionElement>
   className = '',
   ...props
 }) => (
-  <thead className={`bg-slate-50/80 border-b border-slate-200/80 ${className}`} {...props}>
+  <thead className={`bg-slate-50 border-b border-slate-200 ${className}`} {...props}>
     {children}
   </thead>
 );
@@ -37,7 +37,7 @@ export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement>> = ({
   className = '',
   ...props
 }) => (
-  <tr className={`hover:bg-slate-50/70 transition-colors group ${className}`} {...props}>
+  <tr className={`hover:bg-slate-50 transition-colors group ${className}`} {...props}>
     {children}
   </tr>
 );
@@ -48,7 +48,7 @@ export const TableHead: React.FC<React.ThHTMLAttributes<HTMLTableCellElement>> =
   ...props
 }) => (
   <th
-    className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap ${className}`}
+    className={`px-4 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap ${className}`}
     {...props}
   >
     {children}
@@ -60,7 +60,7 @@ export const TableCell: React.FC<React.TdHTMLAttributes<HTMLTableCellElement>> =
   className = '',
   ...props
 }) => (
-  <td className={`px-4 py-3.5 text-sm text-slate-600 align-middle ${className}`} {...props}>
+  <td className={`px-4 py-3.5 text-sm text-slate-700 align-middle ${className}`} {...props}>
     {children}
   </td>
 );

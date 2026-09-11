@@ -28,11 +28,11 @@ export const TopProductsWidget: React.FC<TopProductsWidgetProps> = ({ activeDate
       <CardHeader className="flex-row items-center justify-between pb-3 border-b-0">
         <div>
           <CardTitle>Top Products</CardTitle>
-          <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">{subtitle}</p>
         </div>
         <Link
           to="/admin/products"
-          className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-0.5"
+          className="text-xs font-bold text-[#D90429] hover:text-[#B7092B] flex items-center gap-0.5"
         >
           View all <ChevronRight className="w-3.5 h-3.5" />
         </Link>
@@ -46,41 +46,41 @@ export const TopProductsWidget: React.FC<TopProductsWidgetProps> = ({ activeDate
               className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-3 group"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <span className="w-5 text-center text-xs font-bold text-slate-400 group-hover:text-slate-600">
+                <span className="w-5 text-center text-xs font-bold text-slate-400 group-hover:text-slate-900">
                   #{idx + 1}
                 </span>
                 <img
                   src={product.image}
                   alt={product.name}
-                  className="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0"
+                  className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0"
                 />
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <h4 className="text-xs font-semibold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
+                    <h4 className="text-xs font-bold text-slate-900 truncate group-hover:text-[#D90429] transition-colors">
                       {product.name}
                     </h4>
                     {product.isBestSeller && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">
-                        <Flame className="w-2.5 h-2.5 text-amber-500 fill-amber-400" /> Best Seller
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                        <Flame className="w-2.5 h-2.5 text-amber-500 fill-amber-500" /> Best Seller
                       </span>
                     )}
                     {product.isNewArrival && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
-                        <Sparkles className="w-2.5 h-2.5 text-emerald-500" /> New
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-[#16803C] border border-emerald-200">
+                        <Sparkles className="w-2.5 h-2.5 text-[#16803C]" /> New
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
+                  <p className="text-[11px] text-slate-500 mt-0.5">
                     ₹{product.salePrice || product.price} • {product.category}
                   </p>
                 </div>
               </div>
 
               <div className="text-right shrink-0">
-                <span className="text-xs font-bold text-slate-900 flex items-center justify-end gap-1">
-                  {product.salesCount} <span className="text-[11px] font-normal text-slate-500">sold</span>
+                <span className="text-xs font-black text-slate-900 flex items-center justify-end gap-1">
+                  {product.salesCount} <span className="text-[11px] font-medium text-slate-500">sold</span>
                 </span>
-                <span className="text-[10px] text-emerald-600 font-medium flex items-center justify-end gap-0.5 mt-0.5">
+                <span className="text-[10px] text-[#16803C] font-bold flex items-center justify-end gap-0.5 mt-0.5">
                   <TrendingUp className="w-2.5 h-2.5" /> High demand
                 </span>
               </div>

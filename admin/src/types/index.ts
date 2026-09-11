@@ -1,4 +1,4 @@
-export type ProductStatus = 'Active' | 'Draft' | 'Out of Stock';
+export type ProductStatus = 'Active' | 'Draft' | 'Out of Stock' | 'APPROVED' | 'PENDING' | 'REJECTED';
 
 export interface ProductVariant {
   id: string;
@@ -24,6 +24,7 @@ export interface Product {
   discount?: number;
   stock: number;
   status: ProductStatus;
+  rejectionReason?: string;
   featured: boolean;
   isBestSeller?: boolean;
   isNewArrival?: boolean;

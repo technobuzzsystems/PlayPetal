@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, User, ArrowRight, Sparkles } from "lucide-react";
+import { Mail, Lock, User, ArrowRight } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 export default function SignupPage() {
@@ -38,107 +38,103 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-[85vh] bg-[#0F1026] text-white flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Magical Elements */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} className="absolute top-24 left-16 text-4xl opacity-30">⭐</motion.div>
-        <motion.div animate={{ y: [0, 20, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} className="absolute bottom-24 right-1/4 text-4xl opacity-30">🚀</motion.div>
-        <motion.div animate={{ y: [0, -15, 0], rotate: [0, -10, 10, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute top-32 right-12 text-3xl opacity-30">🪄</motion.div>
+    <div className="min-h-[85vh] bg-[#FFFDF9] text-[#202124] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Floating Elements */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-40">
+        <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} className="absolute top-24 left-16 text-4xl">⭐</motion.div>
+        <motion.div animate={{ y: [0, 20, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} className="absolute bottom-24 right-1/4 text-4xl">🚀</motion.div>
+        <motion.div animate={{ y: [0, -15, 0], rotate: [0, -10, 10, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute top-32 right-12 text-3xl">🪄</motion.div>
       </div>
 
-      <div className="max-w-4xl w-full bg-[#20224A] rounded-3xl shadow-2xl flex flex-col md:flex-row-reverse overflow-hidden relative z-10 border border-[#3A3D70]">
+      <div className="max-w-4xl w-full bg-white rounded-3xl shadow-xl flex flex-col md:flex-row-reverse overflow-hidden relative z-10 border border-slate-200">
         
         {/* Right Side: Visual / Brand */}
-        <div className="w-full md:w-1/2 bg-gradient-to-br from-[#171936] to-[#20224A] border-b md:border-b-0 md:border-l border-[#3A3D70] p-10 flex flex-col justify-center text-white relative overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#FF4FA3]/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="w-full md:w-1/2 bg-[#D90429] p-10 flex flex-col justify-center text-white relative overflow-hidden">
           <div className="relative z-10">
             <Link href="/" className="inline-block mb-8">
-              <span className="text-4xl font-black tracking-tighter">
-                <span className="text-[#FF4FA3]">Toy</span>
-                <span className="text-[#FFD447]">J</span>
-                <span className="text-[#28B8FF]">o</span>
-                <span className="text-[#48D597]">y</span>
+              <span className="text-4xl font-black tracking-tight text-white flex items-center gap-1">
+                Play<span className="text-[#FFD43B]">Petal</span>
               </span>
             </Link>
-            <h2 className="text-3xl font-black mb-4 leading-tight text-white">Join the ToyJoy Club! 🎈</h2>
-            <p className="text-[#D9DBF0] font-medium text-sm leading-relaxed mb-8">
+            <h2 className="text-3xl font-black mb-4 leading-tight text-white">Join the Play Petal Club! 🎈</h2>
+            <p className="text-white/90 font-medium text-sm leading-relaxed mb-8">
               Create an account to start earning Play Points, get early access to new toys, and enjoy faster checkouts.
             </p>
             
             <div className="hidden md:flex gap-4 items-center">
-              <div className="w-12 h-12 rounded-full bg-[#171936] border border-[#3A3D70] flex items-center justify-center text-2xl shadow-sm">🎁</div>
-              <div className="w-12 h-12 rounded-full bg-[#171936] border border-[#3A3D70] flex items-center justify-center text-2xl shadow-sm">🏎️</div>
-              <div className="w-12 h-12 rounded-full bg-[#171936] border border-[#3A3D70] flex items-center justify-center text-2xl shadow-sm">🧸</div>
+              <div className="w-12 h-12 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-2xl shadow-xs">🎁</div>
+              <div className="w-12 h-12 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-2xl shadow-xs">🏎️</div>
+              <div className="w-12 h-12 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-2xl shadow-xs">🧸</div>
             </div>
           </div>
         </div>
 
         {/* Left Side: Signup Form */}
-        <div className="w-full md:w-1/2 p-10 md:p-12 bg-[#20224A]">
+        <div className="w-full md:w-1/2 p-10 md:p-12 bg-white">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-black text-white mb-2">Create Your Account</h3>
-            <p className="text-sm text-[#D9DBF0] font-medium">Already have an account? <Link href="/login" className="text-[#28B8FF] hover:text-[#FFD447] font-bold hover:underline">Log in</Link></p>
+            <h3 className="text-2xl font-black text-[#202124] mb-2">Create Your Account</h3>
+            <p className="text-sm text-slate-500 font-medium">Already have an account? <Link href="/login" className="text-[#D90429] font-bold hover:underline">Log in</Link></p>
           </div>
 
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-[#D9DBF0] uppercase tracking-wider ml-1">Full Name</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Full Name</label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A8ACCA]" size={18} />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
                   type="text" 
                   autoComplete="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="John Doe"
-                  className="w-full bg-[#171936] border border-[#3A3D70] rounded-xl py-3 pl-11 pr-4 outline-none focus:border-[#7C3CFF] focus:ring-2 focus:ring-[#7C3CFF]/50 transition-all font-medium text-white placeholder-[#A8ACCA]"
+                  placeholder="Aryan Sharma"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 outline-none focus:border-[#D90429] focus:ring-2 focus:ring-[#D90429]/30 transition-all font-medium text-[#202124] placeholder-slate-400"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-[#D9DBF0] uppercase tracking-wider ml-1">Email Address</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Email Address</label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A8ACCA]" size={18} />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
                   type="email" 
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="hello@example.com"
-                  className="w-full bg-[#171936] border border-[#3A3D70] rounded-xl py-3 pl-11 pr-4 outline-none focus:border-[#7C3CFF] focus:ring-2 focus:ring-[#7C3CFF]/50 transition-all font-medium text-white placeholder-[#A8ACCA]"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 outline-none focus:border-[#D90429] focus:ring-2 focus:ring-[#D90429]/30 transition-all font-medium text-[#202124] placeholder-slate-400"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-[#D9DBF0] uppercase tracking-wider ml-1">Password</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Password</label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A8ACCA]" size={18} />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
                   type="password" 
                   autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[#171936] border border-[#3A3D70] rounded-xl py-3 pl-11 pr-4 outline-none focus:border-[#7C3CFF] focus:ring-2 focus:ring-[#7C3CFF]/50 transition-all font-medium text-white placeholder-[#A8ACCA]"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 outline-none focus:border-[#D90429] focus:ring-2 focus:ring-[#D90429]/30 transition-all font-medium text-[#202124] placeholder-slate-400"
                   required
                 />
               </div>
             </div>
 
-            <button type="submit" className="w-full bg-gradient-to-r from-[#7C3CFF] to-[#9147FF] hover:from-[#9147FF] hover:to-[#FF4FA3] text-white font-bold py-3.5 rounded-xl shadow-lg shadow-[#7C3CFF]/30 transition-all flex items-center justify-center gap-2 group mt-4 cursor-pointer active:scale-95">
+            <button
+              type="submit"
+              className="w-full mt-4 bg-[#D90429] hover:bg-[#B7092B] text-white py-3.5 rounded-full font-black text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            >
               <span>Create Account</span>
-              <ArrowRight size={18} className="transform group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={16} />
             </button>
           </form>
-
-          <div className="mt-8 text-center text-xs font-semibold text-[#A8ACCA]">
-            By creating an account, you agree to ToyJoy&apos;s <Link href="#" className="text-[#D9DBF0] hover:underline">Terms of Service</Link> and <Link href="#" className="text-[#D9DBF0] hover:underline">Privacy Policy</Link>.
-          </div>
         </div>
+
       </div>
     </div>
   );

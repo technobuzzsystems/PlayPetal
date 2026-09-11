@@ -1,29 +1,42 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0F1026;
-  --foreground: #FFFFFF;
+  --background: #FFFDF9;
+  --foreground: #202124;
 
-  /* TOYJOY DARK PLAYFUL PALETTE */
-  --bg-primary: #0F1026;
-  --bg-secondary: #171936;
-  --card-surface: #20224A;
-  --card-elevated: #282B59;
-  --border-color: #3A3D70;
+  /* PLAY PETAL LIGHT PLAYFUL PALETTE (HAMLEYS INSPIRED) */
+  --bg-primary: #FFFDF9;
+  --bg-secondary: #F8F9FC;
+  --card-surface: #FFFFFF;
+  --card-elevated: #FFFFFF;
+  --border-color: #E2E8F0;
 
-  /* VIBRANT PLAYFUL ACCENTS */
-  --purple-primary: #7C3CFF;
-  --purple-bright: #9147FF;
-  --pink-playful: #FF4FA3;
-  --blue-playful: #28B8FF;
-  --yellow-playful: #FFD447;
-  --orange-playful: #FF8A3D;
-  --green-playful: #48D597;
+  /* BRAND RED */
+  --red-primary: #D90429;
+  --red-hover: #EF233C;
+  --red-deep: #B7092B;
+
+  /* VIBRANT MULTI-COLOR ACCENTS */
+  --purple-primary: #9C27B0;
+  --purple-soft: #E9D5FF;
+  --blue-primary: #2196F3;
+  --blue-soft: #D7EEFF;
+  --teal-primary: #00A896;
+  --teal-soft: #D8F7F1;
+  --green-primary: #43B94A;
+  --green-badge: #16803C;
+  --green-soft: #E1F7DF;
+  --orange-primary: #FF9800;
+  --orange-soft: #FFF0D0;
+  --yellow-primary: #FFD43B;
+  --yellow-soft: #FFF8C7;
+  --pink-primary: #F7255A;
+  --pink-soft: #FFE0E8;
 
   /* TEXT CONTRAST */
-  --text-primary: #FFFFFF;
-  --text-secondary: #D9DBF0;
-  --text-muted: #A8ACCA;
+  --text-primary: #202124;
+  --text-secondary: #5F6368;
+  --text-muted: #8A8F98;
 }
 
 @theme inline {
@@ -41,7 +54,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Scrollbar for playful horizontal tabs */
+/* Custom Scrollbar */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -50,18 +63,14 @@ body {
   scrollbar-width: none;
 }
 
-/* Playful Glow Utilities */
-.toy-glow-purple {
-  box-shadow: 0 0 15px rgba(124, 60, 255, 0.45);
-}
-.toy-glow-pink {
-  box-shadow: 0 0 15px rgba(255, 79, 163, 0.45);
+/* Playful Card & Shadow Utilities */
+.toy-card-shadow {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
 }
 .toy-card-lift {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .toy-card-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(124, 60, 255, 0.22);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(217, 4, 41, 0.12);
 }
-

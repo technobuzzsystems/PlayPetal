@@ -77,6 +77,7 @@ export const Products: React.FC = () => {
   const filteredProducts = useMemo(() => {
     return products
       .filter((p) => {
+        if (p.status === 'REJECTED' || (p as any).status === 'Rejected') return false;
         const matchesSearch =
           p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           p.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||

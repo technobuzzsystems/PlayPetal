@@ -28,10 +28,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             id={inputId}
             ref={ref}
-            className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 ${
+            className={`w-full rounded-xl border bg-slate-50 px-3 py-2 text-sm text-[#202124] transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#D90429]/20 focus:border-[#D90429] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 ${
               leftIcon ? 'pl-9' : ''
             } ${rightIcon ? 'pr-9' : ''} ${
-              error ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200' : 'border-slate-200 hover:border-slate-300'
+              error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-slate-200 hover:border-slate-300'
             } ${className}`}
             {...props}
           />
@@ -42,9 +42,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error ? (
-          <p className="mt-1 text-xs text-rose-500 font-medium">{error}</p>
+          <p className="mt-1 text-xs text-red-500 font-medium">{error}</p>
         ) : helperText ? (
-          <p className="mt-1 text-xs text-slate-500">{helperText}</p>
+          <p className="mt-1 text-xs text-slate-400">{helperText}</p>
         ) : null}
       </div>
     );

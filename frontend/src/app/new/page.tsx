@@ -1,90 +1,35 @@
 "use client";
 
 import { useState, useEffect, useMemo, Suspense } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Star, ShoppingBag, Heart, Eye, Sparkles, Filter, SlidersHorizontal, ArrowRight, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { Star, ShoppingBag, Heart, Sparkles } from "lucide-react";
 import { useCart } from "../../context/CartContext";
-
-const NEW_ARRIVALS_DATA = [
-  {
-    id: 101,
-    name: "Speedster Remote Control Car",
-    category: "Cars & Vehicles",
-    brand: "Hot Wheels",
-    price: 1499,
-    originalPrice: 1999,
-    rating: 4.9,
-    reviews: 42,
-    img: "https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=500&q=80",
-    badge: "NEW",
-    pastelBg: "from-sky-100 to-blue-50"
-  },
-  {
-    id: 102,
-    name: "Baby Musical Xylophone & Drum Toy",
-    category: "Baby Toys",
-    brand: "Fisher-Price",
-    price: 799,
-    originalPrice: 999,
-    rating: 4.8,
-    reviews: 29,
-    img: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=500&q=80",
-    badge: "NEW",
-    pastelBg: "from-pink-100 to-sky-50"
-  },
-  {
-    id: 103,
-    name: "Creative Art & Craft Painting Kit",
-    category: "Arts & Crafts",
-    brand: "Funskool",
-    price: 499,
-    originalPrice: 799,
-    rating: 4.7,
-    reviews: 35,
-    img: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=500&q=80",
-    badge: "NEW",
-    pastelBg: "from-purple-100 to-indigo-50"
-  }
-];
 
 function NewArrivalsInner() {
   const { addToCart, toggleWishlist, isInWishlist, isMounted } = useCart();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
-    // Attempt fetching live data from Express Backend API
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/products`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
           const approved = data.filter((item: any) => (item.status === "APPROVED" || item.status === "Active") && item.isActive !== false);
-          // Strictly show only products marked isNewArrival === true
           const tagged = approved.filter((item: any) => Boolean(item.isNewArrival));
-
-          const pastelBgs = [
-            "from-sky-100 to-blue-50",
-            "from-pink-100 to-rose-50",
-            "from-purple-100 to-pink-50",
-            "from-amber-100 to-yellow-50",
-            "from-emerald-100 to-teal-50",
-            "from-orange-100 to-amber-50"
-          ];
 
           const formatted = tagged.map((item: any, idx: number) => ({
             id: item.id,
             name: item.name,
             category: typeof item.category === "string" ? item.category : (item.category?.name || "Toys"),
-            brand: item.brand || "ToyJoy",
+            brand: item.brand || "Play Petal",
             price: Number(item.salePrice || item.price || item.basePrice),
             originalPrice: Number(item.basePrice || item.price || 1499),
             rating: Number(item.rating || 4.8),
             reviews: Number(item.reviewsCount || item.reviewCount || 24),
             img: item.images?.[0]?.url || item.image || "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80",
             badge: "NEW",
-            pastelBg: pastelBgs[idx % pastelBgs.length]
           }));
           setProducts(formatted);
         } else {
@@ -114,127 +59,131 @@ function NewArrivalsInner() {
   if (!isMounted) return null;
 
   return (
-    <div className="w-full bg-[#0F1026] min-h-screen py-8 font-sans text-white">
+    <div className="w-full bg-[#FFFDF9] text-[#202124] min-h-screen py-8 font-sans">
       
-      {/* 🚀 NEW ARRIVALS HERO BANNER 🚀 */}
+      {/* HERO BANNER */}
       <section className="w-full px-3 sm:px-4 md:px-5 lg:px-6 mb-10">
-        <div className="bg-[#171936] rounded-3xl p-8 md:p-12 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between shadow-xl border border-[#3A3D70] min-h-[220px]">
-          <div className="absolute -top-24 -right-24 w-72 h-72 bg-[#7C3CFF]/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-[#FF4FA3]/20 rounded-full blur-3xl pointer-events-none" />
-          
+        <div className="bg-[#D90429] rounded-3xl p-8 md:p-12 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between shadow-lg min-h-[200px]">
           <div className="z-10 max-w-xl text-center md:text-left mb-6 md:mb-0">
-            <span className="bg-gradient-to-r from-[#FF8A3D] to-[#FF4FA3] text-white px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-3 inline-block shadow-md">
-              ✨ Fresh Arrivals 2026
+            <span className="bg-white/20 text-[#FFD43B] border border-white/30 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-3 inline-flex items-center gap-1.5 shadow-xs">
+              <Sparkles size={14} className="text-[#FFD43B]" />
+              <span>Just Unboxed</span>
             </span>
             <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white leading-tight mb-2">
-              Discover <span className="text-[#FFD447]">New Arrivals!</span> 🦒
+              New Arrivals <span className="text-[#FFD43B]">Kingdom</span>
             </h1>
-            <p className="text-[#D9DBF0] text-sm font-semibold mb-4">
-              Explore the latest released toys, games, and play sets added by our admin team!
+            <p className="text-white/90 text-sm md:text-base font-semibold max-w-md">
+              Fresh out of the factory! Discover the latest trending toys, STEM kits, and playful characters.
             </p>
           </div>
-
-          <div className="relative w-full md:w-1/2 h-48 flex items-center justify-center md:justify-end z-10">
-            <motion.div animate={{ y: [0, -15, 0] }} transition={{ repeat: Infinity, duration: 3 }} className="text-9xl filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
-              🦒
-            </motion.div>
-          </div>
-
         </div>
       </section>
 
-      {/* 🎨 CATEGORY FILTER TABS 🎨 */}
+      {/* CATEGORY FILTER TABS */}
       <section className="w-full px-3 sm:px-4 md:px-5 lg:px-6 mb-8">
-        <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-5 py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${
-                selectedCategory === cat 
-                  ? 'bg-gradient-to-r from-[#7C3CFF] to-[#9147FF] text-white shadow-lg shadow-[#7C3CFF]/30 border border-[#9147FF]' 
-                  : 'bg-[#171936] text-[#D9DBF0] border border-[#3A3D70] hover:border-[#7C3CFF] hover:text-white'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="flex items-center justify-between gap-4 flex-wrap pb-4 border-b border-slate-200">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                  selectedCategory === cat
+                    ? "bg-[#D90429] text-white shadow-xs scale-105"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+          <span className="text-xs font-bold text-slate-500">
+            Showing {filteredProducts.length} New Arrivals
+          </span>
         </div>
       </section>
 
-      {/* 🛍️ PRODUCT GRID 🛍️ */}
-      <section className="w-full px-3 sm:px-4 md:px-5 lg:px-6">
+      {/* PRODUCTS GRID */}
+      <section className="w-full px-3 sm:px-4 md:px-5 lg:px-6 mb-16">
         {loading ? (
-          <div className="text-center py-20 font-bold text-[#A8ACCA]">Loading New Arrivals...</div>
+          <div className="text-center py-20 font-bold text-slate-400">Loading New Arrivals...</div>
         ) : filteredProducts.length === 0 ? (
-          <div className="bg-[#20224A] rounded-3xl p-12 text-center border border-[#3A3D70]">
+          <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm max-w-lg mx-auto">
             <div className="text-6xl mb-4">✨</div>
-            <h3 className="text-xl font-black text-white mb-2">No New Toys in this Category</h3>
-            <button onClick={() => setSelectedCategory("All")} className="bg-gradient-to-r from-[#7C3CFF] to-[#9147FF] hover:from-[#9147FF] hover:to-[#FF4FA3] text-white px-6 py-2.5 rounded-full font-bold text-xs mt-4 cursor-pointer transition-all shadow-md shadow-[#7C3CFF]/30">
-              Show All New Arrivals
-            </button>
+            <h3 className="text-xl font-black text-[#202124] mb-2">No New Arrivals Found</h3>
+            <p className="text-slate-500 text-sm font-medium">
+              Check back soon! New toys are being added by verified sellers daily.
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {filteredProducts.map(prod => {
-              const isWishlisted = isInWishlist(prod.id);
-              const discountPct = Math.round(((prod.originalPrice - prod.price) / prod.originalPrice) * 100);
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredProducts.map((p: any) => {
+              const isWishlisted = isInWishlist(p.id);
 
               return (
                 <motion.div
-                  whileHover={{ y: -5 }}
-                  key={prod.id}
-                  className="bg-[#20224A] hover:bg-[#282B59] rounded-2xl overflow-hidden border border-[#3A3D70] hover:border-[#7C3CFF] shadow-lg hover:shadow-[0_8px_30px_rgba(124,60,255,0.25)] transition-all flex flex-col justify-between group relative"
+                  key={p.id}
+                  whileHover={{ y: -6 }}
+                  className="bg-white rounded-3xl overflow-hidden border border-slate-200 hover:border-[#D90429]/40 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between group"
                 >
-                  <div className="relative aspect-square overflow-hidden bg-[#171936] p-3 flex items-center justify-center">
-                    <img src={prod.img} alt={prod.name} className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500 shadow-sm" />
-                    
-                    <span className="absolute top-3 left-3 bg-gradient-to-r from-[#FF8A3D] to-[#FF4FA3] text-white text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-md">
-                      {prod.badge}
+                  <div className="relative h-64 w-full bg-slate-50 p-6 flex items-center justify-center overflow-hidden">
+                    <img
+                      src={p.img}
+                      alt={p.name}
+                      className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                    />
+
+                    <span className="absolute top-4 left-4 bg-[#2196F3] text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-xs uppercase tracking-wider">
+                      {p.badge}
                     </span>
 
-                    <button 
-                      onClick={() => toggleWishlist(prod.id)}
-                      className={`absolute top-3 right-3 p-2 rounded-full shadow-md transition-all z-10 border ${
-                        isWishlisted 
-                          ? 'bg-[#FF4FA3] border-[#FF4FA3] text-white shadow-[#FF4FA3]/30' 
-                          : 'bg-[#171936]/80 backdrop-blur-sm border-[#3A3D70] text-[#A8ACCA] hover:text-[#FF4FA3] hover:border-[#FF4FA3]'
-                      }`}
+                    <button
+                      onClick={() => toggleWishlist(p.id)}
+                      className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-slate-400 hover:text-[#F7255A] border border-slate-200 shadow-xs transition-all cursor-pointer"
                     >
-                      <Heart size={14} fill={isWishlisted ? "currentColor" : "none"} />
+                      <Heart size={16} className={isWishlisted ? "fill-[#F7255A] text-[#F7255A]" : ""} />
                     </button>
                   </div>
 
-                  <div className="p-4 flex-1 flex flex-col justify-between">
+                  <div className="p-5 flex-1 flex flex-col justify-between">
                     <div>
-                      <span className="text-[11px] font-bold text-[#28B8FF] uppercase tracking-wider">{prod.category}</span>
-                      <h3 className="font-black text-white text-sm mb-1 line-clamp-1 group-hover:text-[#FFD447] transition-colors">{prod.name}</h3>
-
-                      <div className="flex items-center gap-1 text-[#FFD447] font-black text-[11px] mb-3">
-                        <Star size={12} fill="currentColor" />
-                        <span>{prod.rating}</span>
-                        <span className="text-[#A8ACCA] font-normal">({prod.reviews})</span>
+                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                        {p.brand} • {p.category}
+                      </div>
+                      <h3 className="font-bold text-[#202124] text-sm md:text-base line-clamp-2 leading-snug mb-2 hover:text-[#D90429] transition-colors">
+                        {p.name}
+                      </h3>
+                      
+                      <div className="flex items-center gap-1.5 mb-3">
+                        <div className="flex items-center text-amber-500">
+                          <Star size={14} className="fill-amber-500" />
+                        </div>
+                        <span className="text-xs font-black text-[#202124]">{p.rating}</span>
+                        <span className="text-[11px] text-slate-400 font-medium">({p.reviews} reviews)</span>
                       </div>
                     </div>
 
-                    <div>
-                      <div className="flex items-baseline justify-between mb-3">
-                        <div>
-                          <span className="text-lg font-black text-[#FFD447]">₹{prod.price}</span>
-                          <span className="text-xs text-[#A8ACCA] line-through ml-1">₹{prod.originalPrice}</span>
-                        </div>
-                        {discountPct > 0 && (
-                          <span className="text-[10px] font-black text-[#48D597] bg-[#48D597]/15 border border-[#48D597]/30 px-2 py-0.5 rounded-md">
-                            {discountPct}% OFF
-                          </span>
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <div>
+                        <div className="text-lg font-black text-[#202124]">₹{p.price}</div>
+                        {p.originalPrice > p.price && (
+                          <div className="text-xs text-slate-400 line-through">₹{p.originalPrice}</div>
                         )}
                       </div>
 
-                      <button 
-                        onClick={() => addToCart(prod as any)}
-                        className="w-full bg-gradient-to-r from-[#7C3CFF] to-[#9147FF] hover:from-[#9147FF] hover:to-[#FF4FA3] text-white py-2.5 rounded-xl font-bold text-xs shadow-md shadow-[#7C3CFF]/30 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                      <button
+                        onClick={() => addToCart({
+                          id: p.id,
+                          name: p.name,
+                          price: p.price,
+                          originalPrice: p.originalPrice,
+                          img: p.img,
+                          category: p.category,
+                          brand: p.brand
+                        })}
+                        className="bg-[#D90429] hover:bg-[#B7092B] text-white p-2.5 rounded-full shadow-xs transition-all flex items-center justify-center active:scale-95 cursor-pointer"
                       >
-                        <ShoppingBag size={14} /> Add to Cart
+                        <ShoppingBag size={16} />
                       </button>
                     </div>
                   </div>
@@ -251,7 +200,7 @@ function NewArrivalsInner() {
 
 export default function NewArrivalsPage() {
   return (
-    <Suspense fallback={<div className="py-20 text-center font-bold">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#FFFDF9] p-8 text-center text-[#202124] font-bold">Loading New Arrivals...</div>}>
       <NewArrivalsInner />
     </Suspense>
   );

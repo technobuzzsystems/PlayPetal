@@ -8,7 +8,6 @@ import {
   ChevronDown,
   ExternalLink,
   Store,
-  Check,
   CheckCheck,
   X,
 } from 'lucide-react';
@@ -95,38 +94,36 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className={`h-16 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs border-b ${
-      isVendor ? 'bg-amber-50/80 border-amber-200' : 'bg-white border-slate-200'
-    }`}>
+    <header className="h-16 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-md border-b bg-[#D90429] border-red-700 text-white">
       {/* Left section: Hamburger / Page Title */}
       <div className="flex items-center gap-3 sm:gap-4">
         {/* Mobile toggle */}
         <button
           onClick={() => setMobileSidebarOpen(true)}
-          className="lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+          className="lg:hidden p-2 text-white hover:bg-[#EF233C] rounded-xl transition-colors cursor-pointer"
           aria-label="Open Sidebar"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Desktop collapse indicator button */}
+        {/* Desktop collapse button */}
         <button
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className="hidden lg:flex p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+          className="hidden lg:flex p-2 text-white hover:bg-[#EF233C] rounded-xl transition-colors cursor-pointer"
           title="Toggle Sidebar"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         <div className="flex flex-col">
-          <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-tight flex items-center gap-2">
-            {isVendor && <Store className="w-4 h-4 text-amber-600 hidden sm:inline" />}
+          <h1 className="text-base sm:text-lg font-black text-white tracking-tight leading-tight flex items-center gap-2">
+            {isVendor && <Store className="w-4 h-4 text-[#FFD43B] hidden sm:inline" />}
             <span>{getPageTitle()}</span>
           </h1>
-          <span className="hidden sm:inline text-[11px] font-semibold text-slate-500">
+          <span className="hidden sm:inline text-[11px] font-bold text-white/80">
             {isVendor
               ? `Shopkeeper Partner Portal • ${user?.shopName || 'Toy Store'}`
-              : 'KidsPlay Store Administration'}
+              : 'Play Petal Administration'}
           </span>
         </div>
       </div>
@@ -141,49 +138,49 @@ export const Header: React.FC = () => {
             placeholder={isVendor ? "Search my toys, orders..." : "Search catalog, orders, SKUs..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-8 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all shadow-2xs"
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-8 py-1.5 text-xs text-[#202124] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFD43B] transition-all shadow-xs"
           />
         </div>
 
         {/* View Storefront Link */}
         <a
-          href="https://playpetal.technobuzzsystems.com"
+          href="http://localhost:3000"
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-indigo-600 bg-white border border-indigo-200 hover:bg-indigo-50 transition-all shadow-2xs"
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-[#D90429] bg-white hover:bg-slate-100 transition-all shadow-xs"
           title="Open Live Customer Storefront"
         >
           <ExternalLink className="w-3.5 h-3.5" />
           <span>Live Store</span>
         </a>
 
-        {/* Notifications Dropdown (Admin only) */}
+        {/* Notifications Dropdown */}
         {!isVendor && (
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 relative transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-white hover:bg-[#EF233C] relative transition-colors cursor-pointer"
               aria-label="Notifications"
             >
               <Bell className="w-5 h-5" />
               {unreadNotificationsCount > 0 && (
                 <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500 ring-2 ring-white" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-300 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#FFD43B]" />
                 </span>
               )}
             </button>
 
             {notificationsOpen && (
-              <div className="absolute right-0 mt-2 w-84 sm:w-96 rounded-2xl bg-white shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute right-0 mt-2 w-84 sm:w-96 rounded-2xl bg-white shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in zoom-in-95 duration-100 text-[#202124]">
                 {/* Header */}
-                <div className="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between gap-2">
+                <div className="px-4 py-2.5 border-b border-slate-200 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    <span className="text-xs font-bold text-[#202124] uppercase tracking-wider">
                       Notifications
                     </span>
                     {unreadNotificationsCount > 0 && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-[#D90429] border border-red-200">
                         {unreadNotificationsCount} new
                       </span>
                     )}
@@ -193,10 +190,10 @@ export const Header: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => markAllNotificationsAsRead()}
-                        className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 hover:underline cursor-pointer flex items-center gap-1"
+                        className="text-[11px] font-semibold text-[#2196F3] hover:underline cursor-pointer flex items-center gap-1"
                         title="Mark all as read"
                       >
-                        <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
+                        <CheckCheck className="w-3.5 h-3.5 text-[#16803C]" />
                         <span>Mark all read</span>
                       </button>
                     )}
@@ -204,8 +201,8 @@ export const Header: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => clearAllNotifications()}
-                        className="text-[11px] font-semibold text-slate-400 hover:text-rose-600 hover:underline cursor-pointer flex items-center gap-1"
-                        title="Ignore and dismiss all notifications"
+                        className="text-[11px] font-semibold text-slate-400 hover:text-red-600 hover:underline cursor-pointer flex items-center gap-1"
+                        title="Ignore all"
                       >
                         <X className="w-3.5 h-3.5" />
                         <span>Ignore all</span>
@@ -218,8 +215,8 @@ export const Header: React.FC = () => {
                 <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
                   {notifications.length === 0 ? (
                     <div className="p-6 text-center text-slate-400 text-xs">
-                      <CheckCheck className="w-6 h-6 mx-auto mb-2 text-emerald-500/70" />
-                      <p className="font-semibold text-slate-600">No notifications</p>
+                      <CheckCheck className="w-6 h-6 mx-auto mb-2 text-[#16803C]" />
+                      <p className="font-bold text-[#202124]">No notifications</p>
                       <p className="text-[11px] text-slate-400 mt-0.5">You're all caught up!</p>
                     </div>
                   ) : (
@@ -236,70 +233,36 @@ export const Header: React.FC = () => {
                         className={`p-3 text-xs transition-colors flex items-start justify-between gap-2.5 ${
                           n.link ? 'cursor-pointer' : ''
                         } ${
-                          n.unread ? 'bg-pink-50/40 hover:bg-pink-50/70' : 'bg-white hover:bg-slate-50'
+                          n.unread ? 'bg-red-50/50 hover:bg-red-50' : 'bg-white hover:bg-slate-50'
                         }`}
                       >
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 mb-1">
                             {n.unread ? (
-                              <span
-                                className="w-2 h-2 rounded-full bg-indigo-600 shrink-0"
-                                title="Unread"
-                              />
+                              <span className="w-2 h-2 rounded-full bg-[#D90429] shrink-0" />
                             ) : (
-                              <span
-                                className="w-2 h-2 rounded-full bg-transparent shrink-0"
-                              />
+                              <span className="w-2 h-2 rounded-full bg-transparent shrink-0" />
                             )}
-                            <div className={`font-bold truncate ${n.unread ? 'text-slate-900' : 'text-slate-700'}`}>
-                              {n.title}
-                            </div>
-                            <span className="text-[10px] text-slate-400 ml-auto shrink-0 pl-1">
-                              {n.time}
-                            </span>
+                            <p className="font-bold text-[#202124] text-xs truncate">{n.title}</p>
                           </div>
-                          <p className="text-slate-500 text-[11px] leading-relaxed line-clamp-2 pl-3.5">
+                          <p className="text-slate-600 text-[11px] line-clamp-2 leading-relaxed">
                             {n.desc}
                           </p>
+                          <span className="text-[10px] text-slate-400 font-semibold block mt-1">
+                            {n.time}
+                          </span>
                         </div>
-
-                        {/* Action signs: Mark as read & Ignore */}
-                        <div
-                          className="flex items-center gap-1 shrink-0 pt-0.5"
-                          onClick={(e) => e.stopPropagation()}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            dismissNotification(n.id);
+                          }}
+                          className="p-1 text-slate-400 hover:text-red-500 rounded cursor-pointer"
+                          title="Dismiss"
                         >
-                          {/* Mark as read sign */}
-                          {n.unread ? (
-                            <button
-                              type="button"
-                              onClick={() => markNotificationAsRead(n.id)}
-                              className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
-                              title="Mark as read"
-                              aria-label="Mark as read"
-                            >
-                              <Check className="w-4 h-4" />
-                            </button>
-                          ) : (
-                            <span
-                              className="p-1.5 text-slate-300 inline-flex items-center justify-center"
-                              title="Already read"
-                              aria-label="Already read"
-                            >
-                              <CheckCheck className="w-4 h-4 text-emerald-500/60" />
-                            </span>
-                          )}
-
-                          {/* Ignore sign */}
-                          <button
-                            type="button"
-                            onClick={() => dismissNotification(n.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                            title="Ignore notification"
-                            aria-label="Ignore notification"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
+                          <X className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     ))
                   )}
@@ -309,89 +272,53 @@ export const Header: React.FC = () => {
           </div>
         )}
 
-        {/* Separator */}
-        <div className="h-6 w-px bg-slate-300 hidden sm:block" />
-
-        {/* User Profile Dropdown */}
-        <div className="relative" ref={profileRef}>
+        {/* User Profile */}
+        <div className="relative ml-1">
           <button
             onClick={() => setProfileOpen(!profileOpen)}
-            className="flex items-center gap-2.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl hover:bg-slate-200/50 transition-colors cursor-pointer"
+            className="flex items-center gap-2 text-white hover:bg-white/15 p-1.5 rounded-xl transition-all cursor-pointer"
           >
-            <div className={`w-8 h-8 rounded-full text-white flex items-center justify-center font-black text-xs shadow-xs uppercase ${
-              isVendor ? 'bg-gradient-to-tr from-amber-500 to-rose-500' : 'bg-gradient-to-tr from-indigo-600 to-violet-600'
-            }`}>
-              {user?.name ? user.name.charAt(0) : (isVendor ? 'S' : 'A')}
+            <div className="w-7 h-7 rounded-lg bg-white/20 border border-white/30 text-white flex items-center justify-center font-black text-xs shrink-0">
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
             </div>
-            <div className="hidden sm:flex flex-col text-left">
-              <span className="text-xs font-bold text-slate-900 leading-tight">
-                {user?.name || (isVendor ? 'Shopkeeper' : 'Admin')}
-              </span>
-              <span className={`text-[10px] font-bold leading-tight ${
-                isVendor ? 'text-amber-700' : 'text-slate-400'
-              }`}>
-                {isVendor ? (user?.shopName || 'Shopkeeper') : 'Administrator'}
-              </span>
-            </div>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-500 hidden sm:block" />
+            <span className="text-xs font-bold hidden md:inline max-w-[100px] truncate">{user?.name || 'Admin'}</span>
+            <ChevronDown className="w-3.5 h-3.5 text-white hidden sm:block" />
           </button>
 
           {profileOpen && (
-            <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+            <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white shadow-xl border border-slate-200 py-2 z-50 text-[#202124]">
               <div className="px-4 py-3 border-b border-slate-100">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-xs font-black text-slate-900 truncate">{user?.name || (isVendor ? 'Shopkeeper' : 'Admin')}</p>
-                  <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider ${
-                    isVendor ? 'bg-amber-100 text-amber-800' : 'bg-indigo-50 text-indigo-600'
-                  }`}>
-                    {isVendor ? 'SHOPKEEPER' : 'SUPER ADMIN'}
-                  </span>
-                </div>
-                {isVendor && user?.shopName && (
-                  <p className="text-[11px] font-bold text-amber-700 truncate">{user.shopName}</p>
-                )}
-                <p className="text-[10px] text-slate-400 truncate">{user?.email}</p>
+                <p className="text-xs font-black text-[#202124]">{user?.name || 'Admin User'}</p>
+                <p className="text-[11px] text-slate-500 truncate">{user?.email || 'admin@playpetal.com'}</p>
+                <span className="mt-1 inline-block px-2 py-0.5 bg-red-50 text-[#D90429] border border-red-200 rounded text-[10px] font-bold">
+                  {user?.role || 'SUPER_ADMIN'}
+                </span>
               </div>
 
-              {isVendor ? (
+              <div className="py-1">
                 <button
                   onClick={() => {
-                    navigate('/vendor-portal?tab=profile');
                     setProfileOpen(false);
+                    navigate(isVendor ? '/vendor-portal?tab=profile' : '/settings');
                   }}
-                  className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-amber-50 flex items-center gap-2.5 cursor-pointer font-bold"
-                >
-                  <Store className="w-4 h-4 text-amber-500" />
-                  <span>My Shop Profile</span>
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    navigate('/admin/settings');
-                    setProfileOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 cursor-pointer font-bold"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-[#D90429] font-semibold cursor-pointer"
                 >
                   <Settings className="w-4 h-4 text-slate-400" />
-                  <span>Store Settings</span>
+                  <span>{isVendor ? 'Shop Settings' : 'Admin Settings'}</span>
                 </button>
-              )}
-
-              <div className="my-1 border-t border-slate-100" />
-
-              <button
-                onClick={() => {
-                  const wasVendor = user?.role === 'VENDOR';
-                  logout();
-                  setProfileOpen(false);
-                  showToast('You have been logged out safely.', 'info');
-                  navigate(wasVendor ? '/vendor/login' : '/admin/login');
-                }}
-                className="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 cursor-pointer font-bold"
-              >
-                <LogOut className="w-4 h-4 text-rose-500" />
-                <span>Logout</span>
-              </button>
+                <button
+                  onClick={() => {
+                    setProfileOpen(false);
+                    logout();
+                    showToast('Logged out successfully', 'info');
+                    navigate(isVendor ? '/vendor/auth' : '/login');
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-xs text-red-600 hover:bg-red-50 font-semibold cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Log Out</span>
+                </button>
+              </div>
             </div>
           )}
         </div>

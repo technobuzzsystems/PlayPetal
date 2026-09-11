@@ -65,8 +65,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const savedCart = localStorage.getItem("toyjoy_cart");
-      const savedWishlist = localStorage.getItem("toyjoy_wishlist");
+      const savedCart = localStorage.getItem("playpetal_cart") || localStorage.getItem("toyjoy_cart");
+      const savedWishlist = localStorage.getItem("playpetal_wishlist") || localStorage.getItem("toyjoy_wishlist");
       if (savedCart) {
         const parsed = JSON.parse(savedCart);
         if (Array.isArray(parsed)) setCart(parsed);
@@ -94,13 +94,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isMounted) {
-      localStorage.setItem("toyjoy_cart", JSON.stringify(cart));
+      localStorage.setItem("playpetal_cart", JSON.stringify(cart));
     }
   }, [cart, isMounted]);
 
   useEffect(() => {
     if (isMounted) {
-      localStorage.setItem("toyjoy_wishlist", JSON.stringify(wishlist));
+      localStorage.setItem("playpetal_wishlist", JSON.stringify(wishlist));
     }
   }, [wishlist, isMounted]);
 
@@ -158,6 +158,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const clearCart = () => {
     setCart([]);
     if (typeof window !== "undefined") {
+      localStorage.removeItem("playpetal_cart");
       localStorage.removeItem("toyjoy_cart");
     }
   };

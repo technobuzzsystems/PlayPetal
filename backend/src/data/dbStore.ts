@@ -556,6 +556,70 @@ export const defaultProducts: ProductItem[] = [
     },
     features: ['Ultra-soft velvety touch', 'Child-safe embroidered eyes', 'Washable cover', 'Hypoallergenic fabric'],
     createdAt: '2026-02-15T09:15:00.000Z'
+  },
+  {
+    id: 'prod-4',
+    name: 'Wooden Alphabet & Number Puzzle Board',
+    slug: 'wooden-alphabet-number-puzzle-board',
+    sku: 'WOOD-PUZZLE-01',
+    category: 'Toys',
+    categoryId: 'cat-1',
+    brand: 'Melissa & Doug',
+    ageGroup: '3 - 5 Years',
+    vendorId: 'vendor-1',
+    vendorName: 'ABC Toys Wonderland',
+    vendorRating: 4.9,
+    basePrice: 899,
+    salePrice: 499,
+    price: 499,
+    discount: 44,
+    stock: 40,
+    status: 'APPROVED',
+    isActive: true,
+    isFeatured: true,
+    isBestSeller: true,
+    isNewArrival: true,
+    rating: 4.8,
+    salesCount: 165,
+    image: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=600&h=600&fit=crop',
+    images: [
+      { url: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=600&h=600&fit=crop' }
+    ],
+    shortDescription: 'Colorful eco-friendly wooden puzzle board with chunky smooth-edge alphabet pieces.',
+    description: 'Helps toddlers develop motor skills, letter recognition, and hand-eye coordination with non-toxic natural wood finishes.',
+    createdAt: '2026-02-18T10:00:00.000Z'
+  },
+  {
+    id: 'prod-5',
+    name: 'Speedy Friction-Powered Stunt Racing Car',
+    slug: 'speedy-friction-powered-stunt-racing-car',
+    sku: 'RACE-STUNT-02',
+    category: 'Cars & Vehicles',
+    categoryId: 'cat-2',
+    brand: 'Hot Wheels',
+    ageGroup: '3 - 5 Years',
+    vendorId: 'vendor-2',
+    vendorName: 'Kids World Collectibles',
+    vendorRating: 4.8,
+    basePrice: 1199,
+    salePrice: 799,
+    price: 799,
+    discount: 33,
+    stock: 50,
+    status: 'APPROVED',
+    isActive: true,
+    isFeatured: true,
+    isBestSeller: true,
+    isNewArrival: false,
+    rating: 4.7,
+    salesCount: 220,
+    image: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=600&h=600&fit=crop',
+    images: [
+      { url: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=600&h=600&fit=crop' }
+    ],
+    shortDescription: 'High-velocity 360-degree push-and-go friction stunt car with shock-proof bumpers.',
+    description: 'Runs on push power with zero batteries required. Flips and rolls over obstacles smoothly on high-grip rubber tires.',
+    createdAt: '2026-02-20T12:00:00.000Z'
   }
 ];
 
@@ -721,6 +785,8 @@ class LocalDbStore {
       list = list.filter((p) => (p.status === 'APPROVED' || p.status === 'Active') && p.isActive !== false);
     } else if (filter?.status) {
       list = list.filter((p) => p.status === filter.status);
+    } else {
+      list = list.filter((p) => p.status !== 'REJECTED');
     }
 
     if (!filter) return list;
@@ -817,7 +883,8 @@ class LocalDbStore {
 
   getProductById(id: string): ProductItem | null {
     const found = this.data.products.find((p) => p.id === id || p.slug === id);
-    return found || null;
+    if (!found || found.status === 'REJECTED') return null;
+    return found;
   }
 
   // Admin Approval Queue
@@ -978,7 +1045,7 @@ class LocalDbStore {
       status: 'ACTIVE',
       joinedAt: new Date().toISOString(),
       logo: item.logo || 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=120&h=120&fit=crop',
-      description: item.description || 'Verified toy merchant partner on ToyJoy Marketplace.',
+      description: item.description || 'Verified toy merchant partner on Play Petal Marketplace.',
       address: item.address || '',
       city: item.city || 'Mumbai',
     };

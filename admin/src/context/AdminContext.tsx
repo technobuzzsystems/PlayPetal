@@ -130,7 +130,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [attributes, setAttributes] = useState<Attribute[]>(initialAttributes);
   const [stockHistory, setStockHistory] = useState<Record<string, StockHistoryEntry[]>>(() => {
     try {
-      const saved = localStorage.getItem('toyjoy_admin_stock_history');
+      const saved = localStorage.getItem('playpetal_admin_stock_history') || localStorage.getItem('toyjoy_admin_stock_history');
       return saved ? JSON.parse(saved) : sampleStockHistory;
     } catch {
       return sampleStockHistory;
@@ -139,7 +139,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     try {
-      localStorage.setItem('toyjoy_admin_stock_history', JSON.stringify(stockHistory));
+      localStorage.setItem('playpetal_admin_stock_history', JSON.stringify(stockHistory));
     } catch {
       // ignore
     }
@@ -191,7 +191,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const res = await fetch('http://localhost:5000/api/products?allStatus=true');
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
-        const backendMapped: Product[] = data.map((item: any) => ({
+        const backendMapped: Product[] = data
+          .filter((item: any) => item.status !== 'REJECTED')
+          .map((item: any) => ({
           id: item.id,
           name: item.name,
           slug: item.slug || (item.name ? item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : item.id),
@@ -237,6 +239,16 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   React.useEffect(() => {
     const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
     
+    // Fetch products
+    fetch(`${API_BASE}/products?allStatus=true`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const filtered = data.filter((item: any) => item.status !== 'REJECTED');
+          setProducts(filtered);
+        }
+      }).catch(err => console.error(err));
+
     // Fetch orders
     fetch(`${API_BASE}/orders`)
       .then(res => res.json())
@@ -245,23 +257,25 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setOrders(data.map((o: any) => ({
             id: o.id || '',
             orderNumber: o.orderNumber || `#ORD-${o.id}`,
-            customerName: o.customerName || 'Customer',
-            customerEmail: o.customerEmail || '',
-            customerPhone: o.customerPhone || '',
+            customerName: o.customerName || o.customer?.name || 'Customer',
+            customerEmail: o.customerEmail || o.customer?.email || '',
+            customerPhone: o.customerPhone || o.customer?.phone || '',
             shippingAddress: typeof o.shippingAddress === 'object' && o.shippingAddress
               ? o.shippingAddress
-              : { street: o.shippingAddress || '', city: '', state: '', postalCode: '', country: '' },
-            productSummary: o.productSummary || '',
+              : { street: typeof o.shippingAddress === 'string' ? o.shippingAddress : '', city: '', state: '', postalCode: '', country: 'India' },
+            productSummary: o.productSummary || (o.items && o.items[0]?.productName) || 'Toy Items',
             items: o.items || [],
             subtotal: Number(o.subtotal) || Number(o.totalAmount) || 0,
             shippingFee: Number(o.shippingFee) || 0,
             discount: Number(o.discount) || 0,
-            totalAmount: Number(o.totalAmount) || 0,
+            totalAmount: Number(o.totalAmount) || Number(o.total) || 0,
             status: o.status || 'Pending',
-            paymentStatus: o.paymentStatus || 'Pending',
-            paymentMethod: o.paymentMethod || 'card',
+            paymentStatus: o.paymentStatus || 'Paid',
+            paymentMethod: o.paymentMethod || 'Online Payment',
             date: o.date || o.createdAt || new Date().toISOString(),
-            timeline: o.timeline || [],
+            timeline: o.timeline || [
+              { status: o.status || 'Pending', timestamp: o.date || 'Recent', description: 'Order created' }
+            ],
           })));
         }
       }).catch(err => console.error(err));
@@ -273,15 +287,16 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (Array.isArray(data)) {
           setCustomers(data.map((c: any) => ({
             id: c.id,
-            name: c.name || '',
+            name: c.name || 'Customer',
             email: c.email || '',
             phone: c.phone || '',
-            avatar: c.avatar || '',
-            status: c.status || 'Active',
+            avatar: c.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop',
+            status: c.status === 'Inactive' ? 'Inactive' : 'Active',
             totalOrders: c.totalOrders || 0,
             totalSpent: c.totalSpent || 0,
             joinedDate: c.joinedDate || c.createdAt || new Date().toISOString(),
-            address: c.address || '',
+            address: c.address || 'Mumbai, Maharashtra',
+            recentOrderId: c.recentOrderId
           })));
         }
       }).catch(err => console.error(err));
@@ -406,45 +421,49 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .catch((err) => console.error('Failed to persist product to backend:', err));
   };
 
-  const updateProduct = (id: string, updated: Partial<Product>) => {
+  const updateProduct = async (id: string, updated: Partial<Product>) => {
     setProducts((prev) =>
       prev.map((item) => (item.id === id ? { ...item, ...updated } : item))
     );
 
-    // Persist updates to backend database
-    const backendUpdates: any = { ...updated };
-    if (updated.isActive !== undefined) backendUpdates.isActive = updated.isActive;
-    if (updated.price !== undefined) backendUpdates.basePrice = updated.price;
-    if (updated.salePrice !== undefined) backendUpdates.salePrice = updated.salePrice;
-    if (updated.stock !== undefined) backendUpdates.stock = updated.stock;
-    if (updated.status !== undefined) {
-      backendUpdates.status = updated.status === 'Active' ? 'APPROVED' : updated.status;
-      backendUpdates.isActive = updated.status === 'Active';
-    }
-    if (updated.featured !== undefined) backendUpdates.isFeatured = updated.featured;
-    if (updated.isBestSeller !== undefined) {
-      backendUpdates.isBestSeller = Boolean(updated.isBestSeller);
-      if (updated.isBestSeller) {
-        backendUpdates.status = 'APPROVED';
-        backendUpdates.isActive = true;
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const backendUpdates: any = { ...updated };
+      if (updated.isActive !== undefined) backendUpdates.isActive = updated.isActive;
+      if (updated.price !== undefined) backendUpdates.basePrice = updated.price;
+      if (updated.salePrice !== undefined) backendUpdates.salePrice = updated.salePrice;
+      if (updated.stock !== undefined) backendUpdates.stock = updated.stock;
+      if (updated.status !== undefined) {
+        backendUpdates.status = updated.status === 'Active' ? 'APPROVED' : updated.status;
+        backendUpdates.isActive = updated.status === 'Active';
       }
-    }
-    if (updated.isNewArrival !== undefined) {
-      backendUpdates.isNewArrival = Boolean(updated.isNewArrival);
-      if (updated.isNewArrival) {
-        backendUpdates.status = 'APPROVED';
-        backendUpdates.isActive = true;
+      if (updated.featured !== undefined) backendUpdates.isFeatured = updated.featured;
+      if (updated.isBestSeller !== undefined) {
+        backendUpdates.isBestSeller = Boolean(updated.isBestSeller);
+        if (updated.isBestSeller) {
+          backendUpdates.status = 'APPROVED';
+          backendUpdates.isActive = true;
+        }
       }
-    }
-    if (updated.galleryImages) {
-      backendUpdates.images = updated.galleryImages.map((url) => ({ url }));
-    }
+      if (updated.isNewArrival !== undefined) {
+        backendUpdates.isNewArrival = Boolean(updated.isNewArrival);
+        if (updated.isNewArrival) {
+          backendUpdates.status = 'APPROVED';
+          backendUpdates.isActive = true;
+        }
+      }
+      if (updated.galleryImages) {
+        backendUpdates.images = updated.galleryImages.map((url) => ({ url }));
+      }
 
-    fetch(`http://localhost:5000/api/products/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(backendUpdates),
-    }).catch((err) => console.error('Failed to update product in backend:', err));
+      await fetch(`${API_BASE}/products/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(backendUpdates),
+      });
+    } catch (err) {
+      console.error('Failed to update product in backend:', err);
+    }
   };
 
   const deleteProduct = (id: string) => {

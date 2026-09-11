@@ -6,7 +6,7 @@ export const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   ...props
 }) => (
   <div
-    className={`bg-white rounded-xl border border-slate-200/80 shadow-xs transition-shadow hover:shadow-sm ${className}`}
+    className={`bg-white rounded-2xl border border-slate-200 shadow-sm text-[#202124] transition-all duration-200 hover:border-[#D90429]/30 ${className}`}
     {...props}
   >
     {children}
@@ -28,7 +28,7 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
   className = '',
   ...props
 }) => (
-  <h3 className={`text-base font-semibold text-slate-800 tracking-tight ${className}`} {...props}>
+  <h3 className={`text-base font-bold text-[#202124] tracking-tight ${className}`} {...props}>
     {children}
   </h3>
 );
@@ -48,7 +48,7 @@ export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className = '',
   ...props
 }) => (
-  <div className={`p-5 sm:p-6 ${className}`} {...props}>
+  <div className={`p-5 sm:p-6 text-slate-700 ${className}`} {...props}>
     {children}
   </div>
 );
@@ -58,7 +58,7 @@ export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className = '',
   ...props
 }) => (
-  <div className={`p-4 sm:p-6 pt-0 flex items-center gap-3 ${className}`} {...props}>
+  <div className={`p-4 sm:p-6 pt-0 border-t border-slate-100 flex items-center gap-3 ${className}`} {...props}>
     {children}
   </div>
 );

@@ -21,7 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<Customer | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("toyjoy_user");
+    const stored = localStorage.getItem("playpetal_user") || localStorage.getItem("toyjoy_user");
     if (stored) {
       setUser(JSON.parse(stored));
     }
@@ -29,11 +29,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = (userData: Customer) => {
     setUser(userData);
-    localStorage.setItem("toyjoy_user", JSON.stringify(userData));
+    localStorage.setItem("playpetal_user", JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem("playpetal_user");
     localStorage.removeItem("toyjoy_user");
   };
 

@@ -25,21 +25,21 @@ export default function OrdersPage() {
   }, []);
 
   return (
-    <div className="w-full bg-[#0F1026] min-h-screen py-10 px-4 sm:px-6 lg:px-8 font-sans text-white">
+    <div className="w-full bg-[#FFFDF9] min-h-screen py-10 px-4 sm:px-6 lg:px-8 font-sans text-[#202124]">
       <div className="max-w-5xl mx-auto">
         
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-black text-white flex items-center gap-2">
-              My Orders 📦 <Sparkles className="text-[#FFD447]" size={24} />
+            <h1 className="text-3xl font-black text-[#202124] flex items-center gap-2">
+              My Orders 📦 <Sparkles className="text-[#D90429]" size={24} />
             </h1>
-            <p className="text-[#D9DBF0] text-sm font-semibold mt-1">
+            <p className="text-slate-600 text-sm font-semibold mt-1">
               Track delivery progress and inspect vendor attributions for your toys.
             </p>
           </div>
           <Link
             href="/products"
-            className="bg-gradient-to-r from-[#7C3CFF] to-[#9147FF] hover:from-[#9147FF] hover:to-[#FF4FA3] text-white px-6 py-2.5 rounded-full font-black text-xs shadow-md shadow-[#7C3CFF]/30 transition-all inline-block active:scale-95"
+            className="bg-[#D90429] hover:bg-[#B7092B] text-white px-6 py-2.5 rounded-full font-black text-xs shadow-md transition-all inline-block active:scale-95"
           >
             Explore More Toys
           </Link>
@@ -48,22 +48,22 @@ export default function OrdersPage() {
         {loading ? (
           <div className="space-y-4">
             {[1, 2].map((n) => (
-              <div key={n} className="bg-[#20224A] rounded-3xl p-6 shadow-xl border border-[#3A3D70] animate-pulse space-y-4">
-                <div className="h-4 bg-[#171936] rounded w-1/4"></div>
-                <div className="h-16 bg-[#171936] rounded-2xl"></div>
+              <div key={n} className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 animate-pulse space-y-4">
+                <div className="h-4 bg-slate-100 rounded w-1/4"></div>
+                <div className="h-16 bg-slate-100 rounded-2xl"></div>
               </div>
             ))}
           </div>
         ) : orders.length === 0 ? (
-          <div className="bg-[#20224A] rounded-3xl p-12 text-center shadow-xl border border-[#3A3D70]">
+          <div className="bg-white rounded-3xl p-12 text-center shadow-sm border border-slate-200">
             <div className="text-6xl mb-4">🎁</div>
-            <h2 className="text-2xl font-black text-white mb-2">No Orders Placed Yet</h2>
-            <p className="text-[#D9DBF0] text-sm mb-6 max-w-sm mx-auto">
+            <h2 className="text-2xl font-black text-[#202124] mb-2">No Orders Placed Yet</h2>
+            <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">
               You haven&apos;t ordered any toys yet! Explore our catalog and surprise your little ones.
             </p>
             <Link
               href="/products"
-              className="bg-gradient-to-r from-[#7C3CFF] to-[#9147FF] hover:from-[#9147FF] hover:to-[#FF4FA3] text-white px-8 py-3 rounded-full font-black text-sm shadow-md shadow-[#7C3CFF]/30 transition-all inline-block"
+              className="bg-[#D90429] hover:bg-[#B7092B] text-white px-8 py-3 rounded-full font-black text-sm shadow-md transition-all inline-block"
             >
               Browse Toys &rarr;
             </Link>
@@ -72,93 +72,82 @@ export default function OrdersPage() {
           <div className="space-y-6">
             {orders.map((order) => {
               const statusColors: Record<string, string> = {
-                Pending: "bg-[#FFD447]/15 text-[#FFD447] border-[#FFD447]/30",
-                Confirmed: "bg-[#28B8FF]/15 text-[#28B8FF] border-[#28B8FF]/30",
-                Processing: "bg-[#7C3CFF]/15 text-[#9147FF] border-[#7C3CFF]/30",
-                Shipped: "bg-[#28B8FF]/15 text-[#28B8FF] border-[#28B8FF]/30",
-                Delivered: "bg-[#48D597]/15 text-[#48D597] border-[#48D597]/30",
-                Cancelled: "bg-[#FF4FA3]/15 text-[#FF4FA3] border-[#FF4FA3]/30",
+                Pending: "bg-amber-50 text-[#FF9800] border-amber-200",
+                Confirmed: "bg-blue-50 text-[#2196F3] border-blue-200",
+                Processing: "bg-purple-50 text-[#9C27B0] border-purple-200",
+                Shipped: "bg-blue-50 text-[#2196F3] border-blue-200",
+                Delivered: "bg-emerald-50 text-[#16803C] border-emerald-200",
+                Cancelled: "bg-red-50 text-[#D90429] border-red-200",
               };
 
               return (
                 <div
                   key={order.id}
-                  className="bg-[#20224A] rounded-3xl p-6 shadow-xl border border-[#3A3D70] space-y-6"
+                  className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-6"
                 >
                   {/* Order Top Bar */}
-                  <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#3A3D70]">
+                  <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-black text-white text-base">{order.orderNumber}</span>
-                        <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full border ${statusColors[order.status] || "bg-[#171936] text-[#D9DBF0] border-[#3A3D70]"}`}>
+                        <span className="font-black text-[#202124] text-base">{order.orderNumber}</span>
+                        <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full border ${statusColors[order.status] || "bg-slate-100 text-slate-700 border-slate-200"}`}>
                           {order.status}
                         </span>
                       </div>
-                      <div className="text-xs text-[#A8ACCA] font-semibold mt-1">
+                      <div className="text-xs text-slate-400 font-semibold mt-1">
                         Placed on {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </div>
                     </div>
 
                     <div className="text-right">
-                      <div className="text-lg font-black text-[#FFD447]">₹{order.totalAmount}</div>
-                      <div className="text-xs text-[#48D597] font-bold">{order.paymentStatus} ({order.paymentMethod})</div>
+                      <div className="text-sm font-black text-[#202124]">Total Amount</div>
+                      <div className="text-xl font-black text-[#D90429]">₹{order.totalAmount}</div>
                     </div>
                   </div>
 
-                  {/* Multi-Vendor Items List */}
+                  {/* Order Items */}
                   <div className="space-y-3">
-                    <h3 className="text-xs font-black uppercase tracking-wider text-[#A8ACCA]">
-                      Ordered Toys &amp; Sellers
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {order.items.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-[#171936] rounded-2xl p-3 flex items-center justify-between gap-3 border border-[#3A3D70]"
-                        >
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={item.image || "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=200&h=200&fit=crop"}
-                              alt=""
-                              className="w-14 h-14 object-cover rounded-xl bg-[#0F1026] flex-shrink-0"
-                            />
-                            <div>
-                              <div className="font-extrabold text-white text-xs line-clamp-1">{item.name}</div>
-                              <div className="text-[10px] text-[#28B8FF] font-bold mt-0.5 flex items-center gap-1">
-                                <ShieldCheck size={12} className="text-[#28B8FF]" />
-                                <span>Sold by: {item.vendorName || "ABC Toys Wonderland"}</span>
-                              </div>
-                              <div className="text-[10px] text-[#A8ACCA] font-semibold mt-0.5">
-                                Qty: {item.quantity} × ₹{item.price}
-                              </div>
-                            </div>
+                    {order.items.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-14 h-14 object-cover rounded-xl bg-white flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <Link href={`/products/${item.id}`} className="font-extrabold text-[#202124] text-sm hover:text-[#D90429] transition-colors truncate block">
+                            {item.name}
+                          </Link>
+                          
+                          <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#2196F3] mt-0.5">
+                            <ShieldCheck size={13} className="text-[#2196F3]" />
+                            <span>Sold by: {item.vendorName || "Play Petal Store"}</span>
                           </div>
-                          <div className="text-right font-black text-[#FFD447] text-xs">
-                            ₹{item.price * item.quantity}
-                          </div>
+                          
+                          <div className="text-xs text-slate-500 font-medium">Qty: {item.quantity} × ₹{item.price}</div>
                         </div>
-                      ))}
-                    </div>
+
+                        <div className="text-right font-black text-[#202124] text-sm">
+                          ₹{item.price * item.quantity}
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
-                  {/* Shipping & Delivery Timeline */}
-                  <div className="bg-[#171936] border border-[#3A3D70] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-semibold text-[#D9DBF0]">
+                  {/* Shipping Info Footer */}
+                  <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-500 font-medium gap-2">
                     <div>
-                      <span className="font-bold text-white">Delivering to: </span>
-                      <span>{typeof order.shippingAddress === "string" ? order.shippingAddress : "Customer Destination"}</span>
+                      <span className="font-bold text-[#202124]">Ship To:</span> {order.shippingAddress}
                     </div>
-                    <div className="flex items-center gap-2 text-[#28B8FF] font-extrabold flex-shrink-0">
-                      <Truck size={16} />
-                      <span>Estimated Doorstep Arrival in 2-3 Business Days</span>
+                    <div className="flex items-center gap-2 font-bold text-[#16803C]">
+                      <Truck size={14} /> Payment: {order.paymentMethod} ({order.paymentStatus})
                     </div>
                   </div>
-
                 </div>
               );
             })}
           </div>
         )}
-
       </div>
     </div>
   );

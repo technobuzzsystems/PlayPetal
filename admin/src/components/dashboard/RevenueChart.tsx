@@ -87,9 +87,9 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ dateFilter, onFilter
       <CardHeader className="flex-row items-center justify-between pb-2 border-b-0">
         <div>
           <CardTitle>Revenue Overview</CardTitle>
-          <p className="text-xs text-slate-500 mt-0.5">Sales trends and gross volume</p>
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">Sales trends and gross volume</p>
         </div>
-        <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200/60">
+        <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
           {(
             [
               { id: 'today', label: 'Today' },
@@ -109,10 +109,10 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ dateFilter, onFilter
                   else if (item.id === 'monthly') onFilterChange('month');
                 }
               }}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer capitalize ${
+              className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer capitalize ${
                 timeframe === item.id
-                  ? 'bg-white text-slate-900 shadow-2xs'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#D90429] text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               {item.label}
@@ -124,10 +124,10 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ dateFilter, onFilter
       <CardContent className="pt-2 flex-1 flex flex-col justify-end">
         {/* Dynamic Metric Display */}
         <div className="flex items-baseline gap-2 mb-2 px-1">
-          <span className="text-2xl font-bold text-slate-900">
+          <span className="text-2xl font-black text-slate-900">
             {hoveredPoint ? `₹${hoveredPoint.amount.toLocaleString()}` : `₹${currentTotal.toLocaleString()}`}
           </span>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-500 font-medium">
             {hoveredPoint ? `(${hoveredPoint.orders} orders in ${hoveredPoint.label})` : currentLabel}
           </span>
         </div>
@@ -141,8 +141,8 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ dateFilter, onFilter
           >
             <defs>
               <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#6366f1" stopOpacity="0.25" />
-                <stop offset="100%" stopColor="#6366f1" stopOpacity="0.0" />
+                <stop offset="0%" stopColor="#D90429" stopOpacity="0.25" />
+                <stop offset="100%" stopColor="#D90429" stopOpacity="0.0" />
               </linearGradient>
             </defs>
 
@@ -157,14 +157,15 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ dateFilter, onFilter
                     y1={y}
                     x2={width - paddingRight}
                     y2={y}
-                    stroke="#f1f5f9"
+                    stroke="#E2E8F0"
                     strokeWidth="1"
+                    strokeDasharray="2 2"
                   />
                   <text
                     x={paddingLeft - 8}
                     y={y + 3}
                     textAnchor="end"
-                    className="text-[10px] fill-slate-400 font-medium"
+                    className="text-[10px] fill-slate-400 font-bold"
                   >
                     ₹{val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}
                   </text>
@@ -179,8 +180,8 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ dateFilter, onFilter
             <path
               d={linePath}
               fill="none"
-              stroke="#4f46e5"
-              strokeWidth="2.5"
+              stroke="#D90429"
+              strokeWidth="3"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -192,8 +193,8 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ dateFilter, onFilter
                   x={pt.x}
                   y={height - 10}
                   textAnchor="middle"
-                  className={`text-[11px] font-medium transition-colors ${
-                    hoveredPoint?.label === pt.label ? 'fill-indigo-600 font-bold' : 'fill-slate-400'
+                  className={`text-[11px] font-bold transition-colors ${
+                    hoveredPoint?.label === pt.label ? 'fill-[#D90429] font-black' : 'fill-slate-500'
                   }`}
                 >
                   {pt.label}
@@ -203,8 +204,8 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ dateFilter, onFilter
                 <circle
                   cx={pt.x}
                   cy={pt.y}
-                  r={hoveredPoint?.label === pt.label ? 5 : 3.5}
-                  className="fill-white stroke-indigo-600 stroke-2 cursor-pointer transition-all"
+                  r={hoveredPoint?.label === pt.label ? 6 : 4}
+                  className="fill-white stroke-[#D90429] stroke-2 cursor-pointer transition-all"
                   onMouseEnter={() => setHoveredPoint(pt)}
                 />
 
@@ -227,8 +228,8 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ dateFilter, onFilter
                 y1={paddingTop}
                 x2={hoveredPoint.x}
                 y2={paddingTop + chartHeight}
-                stroke="#cbd5e1"
-                strokeWidth="1"
+                stroke="#D90429"
+                strokeWidth="1.5"
                 strokeDasharray="3 3"
               />
             )}
@@ -237,13 +238,13 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ dateFilter, onFilter
           {/* Floating Tooltip */}
           {hoveredPoint && (
             <div
-              className="absolute bg-slate-900 text-white px-2.5 py-1.5 rounded-lg text-xs shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full z-20"
+              className="absolute bg-slate-900 text-white border border-slate-800 px-3 py-2 rounded-xl text-xs shadow-xl pointer-events-none transform -translate-x-1/2 -translate-y-full z-20"
               style={{
                 left: `${(hoveredPoint.x / width) * 100}%`,
                 top: `${(hoveredPoint.y / height) * 100 - 8}%`,
               }}
             >
-              <p className="font-bold">₹{hoveredPoint.amount.toLocaleString()}</p>
+              <p className="font-black text-amber-400">₹{hoveredPoint.amount.toLocaleString()}</p>
               <p className="text-[10px] text-slate-300">
                 {hoveredPoint.orders} orders ({hoveredPoint.label})
               </p>

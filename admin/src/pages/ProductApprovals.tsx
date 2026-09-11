@@ -7,6 +7,7 @@ import {
   Store,
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import { useAdmin } from '../context/AdminContext';
 
 interface PendingProduct {
   id: string;
@@ -31,6 +32,7 @@ interface PendingProduct {
 
 export const ProductApprovals: React.FC = () => {
   const { showToast } = useToast();
+  const { refreshProducts } = useAdmin();
   const [pendingProducts, setPendingProducts] = useState<PendingProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -66,6 +68,9 @@ export const ProductApprovals: React.FC = () => {
       if (res.ok) {
         showToast(`Product "${name}" approved and live on storefront! 🎉`, 'success');
         setPendingProducts((prev) => prev.filter((p) => p.id !== id));
+        if (refreshProducts) {
+          refreshProducts();
+        }
       } else {
         throw new Error('Failed to approve');
       }
@@ -88,6 +93,9 @@ export const ProductApprovals: React.FC = () => {
       if (res.ok) {
         showToast(`Product "${rejectingProduct.name}" rejected.`, 'info', rejectReason);
         setPendingProducts((prev) => prev.filter((p) => p.id !== rejectingProduct.id));
+        if (refreshProducts) {
+          refreshProducts();
+        }
         setRejectModalOpen(false);
         setRejectingProduct(null);
       }

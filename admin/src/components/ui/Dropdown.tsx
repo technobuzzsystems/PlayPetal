@@ -44,7 +44,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
         <div
           className={`absolute ${
             align === 'right' ? 'right-0' : 'left-0'
-          } mt-2 w-48 rounded-xl bg-white shadow-lg border border-slate-200/80 py-1.5 z-40 focus:outline-none animate-in fade-in zoom-in-95 duration-100`}
+          } mt-2 w-48 rounded-xl bg-white shadow-xl border border-slate-200 py-1.5 z-40 focus:outline-none animate-in fade-in zoom-in-95 duration-100 text-slate-900`}
         >
           {items.map((item, index) => (
             <button
@@ -54,10 +54,10 @@ export const Dropdown: React.FC<DropdownProps> = ({
                 item.onClick();
                 setIsOpen(false);
               }}
-              className={`w-full text-left px-3.5 py-2 text-xs font-medium flex items-center gap-2.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`w-full text-left px-3.5 py-2 text-xs font-bold flex items-center gap-2.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                 item.danger
-                  ? 'text-rose-600 hover:bg-rose-50'
-                  : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'text-rose-600 hover:bg-rose-50 hover:text-rose-700'
+                  : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
               }`}
             >
               {item.icon && <span className="w-4 h-4 shrink-0 text-slate-400">{item.icon}</span>}

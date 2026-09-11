@@ -48,11 +48,11 @@ export const RecentOrdersTable: React.FC<RecentOrdersTableProps> = ({ activeDate
         <CardHeader className="flex-row items-center justify-between pb-3">
           <div>
             <CardTitle>Recent Orders</CardTitle>
-            <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+            <p className="text-xs text-slate-500 mt-0.5 font-medium">{subtitle}</p>
           </div>
           <Link
             to="/admin/orders"
-            className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-0.5"
+            className="text-xs font-bold text-[#D90429] hover:text-[#B7092B] flex items-center gap-0.5"
           >
             All orders <ChevronRight className="w-3.5 h-3.5" />
           </Link>
@@ -74,13 +74,13 @@ export const RecentOrdersTable: React.FC<RecentOrdersTableProps> = ({ activeDate
             <TableBody>
               {displayedOrders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-semibold text-slate-900 font-mono text-xs">
+                  <TableCell className="font-bold text-slate-900 font-mono text-xs">
                     {order.orderNumber}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium text-slate-800 text-xs">{order.customerName}</span>
-                      <span className="text-[11px] text-slate-400">{order.customerPhone}</span>
+                      <span className="font-bold text-slate-900 text-xs">{order.customerName}</span>
+                      <span className="text-[11px] text-slate-500">{order.customerPhone}</span>
                     </div>
                   </TableCell>
                   <TableCell className="max-w-[200px]">
@@ -89,7 +89,7 @@ export const RecentOrdersTable: React.FC<RecentOrdersTableProps> = ({ activeDate
                     </span>
                   </TableCell>
                   <TableCell className="text-xs text-slate-500 whitespace-nowrap">{order.date}</TableCell>
-                  <TableCell className="font-bold text-slate-900 text-xs">₹{order.totalAmount.toLocaleString()}</TableCell>
+                  <TableCell className="font-black text-slate-900 text-xs">₹{order.totalAmount.toLocaleString()}</TableCell>
                   <TableCell>
                     <StatusBadge status={order.status} />
                   </TableCell>

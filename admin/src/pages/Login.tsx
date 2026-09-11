@@ -40,16 +40,16 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-[#fff5fc] to-slate-100 flex flex-col items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-md bg-white rounded-2xl border border-slate-200/80 shadow-xl p-6 sm:p-8">
-        <div className="mb-4 p-2.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-xs">
-          <div className="flex items-center gap-1.5 font-bold text-amber-900">
+    <div className="min-h-screen bg-[#FFFDF9] flex flex-col items-center justify-center p-4 sm:p-6 text-slate-900 font-sans">
+      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-8">
+        <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-2xl flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1.5 font-bold text-rose-900">
             <span>🏬</span>
             <span>Are you a Toy Shopkeeper?</span>
           </div>
           <Link
             to="/vendor/login"
-            className="font-black text-rose-600 hover:text-rose-700 underline text-xs"
+            className="font-extrabold text-[#D90429] hover:text-[#B7092B] underline text-xs"
           >
             Shopkeeper Portal &rarr;
           </Link>
@@ -57,23 +57,23 @@ export const Login: React.FC = () => {
 
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white font-extrabold text-2xl shadow-md mb-3">
+          <div className="w-14 h-14 rounded-2xl bg-[#D90429] flex items-center justify-center text-white font-black text-2xl shadow-md shadow-[#D90429]/20 mb-3">
             K
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">KidsPlay Admin</h2>
-          <span className="text-xs font-semibold text-indigo-600 tracking-widest uppercase mt-0.5">
+          <h2 className="text-2xl font-black text-[#202124] tracking-tight">KidsPlay Admin</h2>
+          <span className="text-xs font-extrabold text-[#D90429] tracking-widest uppercase mt-0.5">
             Admin Panel Login
           </span>
-          <p className="text-xs text-slate-500 mt-2">
+          <p className="text-xs text-slate-500 mt-2 font-medium">
             Enter your credentials to access store management
           </p>
         </div>
 
         {/* Error Notice */}
         {error && (
-          <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-xs text-rose-700 animate-in fade-in duration-200">
-            <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-            <div className="flex-1 font-medium">{error}</div>
+          <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-xs text-rose-600 animate-in fade-in duration-200">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <div className="flex-1 font-bold">{error}</div>
           </div>
         )}
 
@@ -141,7 +141,7 @@ export const Login: React.FC = () => {
         </form>
       </div>
 
-      <p className="text-xs text-slate-400 mt-6 text-center">
+      <p className="text-xs text-slate-400 mt-6 text-center font-medium">
         © 2026 KidsPlay E-Commerce Store • Admin Panel
       </p>
     </div>

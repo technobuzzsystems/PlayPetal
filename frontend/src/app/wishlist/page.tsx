@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useMemo } from "react";
 import { api, FALLBACK_PRODUCTS } from "../../services/api";
 
-// Product Dataset reference to resolve wishlisted IDs (fallback for 1..8)
 const PRODUCTS_DATA = [
   {
     id: 1,
@@ -18,7 +17,6 @@ const PRODUCTS_DATA = [
     rating: 4.8,
     reviews: 320,
     img: "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80",
-    pastelBg: "from-pink-100 to-rose-50"
   },
   {
     id: 2,
@@ -29,7 +27,6 @@ const PRODUCTS_DATA = [
     rating: 4.6,
     reviews: 210,
     img: "https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=500&q=80",
-    pastelBg: "from-sky-100 to-blue-50"
   },
   {
     id: 3,
@@ -40,7 +37,6 @@ const PRODUCTS_DATA = [
     rating: 4.7,
     reviews: 180,
     img: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=500&q=80",
-    pastelBg: "from-emerald-100 to-teal-50"
   },
   {
     id: 4,
@@ -51,7 +47,6 @@ const PRODUCTS_DATA = [
     rating: 4.8,
     reviews: 156,
     img: "https://images.unsplash.com/photo-1558066126-25816c278fb1?w=500&q=80",
-    pastelBg: "from-purple-100 to-pink-50"
   },
   {
     id: 5,
@@ -62,7 +57,6 @@ const PRODUCTS_DATA = [
     rating: 4.5,
     reviews: 98,
     img: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=500&q=80",
-    pastelBg: "from-purple-100 to-indigo-50"
   },
   {
     id: 6,
@@ -73,7 +67,6 @@ const PRODUCTS_DATA = [
     rating: 4.8,
     reviews: 143,
     img: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=500&q=80",
-    pastelBg: "from-amber-100 to-orange-50"
   },
   {
     id: 7,
@@ -84,7 +77,6 @@ const PRODUCTS_DATA = [
     rating: 4.7,
     reviews: 201,
     img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=500&q=80",
-    pastelBg: "from-sky-100 to-teal-50"
   },
   {
     id: 8,
@@ -95,159 +87,116 @@ const PRODUCTS_DATA = [
     rating: 4.6,
     reviews: 112,
     img: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=500&q=80",
-    pastelBg: "from-pink-100 to-sky-50"
   }
 ];
 
 export default function WishlistPage() {
   const { wishlist, toggleWishlist, addToCart, isMounted } = useCart();
   const [mounted, setMounted] = useState(false);
-  const [catalog, setCatalog] = useState<any[]>(PRODUCTS_DATA);
+  const [apiProducts, setApiProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Client hydration check
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  // Fetch live products catalog from backend & fallback
-  useEffect(() => {
-    let active = true;
-
-    async function loadCatalog() {
+    async function loadApiProducts() {
       try {
-        const liveProducts = await api.getProducts();
-        if (!active) return;
-
-        const map = new Map<string, any>();
-
-        // 1. Static mock dataset (for numerical IDs 1..8)
-        PRODUCTS_DATA.forEach((p) => {
-          map.set(String(p.id), {
-            id: String(p.id),
-            name: p.name,
-            category: p.category,
-            price: p.price,
-            originalPrice: p.originalPrice,
-            rating: p.rating,
-            reviews: p.reviews,
-            img: p.img,
-            pastelBg: p.pastelBg || "from-pink-50 to-rose-50",
-          });
-        });
-
-        // 2. Fallback products dataset
-        FALLBACK_PRODUCTS.forEach((p) => {
-          map.set(String(p.id), {
-            id: String(p.id),
-            name: p.name,
-            category: typeof p.category === "string" ? p.category : (p.category as any)?.name || "Toys",
-            price: p.salePrice || p.price,
-            originalPrice: p.basePrice || p.price,
-            rating: p.rating || 4.8,
-            reviews: p.salesCount || 120,
-            img: p.image || p.images?.[0]?.url || "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80",
-            pastelBg: "from-sky-50 to-pink-50",
-          });
-        });
-
-        // 3. Live API products (includes vendor products and approved toys)
-        if (Array.isArray(liveProducts) && liveProducts.length > 0) {
-          liveProducts.forEach((p: any) => {
-            map.set(String(p.id), {
-              id: String(p.id),
-              name: p.name,
-              category: typeof p.category === "string" ? p.category : p.category?.name || "Toys",
-              price: p.salePrice || p.price || p.basePrice,
-              originalPrice: p.basePrice || p.originalPrice || p.price,
-              rating: p.rating || 4.8,
-              reviews: p.salesCount || p.reviews || 120,
-              img: p.image || p.img || p.images?.[0]?.url || "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80",
-              pastelBg: "from-amber-50 to-rose-50",
-            });
-          });
-        }
-
-        setCatalog(Array.from(map.values()));
+        const prods = await api.getProducts();
+        setApiProducts(prods);
       } catch (err) {
-        console.error("Failed to load catalog for wishlist:", err);
+        console.error("Failed to load API products for wishlist:", err);
       } finally {
-        if (active) setLoading(false);
+        setLoading(false);
       }
     }
-
-    loadCatalog();
-    return () => {
-      active = false;
-    };
+    loadApiProducts();
   }, []);
 
-  // Filter wishlisted items by matching ID (supports string IDs, number IDs, and objects)
   const wishlistedProducts = useMemo(() => {
     if (!wishlist || wishlist.length === 0) return [];
 
-    const result: any[] = [];
-    const seen = new Set<string>();
+    return wishlist.map((item) => {
+      const wishIdStr = String(item);
+      const numericId = Number(item);
 
-    wishlist.forEach((rawItem) => {
-      const idStr =
-        rawItem !== null && typeof rawItem === "object"
-          ? String((rawItem as any).id ?? (rawItem as any)._id ?? "")
-          : String(rawItem);
+      const foundApi = apiProducts.find((p) => String(p.id) === wishIdStr || String(p._id) === wishIdStr);
+      if (foundApi) {
+        const price = foundApi.salePrice || foundApi.price || foundApi.basePrice;
+        const orig = foundApi.basePrice || (foundApi.salePrice ? foundApi.price : price);
+        const catStr = typeof foundApi.category === "string" ? foundApi.category : foundApi.category?.name || "Toys";
+        const imgUrl = typeof foundApi.images?.[0] === 'object' ? foundApi.images[0].url : (foundApi.image || "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80");
 
-      if (!idStr || idStr === "[object Object]" || idStr === "undefined" || seen.has(idStr)) {
-        return;
+        return {
+          id: foundApi.id || wishIdStr,
+          name: foundApi.name,
+          category: catStr,
+          price: price,
+          originalPrice: orig,
+          rating: foundApi.rating || 4.8,
+          reviews: foundApi.salesCount || 100,
+          img: imgUrl,
+          vendorId: foundApi.vendorId,
+          vendorName: foundApi.vendorName,
+          sku: foundApi.sku
+        };
       }
 
-      // Check if product exists in unified catalog
-      const found = catalog.find((p) => String(p.id) === idStr);
-      if (found) {
-        seen.add(idStr);
-        result.push(found);
-      } else if (rawItem !== null && typeof rawItem === "object" && (rawItem as any).name) {
-        // Direct product object in storage
-        seen.add(idStr);
-        result.push({
-          id: idStr,
-          name: (rawItem as any).name,
-          category:
-            typeof (rawItem as any).category === "string"
-              ? (rawItem as any).category
-              : (rawItem as any).category?.name || "Toys",
-          price: (rawItem as any).salePrice || (rawItem as any).price || 999,
-          originalPrice: (rawItem as any).basePrice || (rawItem as any).originalPrice || 1299,
-          rating: (rawItem as any).rating || 4.8,
-          reviews: (rawItem as any).reviews || (rawItem as any).salesCount || 100,
-          img: (rawItem as any).img || (rawItem as any).image || "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80",
-          pastelBg: "from-pink-50 to-purple-50",
-        });
+      if (!isNaN(numericId)) {
+        const foundFallback = PRODUCTS_DATA.find((p) => p.id === numericId);
+        if (foundFallback) return foundFallback;
+
+        const foundService = FALLBACK_PRODUCTS.find((p) => Number(p.id) === numericId);
+        if (foundService) {
+          const price = foundService.salePrice || foundService.price || foundService.basePrice;
+          const orig = foundService.basePrice || price;
+          return {
+            id: foundService.id,
+            name: foundService.name,
+            category: typeof foundService.category === "string" ? foundService.category : "Toys",
+            price: price,
+            originalPrice: orig,
+            rating: foundService.rating || 4.7,
+            reviews: foundService.salesCount || 80,
+            img: foundService.image,
+            vendorId: foundService.vendorId,
+            vendorName: foundService.vendorName,
+            sku: foundService.sku
+          };
+        }
       }
+
+      return {
+        id: wishIdStr,
+        name: `Toy Product #${wishIdStr}`,
+        category: "Featured Toys",
+        price: 999,
+        originalPrice: 1299,
+        rating: 4.8,
+        reviews: 50,
+        img: "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80",
+      };
     });
+  }, [wishlist, apiProducts]);
 
-    return result;
-  }, [wishlist, catalog]);
-
-  // Prevent SSR Hydration Mismatch
   if (!mounted || !isMounted) {
     return (
-      <div className="w-full bg-[#0F1026] min-h-[70vh] py-12 px-4 flex items-center justify-center font-sans text-white">
-        <div className="text-center font-bold text-[#A8ACCA] animate-pulse">Loading Wishlist...</div>
+      <div className="w-full bg-[#FFFDF9] min-h-[70vh] py-12 px-4 flex items-center justify-center font-sans text-[#202124]">
+        <div className="text-center font-bold text-slate-400 animate-pulse">Loading Wishlist...</div>
       </div>
     );
   }
 
   return (
-    <div className="w-full bg-[#0F1026] min-h-screen py-10 px-4 sm:px-6 font-sans text-white">
+    <div className="w-full bg-[#FFFDF9] min-h-screen py-10 px-4 sm:px-6 font-sans text-[#202124]">
       <div className="max-w-6xl mx-auto">
         
         {/* Header Title */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-black text-white flex items-center gap-3">
-              My Wishlist <Heart size={30} className="text-[#FF4FA3] fill-[#FF4FA3]" />
+            <h1 className="text-3xl sm:text-4xl font-black text-[#202124] flex items-center gap-3">
+              My Wishlist <Heart size={30} className="text-[#F7255A] fill-[#F7255A]" />
             </h1>
-            <p className="text-[#D9DBF0] text-sm font-semibold mt-1">
-              You have <span className="text-[#FFD447] font-extrabold">{wishlistedProducts.length}</span> saved toys in your wishlist.
+            <p className="text-slate-600 text-sm font-semibold mt-1">
+              You have <span className="text-[#D90429] font-extrabold">{wishlistedProducts.length}</span> saved toys in your wishlist.
             </p>
           </div>
 
@@ -257,12 +206,12 @@ export default function WishlistPage() {
                 onClick={() => {
                   wishlistedProducts.forEach((prod) => addToCart(prod as any));
                 }}
-                className="bg-[#7C3CFF]/20 hover:bg-[#7C3CFF]/35 text-[#D9DBF0] hover:text-white border border-[#7C3CFF]/40 font-extrabold text-xs px-4 py-2.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                className="bg-red-50 hover:bg-red-100 text-[#D90429] border border-red-200 font-extrabold text-xs px-4 py-2.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <ShoppingBag size={14} /> Add All to Cart
               </button>
             )}
-            <Link href="/products" className="text-sm font-bold text-[#28B8FF] hover:text-[#FFD447] flex items-center gap-1 transition-colors">
+            <Link href="/products" className="text-sm font-bold text-[#2196F3] hover:text-[#D90429] flex items-center gap-1 transition-colors">
               Explore More Toys &rarr;
             </Link>
           </div>
@@ -270,15 +219,15 @@ export default function WishlistPage() {
 
         {/* Empty State */}
         {!loading && wishlistedProducts.length === 0 ? (
-          <div className="bg-[#20224A] rounded-3xl p-12 text-center shadow-xl border border-[#3A3D70]">
+          <div className="bg-white rounded-3xl p-12 text-center shadow-sm border border-slate-200">
             <div className="text-6xl mb-4">💔</div>
-            <h2 className="text-2xl font-black text-white mb-2">Your Wishlist is Empty</h2>
-            <p className="text-[#D9DBF0] text-sm mb-6 max-w-sm mx-auto">
+            <h2 className="text-2xl font-black text-[#202124] mb-2">Your Wishlist is Empty</h2>
+            <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">
               Save your favorite toys by tapping the heart icon on any product card!
             </p>
             <Link
               href="/products"
-              className="bg-gradient-to-r from-[#7C3CFF] to-[#9147FF] hover:from-[#9147FF] hover:to-[#FF4FA3] text-white px-8 py-3 rounded-full font-black text-sm shadow-md shadow-[#7C3CFF]/30 transition-all inline-block"
+              className="bg-[#D90429] hover:bg-[#B7092B] text-white px-8 py-3 rounded-full font-black text-sm shadow-md transition-all inline-block"
             >
               Discover Toys Now &rarr;
             </Link>
@@ -298,29 +247,29 @@ export default function WishlistPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
                     key={prod.id}
-                    className="bg-[#20224A] hover:bg-[#282B59] rounded-2xl overflow-hidden border border-[#3A3D70] hover:border-[#7C3CFF] shadow-lg hover:shadow-[0_8px_30px_rgba(124,60,255,0.25)] transition-all flex flex-col justify-between group relative"
+                    className="bg-white rounded-[24px] overflow-hidden border border-slate-200 hover:border-[#D90429]/40 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between group relative"
                   >
                     {/* Image Box */}
-                    <div className="relative aspect-square overflow-hidden bg-[#171936] p-3 flex items-center justify-center">
+                    <div className="relative aspect-square overflow-hidden bg-slate-50 p-3 flex items-center justify-center">
                       <Link href={`/products/${prod.id}`} className="w-full h-full flex items-center justify-center">
                         <img
                           src={prod.img}
                           alt={prod.name}
-                          className="w-full h-full object-contain rounded-xl group-hover:scale-105 transition-transform duration-300 shadow-sm"
+                          className="w-full h-full object-contain rounded-xl group-hover:scale-105 transition-transform duration-300 shadow-xs"
                         />
                       </Link>
                       
                       {/* Remove Button */}
                       <button 
                         onClick={() => toggleWishlist(prod.id)}
-                        className="absolute top-3 right-3 p-2 rounded-full bg-[#20224A]/90 border border-[#3A3D70] text-[#FF4FA3] hover:bg-[#FF4FA3] hover:text-white transition-all shadow-md cursor-pointer"
+                        className="absolute top-3 right-3 p-2 rounded-full bg-white/90 border border-slate-200 text-[#F7255A] hover:bg-[#F7255A] hover:text-white transition-all shadow-xs cursor-pointer"
                         title="Remove from wishlist"
                       >
                         <Trash2 size={16} />
                       </button>
 
                       {discountPct > 0 && (
-                        <span className="absolute top-3 left-3 bg-gradient-to-r from-[#FF8A3D] to-[#FF4FA3] text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-md">
+                        <span className="absolute top-3 left-3 bg-[#16803C] text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-xs">
                           {discountPct}% OFF
                         </span>
                       )}
@@ -329,30 +278,30 @@ export default function WishlistPage() {
                     {/* Product Details */}
                     <div className="p-4 flex-1 flex flex-col justify-between">
                       <div>
-                        <span className="text-[11px] font-bold text-[#28B8FF] uppercase tracking-wider">{prod.category}</span>
+                        <span className="text-[11px] font-bold text-[#2196F3] uppercase tracking-wider">{prod.category}</span>
                         <Link href={`/products/${prod.id}`}>
-                          <h3 className="font-black text-white text-base mb-1.5 line-clamp-1 group-hover:text-[#FFD447] transition-colors">
+                          <h3 className="font-black text-[#202124] text-base mb-1.5 line-clamp-1 hover:text-[#D90429] transition-colors">
                             {prod.name}
                           </h3>
                         </Link>
 
-                        <div className="flex items-center gap-1 text-[#FFD447] font-black text-xs mb-3">
+                        <div className="flex items-center gap-1 text-amber-500 font-black text-xs mb-3">
                           <Star size={12} fill="currentColor" />
                           <span>{prod.rating}</span>
-                          <span className="text-[#A8ACCA] font-normal">({prod.reviews})</span>
+                          <span className="text-slate-400 font-normal">({prod.reviews})</span>
                         </div>
                       </div>
 
                       <div>
                         <div className="flex items-baseline justify-between mb-4">
                           <div>
-                            <span className="text-lg font-black text-[#FFD447]">₹{prod.price}</span>
+                            <span className="text-lg font-black text-[#202124]">₹{prod.price}</span>
                             {orig > prod.price && (
-                              <span className="text-xs text-[#A8ACCA] line-through ml-1.5">₹{orig}</span>
+                              <span className="text-xs text-slate-400 line-through ml-1.5">₹{orig}</span>
                             )}
                           </div>
                           {discountPct > 0 && (
-                            <span className="text-[10px] font-bold text-[#48D597] bg-[#48D597]/15 border border-[#48D597]/30 px-2 py-0.5 rounded">
+                            <span className="text-[10px] font-bold text-[#16803C] bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
                               Save ₹{orig - prod.price}
                             </span>
                           )}
@@ -360,7 +309,7 @@ export default function WishlistPage() {
 
                         <button 
                           onClick={() => addToCart(prod as any)}
-                          className="w-full bg-gradient-to-r from-[#7C3CFF] to-[#9147FF] hover:from-[#9147FF] hover:to-[#FF4FA3] text-white py-2.5 rounded-xl font-bold text-xs shadow-md shadow-[#7C3CFF]/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                          className="w-full bg-[#D90429] hover:bg-[#B7092B] text-white py-2.5 rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                         >
                           <ShoppingBag size={14} /> Move to Cart
                         </button>

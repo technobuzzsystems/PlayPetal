@@ -23,17 +23,17 @@ export default function OffersPage() {
   };
 
   return (
-    <div className="w-full bg-[#0F1026] min-h-screen py-8 px-3 sm:px-4 md:px-5 lg:px-6 font-sans text-white">
+    <div className="w-full bg-[#FFFDF9] min-h-screen py-8 px-3 sm:px-4 md:px-5 lg:px-6 font-sans text-[#202124]">
       <div className="w-full">
         
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <span className="bg-[#20224A] text-[#FF4FA3] border border-[#3A3D70] text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 w-fit mx-auto shadow-md">
-            <Flame size={14} className="text-[#FF4FA3] animate-pulse" /> Limited Period Discounts
+          <span className="bg-red-50 text-[#D90429] border border-red-200 text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 w-fit mx-auto shadow-xs">
+            <Flame size={14} className="text-[#D90429] animate-pulse" /> Limited Period Discounts
           </span>
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight mt-3 mb-2">
-            Special Deals &amp; <span className="text-[#FFD447]">Promo Offers</span>
+          <h1 className="text-3xl sm:text-4xl font-black text-[#202124] tracking-tight mt-3 mb-2">
+            Special Deals &amp; <span className="text-[#D90429]">Promo Offers</span>
           </h1>
-          <p className="text-[#D9DBF0] text-sm font-medium">
+          <p className="text-slate-600 text-sm font-medium">
             Unlock exclusive coupons for toys, building sets, and STEM robotics kits across top sellers.
           </p>
         </div>
@@ -45,34 +45,32 @@ export default function OffersPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
-              className="bg-[#20224A] hover:bg-[#282B59] rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-[0_8px_30px_rgba(124,60,255,0.25)] border border-[#3A3D70] hover:border-[#7C3CFF] flex flex-col justify-between relative overflow-hidden transition-all"
+              className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-lg border border-slate-200 hover:border-[#D90429]/40 flex flex-col justify-between relative overflow-hidden transition-all"
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#7C3CFF]/10 rounded-bl-full pointer-events-none" />
-
               <div className="relative z-10">
-                <span className="bg-gradient-to-r from-[#FF8A3D] to-[#FF4FA3] text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-md">
+                <span className="bg-[#16803C] text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
                   {offer.tag || "Hot Offer"}
                 </span>
 
-                <div className="text-4xl font-black text-[#FFD447] mt-4 mb-1">
+                <div className="text-4xl font-black text-[#D90429] mt-4 mb-1">
                   {offer.discountPercent}% OFF
                 </div>
-                <h3 className="text-lg font-black text-white mb-2">{offer.title}</h3>
-                <p className="text-[#D9DBF0] text-xs font-medium leading-relaxed mb-6">
+                <h3 className="text-lg font-black text-[#202124] mb-2">{offer.title}</h3>
+                <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6">
                   {offer.description}
                 </p>
               </div>
 
-              <div className="relative z-10 pt-4 border-t border-[#3A3D70] flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-2 bg-[#171936] px-4 py-2.5 rounded-xl border border-dashed border-[#3A3D70] w-full sm:w-auto justify-between">
-                  <span className="font-mono font-black text-[#FFD447] text-xs tracking-wider">{offer.code}</span>
+              <div className="relative z-10 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-xl border border-dashed border-slate-300 w-full sm:w-auto justify-between">
+                  <span className="font-mono font-black text-[#D90429] text-xs tracking-wider">{offer.code}</span>
                   <button
                     onClick={() => handleCopy(offer.code)}
-                    className="text-[#28B8FF] hover:text-white text-xs font-black flex items-center gap-1 cursor-pointer transition-colors"
+                    className="text-[#2196F3] hover:text-[#D90429] text-xs font-black flex items-center gap-1 cursor-pointer transition-colors"
                   >
                     {copiedCode === offer.code ? (
                       <>
-                        <Check size={14} className="text-[#48D597]" /> Copied!
+                        <Check size={14} className="text-[#16803C]" /> Copied!
                       </>
                     ) : (
                       <>
@@ -84,7 +82,7 @@ export default function OffersPage() {
 
                 <Link
                   href="/products?onSale=true"
-                  className="w-full sm:w-auto bg-gradient-to-r from-[#7C3CFF] to-[#9147FF] hover:from-[#9147FF] hover:to-[#FF4FA3] text-white px-5 py-2.5 rounded-full font-black text-xs transition-all shadow-md shadow-[#7C3CFF]/30 flex items-center justify-center gap-1.5 active:scale-95"
+                  className="w-full sm:w-auto bg-[#D90429] hover:bg-[#B7092B] text-white px-5 py-2.5 rounded-full font-black text-xs transition-all shadow-md flex items-center justify-center gap-1.5 active:scale-95"
                 >
                   Shop Deal <ArrowRight size={14} />
                 </Link>

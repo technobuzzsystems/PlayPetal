@@ -70,7 +70,7 @@ export default function ProductListingPage() {
   if (!isMounted) return null;
 
   return (
-    <div className="w-full px-3 sm:px-4 md:px-5 lg:px-6 py-8 font-sans bg-[#0F1026] min-h-screen text-white">
+    <div className="w-full px-3 sm:px-4 md:px-5 lg:px-6 py-8 font-sans bg-[#FFFDF9] min-h-screen text-[#202124]">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -79,16 +79,16 @@ export default function ProductListingPage() {
       >
         <Link
           href="/products"
-          className="inline-flex items-center gap-2 text-xs font-bold text-[#A8ACCA] hover:text-[#FFD447] mb-3 transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-[#D90429] mb-3 transition-colors"
         >
           <ArrowLeft size={16} /> Back to All Toys
         </Link>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-5xl font-black text-white capitalize flex items-center gap-3">
-              Explore {categoryTitle} <span className="text-[#FFD447]">✨</span>
+            <h1 className="text-3xl md:text-5xl font-black text-[#202124] capitalize flex items-center gap-3">
+              Explore {categoryTitle} <span className="text-[#D90429]">✨</span>
             </h1>
-            <p className="text-[#D9DBF0] mt-2 text-sm md:text-base font-medium">
+            <p className="text-slate-600 mt-2 text-sm md:text-base font-medium">
               Showing {categoryProducts.length} toy{categoryProducts.length === 1 ? "" : "s"} in {categoryTitle}
             </p>
           </div>
@@ -100,28 +100,28 @@ export default function ProductListingPage() {
         <motion.aside
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="w-full md:w-64 bg-[#20224A] p-6 rounded-3xl shadow-lg border border-[#3A3D70] h-fit"
+          className="w-full md:w-64 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 h-fit"
         >
-          <div className="flex items-center gap-2 mb-6 text-white font-black text-base">
-            <Filter size={18} className="text-[#7C3CFF]" />
+          <div className="flex items-center gap-2 mb-6 text-[#202124] font-black text-base">
+            <Filter size={18} className="text-[#D90429]" />
             Filters
           </div>
 
           <div className="space-y-6">
             <div>
-              <h3 className="font-bold text-[#A8ACCA] text-xs uppercase tracking-wider mb-3">Age Group</h3>
+              <h3 className="font-bold text-slate-500 text-xs uppercase tracking-wider mb-3">Age Group</h3>
               <div className="space-y-2 text-sm">
                 {["all", "0-2 Years", "3-5 Years", "6-8 Years", "9-12 Years", "13+ Years"].map((age) => (
                   <label
                     key={age}
-                    className="flex items-center gap-2.5 text-[#D9DBF0] cursor-pointer hover:text-[#FFD447] font-semibold"
+                    className="flex items-center gap-2.5 text-slate-700 cursor-pointer hover:text-[#D90429] font-semibold"
                   >
                     <input
                       type="radio"
                       name="ageGroup"
                       checked={selectedAge === age}
                       onChange={() => setSelectedAge(age)}
-                      className="accent-[#7C3CFF]"
+                      className="accent-[#D90429]"
                     />
                     <span className="capitalize">{age === "all" ? "All Ages" : age}</span>
                   </label>
@@ -131,8 +131,8 @@ export default function ProductListingPage() {
 
             <div>
               <div className="flex justify-between items-center mb-2">
-                <h3 className="font-bold text-[#A8ACCA] text-xs uppercase tracking-wider">Max Price</h3>
-                <span className="font-black text-[#FFD447] text-xs">₹{maxPrice}</span>
+                <h3 className="font-bold text-slate-500 text-xs uppercase tracking-wider">Max Price</h3>
+                <span className="font-black text-[#D90429] text-xs">₹{maxPrice}</span>
               </div>
               <input
                 type="range"
@@ -141,9 +141,9 @@ export default function ProductListingPage() {
                 step="100"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full accent-[#7C3CFF] cursor-pointer"
+                className="w-full accent-[#D90429] cursor-pointer"
               />
-              <div className="flex justify-between text-xs text-[#A8ACCA] font-semibold mt-1">
+              <div className="flex justify-between text-xs text-slate-400 font-semibold mt-1">
                 <span>₹200</span>
                 <span>₹10,000</span>
               </div>
@@ -154,17 +154,17 @@ export default function ProductListingPage() {
         {/* Product Grid */}
         <div className="flex-1">
           {loading ? (
-            <div className="text-center py-20 font-bold text-[#A8ACCA]">Loading {categoryTitle} Toys...</div>
+            <div className="text-center py-20 font-bold text-slate-400">Loading {categoryTitle} Toys...</div>
           ) : categoryProducts.length === 0 ? (
-            <div className="bg-[#20224A] rounded-3xl p-12 text-center border border-[#3A3D70]">
+            <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm">
               <div className="text-6xl mb-4">🧸</div>
-              <h3 className="text-xl font-black text-white mb-2">No toys found in {categoryTitle}</h3>
-              <p className="text-[#D9DBF0] text-sm max-w-md mx-auto mb-6">
+              <h3 className="text-xl font-black text-[#202124] mb-2">No toys found in {categoryTitle}</h3>
+              <p className="text-slate-500 text-sm max-w-md mx-auto mb-6">
                 Try adjusting your filters or explore our complete toy catalog.
               </p>
               <Link
                 href="/products"
-                className="inline-block bg-gradient-to-r from-[#7C3CFF] to-[#9147FF] hover:from-[#9147FF] hover:to-[#FF4FA3] text-white font-black text-xs px-6 py-3 rounded-full transition-all shadow-md shadow-[#7C3CFF]/30"
+                className="inline-block bg-[#D90429] hover:bg-[#B7092B] text-white font-black text-xs px-6 py-3 rounded-full transition-all shadow-md"
               >
                 Browse All Toys &rarr;
               </Link>
@@ -187,7 +187,7 @@ export default function ProductListingPage() {
                     transition={{ delay: idx * 0.05 }}
                     whileHover={{ y: -6 }}
                     key={product.id}
-                    className="bg-[#20224A] hover:bg-[#282B59] rounded-3xl p-5 shadow-lg hover:shadow-[0_8px_30px_rgba(124,60,255,0.25)] border border-[#3A3D70] hover:border-[#7C3CFF] group transition-all relative overflow-hidden flex flex-col justify-between"
+                    className="bg-white rounded-[24px] p-5 shadow-sm hover:shadow-lg border border-slate-200 hover:border-[#D90429]/40 group transition-all relative overflow-hidden flex flex-col justify-between"
                   >
                     {/* Wishlist Button */}
                     <button
@@ -195,10 +195,10 @@ export default function ProductListingPage() {
                         e.stopPropagation();
                         toggleWishlist(product.id);
                       }}
-                      className={`absolute top-4 right-4 z-10 p-2.5 rounded-full backdrop-blur-md transition-all border ${
+                      className={`absolute top-4 right-4 z-10 p-2.5 rounded-full backdrop-blur-xs transition-all border ${
                         inWish
-                          ? "bg-[#FF4FA3] border-[#FF4FA3] text-white shadow-md shadow-[#FF4FA3]/30"
-                          : "bg-[#171936]/80 border-[#3A3D70] text-[#A8ACCA] hover:text-[#FF4FA3] hover:border-[#FF4FA3]"
+                          ? "bg-[#F7255A] border-[#F7255A] text-white shadow-xs"
+                          : "bg-white/80 border-slate-200 text-slate-400 hover:text-[#F7255A]"
                       }`}
                       title={inWish ? "Remove from Wishlist" : "Add to Wishlist"}
                     >
@@ -206,19 +206,19 @@ export default function ProductListingPage() {
                     </button>
 
                     {/* Product Image */}
-                    <Link href={`/products/${product.id}`} className="block relative aspect-square rounded-2xl overflow-hidden mb-4 bg-[#171936] p-2">
+                    <Link href={`/products/${product.id}`} className="block relative aspect-square rounded-2xl overflow-hidden mb-4 bg-slate-50 p-2">
                       <img
                         src={imageUrl}
                         alt={product.name}
-                        className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500 shadow-sm"
+                        className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500 shadow-xs"
                       />
                       {product.isBestSeller && (
-                        <span className="absolute top-3 left-3 bg-gradient-to-r from-[#FF8A3D] to-[#FF4FA3] text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-md">
+                        <span className="absolute top-3 left-3 bg-[#FF9800] text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-xs">
                           🔥 Best Seller
                         </span>
                       )}
                       {product.isNewArrival && !product.isBestSeller && (
-                        <span className="absolute top-3 left-3 bg-gradient-to-r from-[#28B8FF] to-[#7C3CFF] text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-md">
+                        <span className="absolute top-3 left-3 bg-[#2196F3] text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-xs">
                           ✨ New
                         </span>
                       )}
@@ -227,28 +227,28 @@ export default function ProductListingPage() {
                     {/* Product Info */}
                     <div className="flex-1 flex flex-col justify-between">
                       <div>
-                        <div className="text-[10px] font-extrabold text-[#28B8FF] uppercase tracking-wider mb-1">
+                        <div className="text-[10px] font-extrabold text-[#2196F3] uppercase tracking-wider mb-1">
                           {typeof product.category === "string" ? product.category : product.category?.name || "Toys"}
                         </div>
                         <Link href={`/products/${product.id}`}>
-                          <h3 className="font-extrabold text-white leading-snug mb-1 line-clamp-2 hover:text-[#FFD447] transition-colors">
+                          <h3 className="font-extrabold text-[#202124] leading-snug mb-1 line-clamp-2 hover:text-[#D90429] transition-colors">
                             {product.name}
                           </h3>
                         </Link>
                       </div>
 
-                      <div className="mt-3 pt-3 border-t border-[#3A3D70]">
+                      <div className="mt-3 pt-3 border-t border-slate-100">
                         <div className="flex items-center gap-1 mb-2">
-                          <Star size={14} className="text-[#FFD447] fill-[#FFD447]" />
-                          <span className="text-xs font-bold text-white">{product.rating || 5.0}</span>
-                          <span className="text-[11px] text-[#A8ACCA]">({product.salesCount || 12} sold)</span>
+                          <Star size={14} className="text-amber-500 fill-amber-500" />
+                          <span className="text-xs font-bold text-[#202124]">{product.rating || 5.0}</span>
+                          <span className="text-[11px] text-slate-400">({product.salesCount || 12} sold)</span>
                         </div>
 
                         <div className="flex items-center justify-between">
                           <div className="flex items-baseline gap-2">
-                            <span className="text-xl font-black text-[#FFD447]">₹{price}</span>
+                            <span className="text-xl font-black text-[#202124]">₹{price}</span>
                             {originalPrice > price && (
-                              <span className="text-xs text-[#A8ACCA] line-through font-semibold">
+                              <span className="text-xs text-slate-400 line-through font-semibold">
                                 ₹{originalPrice}
                               </span>
                             )}
@@ -264,7 +264,7 @@ export default function ProductListingPage() {
                                 category: typeof product.category === "string" ? product.category : product.category?.name,
                               })
                             }
-                            className="bg-gradient-to-r from-[#7C3CFF] to-[#9147FF] hover:from-[#9147FF] hover:to-[#FF4FA3] text-white p-2.5 rounded-xl transition-all shadow-md shadow-[#7C3CFF]/30 active:scale-95 cursor-pointer"
+                            className="bg-[#D90429] hover:bg-[#B7092B] text-white p-2.5 rounded-full transition-all shadow-xs cursor-pointer active:scale-95"
                             title="Add to Cart"
                           >
                             <ShoppingBag size={18} />
