@@ -177,6 +177,7 @@ export default function ProductListingPage() {
                 const imageUrl =
                   product.images?.[0]?.url ||
                   product.image ||
+                  (product as any).img ||
                   "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80";
                 const inWish = isInWishlist(product.id);
 

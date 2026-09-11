@@ -65,7 +65,7 @@ export default function CartPage() {
                 >
                   <div className="flex items-center gap-4">
                     <img
-                      src={item.img}
+                      src={item.img || (item as any).image || "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80"}
                       alt={item.name}
                       className="w-20 h-20 object-cover rounded-2xl bg-slate-50 p-1 border border-slate-200 flex-shrink-0"
                     />

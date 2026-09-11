@@ -141,4 +141,31 @@ router.get('/:vendorId/orders', (req: Request, res: Response) => {
   }
 });
 
+// Update vendor order status (Accept / Reject)
+const updateVendorOrderStatus = (req: Request, res: Response) => {
+  try {
+    const orderId = String(req.params.orderId);
+    const { status } = req.body;
+    const updated = dbStore.updateOrderStatus(orderId, status);
+    if (!updated) return res.status(404).json({ error: 'Order not found' });
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update order status' });
+  }
+};
+
+router.patch('/:vendorId/orders/:orderId/status', updateVendorOrderStatus);
+router.put('/:vendorId/orders/:orderId/status', updateVendorOrderStatus);
+
+// GET vendor reviews
+router.get('/:vendorId/reviews', (req: Request, res: Response) => {
+  try {
+    const vendorId = String(req.params.vendorId);
+    const reviews = dbStore.getVendorReviews(vendorId);
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch vendor reviews' });
+  }
+});
+
 export default router;

@@ -128,7 +128,7 @@ function NewArrivalsInner() {
                 >
                   <div className="relative h-64 w-full bg-slate-50 p-6 flex items-center justify-center overflow-hidden">
                     <img
-                      src={p.img}
+                      src={p.img || p.image || "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80"}
                       alt={p.name}
                       className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-500"
                     />
@@ -177,7 +177,7 @@ function NewArrivalsInner() {
                           name: p.name,
                           price: p.price,
                           originalPrice: p.originalPrice,
-                          img: p.img,
+                          img: p.img || p.image || "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80",
                           category: p.category,
                           brand: p.brand
                         })}

@@ -253,7 +253,7 @@ export default function WishlistPage() {
                     <div className="relative aspect-square overflow-hidden bg-slate-50 p-3 flex items-center justify-center">
                       <Link href={`/products/${prod.id}`} className="w-full h-full flex items-center justify-center">
                         <img
-                          src={prod.img}
+                          src={prod.img || (prod as any).image || "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80"}
                           alt={prod.name}
                           className="w-full h-full object-contain rounded-xl group-hover:scale-105 transition-transform duration-300 shadow-xs"
                         />

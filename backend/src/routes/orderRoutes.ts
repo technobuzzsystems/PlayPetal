@@ -23,8 +23,8 @@ router.post('/', (req: Request, res: Response) => {
   }
 });
 
-// PATCH order status (from admin panel)
-router.patch('/:id/status', (req: Request, res: Response) => {
+// PATCH or PUT order status (Accept/Reject or Status Update)
+const updateStatusHandler = (req: Request, res: Response) => {
   try {
     const id = String(req.params.id);
     const { status } = req.body;
@@ -34,6 +34,9 @@ router.patch('/:id/status', (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ error: 'Failed to update order status' });
   }
-});
+};
+
+router.patch('/:id/status', updateStatusHandler);
+router.put('/:id/status', updateStatusHandler);
 
 export default router;

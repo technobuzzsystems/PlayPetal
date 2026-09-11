@@ -128,6 +128,89 @@ function ProductsContent() {
     return Array.from(map.values());
   }, [categories, products]);
 
+  // Dynamically merge brands
+  const allBrandsList = useMemo(() => {
+    const map = new Map<string, Brand>();
+    const usedIds = new Set<string>();
+
+    brands.forEach((b) => {
+      if (b && b.name) {
+        const key = b.name.trim().toLowerCase();
+        const slug = b.slug || key.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        let id = b.id;
+        if (!id || usedIds.has(id)) {
+          id = `brand-${slug}`;
+        }
+        usedIds.add(id);
+        map.set(key, { ...b, id, slug });
+      }
+    });
+
+    products.forEach((p) => {
+      if ((p.status !== "APPROVED" && p.status !== "Active") || p.isActive === false) return;
+      const bName = p.brand;
+      if (bName && bName.trim()) {
+        const key = bName.trim().toLowerCase();
+        if (!map.has(key)) {
+          const slug = key.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          let id = `brand-${slug}`;
+          if (usedIds.has(id)) {
+            id = `brand-${slug}`;
+          }
+          usedIds.add(id);
+          map.set(key, {
+            id,
+            name: bName.trim(),
+            slug,
+            description: `${bName.trim()} toys`,
+          });
+        }
+      }
+    });
+    return Array.from(map.values());
+  }, [brands, products]);
+
+  // Dynamically merge age groups
+  const allAgeGroupsList = useMemo(() => {
+    const map = new Map<string, AgeGroup>();
+    const usedIds = new Set<string>();
+
+    ageGroups.forEach((a) => {
+      if (a && a.label) {
+        const key = a.label.trim().toLowerCase();
+        let id = a.id;
+        if (!id || usedIds.has(id)) {
+          id = `age-${key.replace(/[^a-z0-9]+/g, '-')}`;
+        }
+        usedIds.add(id);
+        map.set(key, { ...a, id });
+      }
+    });
+
+    products.forEach((p) => {
+      if ((p.status !== "APPROVED" && p.status !== "Active") || p.isActive === false) return;
+      const aName = p.ageGroup;
+      if (aName && aName.trim()) {
+        const key = aName.trim().toLowerCase();
+        if (!map.has(key)) {
+          let id = `age-${key.replace(/[^a-z0-9]+/g, '-')}`;
+          if (usedIds.has(id)) {
+            id = `age-${key.replace(/[^a-z0-9]+/g, '-')}`;
+          }
+          usedIds.add(id);
+          map.set(key, {
+            id,
+            label: aName.trim(),
+            subtitle: `${aName.trim()} toys`,
+            minAge: 0,
+            maxAge: 99,
+          });
+        }
+      }
+    });
+    return Array.from(map.values());
+  }, [ageGroups, products]);
+
   // Filter & Sort Logic
   const filteredProducts = useMemo(() => {
     return products
@@ -445,6 +528,55 @@ function ProductsContent() {
                   </div>
                 </div>
 
+                {/* Brand Filter */}
+                <div className="pt-4 border-t border-slate-200">
+                  <h4 className="font-extrabold text-[#202124] text-xs uppercase tracking-wider mb-2.5 flex items-center justify-between">
+                    <span>Brands</span>
+                    <span className="text-[10px] font-bold text-slate-400 font-mono">({allBrandsList.length + 1})</span>
+                  </h4>
+                  <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+                    <button
+                      onClick={() => setSelectedBrand("all")}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                        selectedBrand === "all" ? "bg-[#D90429] text-white shadow-xs" : "text-slate-600 hover:bg-slate-50 hover:text-[#202124]"
+                      }`}
+                    >
+                      <span>All Brands</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                        selectedBrand === "all" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500 border border-slate-200"
+                      }`}>
+                        {products.filter(p => p.status === "APPROVED" && p.isActive !== false).length}
+                      </span>
+                    </button>
+                    {allBrandsList.map((brand, idx) => {
+                      const isSelected = selectedBrand.toLowerCase() === brand.name.toLowerCase();
+                      const count = products.filter((p) => {
+                        if (p.status !== "APPROVED" || p.isActive === false) return false;
+                        const b = (p.brand || "").toLowerCase();
+                        const t = brand.name.toLowerCase();
+                        return b === t || (t.length > 3 && b.includes(t)) || (b.length > 3 && t.includes(b));
+                      }).length;
+
+                      return (
+                        <button
+                          key={`brand-btn-${brand.id}-${idx}`}
+                          onClick={() => setSelectedBrand(brand.name)}
+                          className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer group ${
+                            isSelected ? "bg-[#D90429] text-white shadow-xs" : "text-slate-600 hover:bg-slate-50 hover:text-[#202124]"
+                          }`}
+                        >
+                          <span className="truncate pr-2">{brand.name}</span>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full shrink-0 ${
+                            isSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500 border border-slate-200"
+                          }`}>
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* Price Filter */}
                 <div className="pt-4 border-t border-slate-200">
                   <h4 className="font-extrabold text-[#202124] text-xs uppercase tracking-wider mb-2.5 flex items-center justify-between">
@@ -516,7 +648,7 @@ function ProductsContent() {
                   const originalPrice = product.basePrice || product.price;
                   const discountPercent = product.discount || (hasDiscount ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0);
                   const isWish = isInWishlist(product.id);
-                  const prodImg = typeof product.images?.[0] === 'object' ? product.images[0].url : (product.image || "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=400&q=80");
+                  const prodImg = typeof product.images?.[0] === 'object' ? product.images[0].url : (product.image || (product as any).img || "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=400&q=80");
                   const catNameStr = typeof product.category === 'string' ? product.category : product.category?.name || "Toys";
 
                   return (

@@ -926,6 +926,25 @@ class LocalDbStore {
     const resolvedStatus = (item.status === 'Active' || item.status === 'APPROVED') ? 'APPROVED' : (item.status || (item.vendorId ? 'PENDING' : 'APPROVED'));
     const resolvedActive = item.isActive !== undefined ? item.isActive : isApprovedStatus;
 
+    const rawImageUrls: string[] = [];
+    if (item.image) rawImageUrls.push(item.image);
+    if (Array.isArray(item.images)) {
+      item.images.forEach((img: any) => {
+        if (typeof img === 'string' && img.trim()) rawImageUrls.push(img.trim());
+        else if (img && typeof img === 'object' && (img.url || img.src)) rawImageUrls.push((img.url || img.src).trim());
+      });
+    }
+    if (Array.isArray((item as any).additionalImages)) {
+      (item as any).additionalImages.forEach((img: any) => {
+        if (typeof img === 'string' && img.trim()) rawImageUrls.push(img.trim());
+      });
+    }
+
+    const uniqueUrls = Array.from(new Set(rawImageUrls.filter(Boolean)));
+    const resolvedImages = uniqueUrls.length > 0
+      ? uniqueUrls.map((url, idx) => ({ id: String(idx + 1), url, alt: `Angle ${idx + 1}` }))
+      : [{ id: '1', url: item.image || 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80', alt: 'Main Photo' }];
+
     const newProduct: ProductItem = {
       id: item.id || newId,
       name: item.name || 'New Toy Product',
@@ -951,8 +970,8 @@ class LocalDbStore {
       isBestSeller: Boolean(item.isBestSeller),
       rating: item.rating || 5.0,
       salesCount: item.salesCount || 0,
-      image: item.image || (item.images && item.images[0]?.url) || 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80',
-      images: item.images || [{ url: item.image || 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80' }],
+      image: uniqueUrls[0] || item.image || 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80',
+      images: resolvedImages,
       shortDescription: item.shortDescription || '',
       description: item.description || '',
       specifications: item.specifications || {},
@@ -998,6 +1017,27 @@ class LocalDbStore {
     const newStatus = willBeApproved ? 'APPROVED' : (updates.status ?? existing.status);
     const newIsActive = willBeApproved ? true : (updates.isActive ?? (newStatus === 'APPROVED' ? true : existing.isActive));
 
+    let updatedImages = existing.images;
+    if (updates.images || updates.image || (updates as any).additionalImages) {
+      const rawUpdateUrls: string[] = [];
+      if (updates.image) rawUpdateUrls.push(updates.image);
+      if (Array.isArray(updates.images)) {
+        updates.images.forEach((img: any) => {
+          if (typeof img === 'string' && img.trim()) rawUpdateUrls.push(img.trim());
+          else if (img && typeof img === 'object' && (img.url || img.src)) rawUpdateUrls.push((img.url || img.src).trim());
+        });
+      }
+      if (Array.isArray((updates as any).additionalImages)) {
+        (updates as any).additionalImages.forEach((img: any) => {
+          if (typeof img === 'string' && img.trim()) rawUpdateUrls.push(img.trim());
+        });
+      }
+      const uniqueUpdateUrls = Array.from(new Set(rawUpdateUrls.filter(Boolean)));
+      if (uniqueUpdateUrls.length > 0) {
+        updatedImages = uniqueUpdateUrls.map((url, idx) => ({ id: String(idx + 1), url, alt: `Angle ${idx + 1}` }));
+      }
+    }
+
     const updated: ProductItem = {
       ...existing,
       ...updates,
@@ -1006,6 +1046,8 @@ class LocalDbStore {
       isBestSeller: updates.isBestSeller !== undefined ? Boolean(updates.isBestSeller) : existing.isBestSeller,
       isNewArrival: updates.isNewArrival !== undefined ? Boolean(updates.isNewArrival) : existing.isNewArrival,
       isFeatured: updates.isFeatured !== undefined ? Boolean(updates.isFeatured) : existing.isFeatured,
+      image: updates.image || updatedImages[0]?.url || existing.image,
+      images: updatedImages,
       updatedAt: new Date().toISOString(),
     };
     this.data.products[idx] = updated;
@@ -1231,6 +1273,14 @@ class LocalDbStore {
   // --- REVIEWS ---
   getReviews(): ReviewItem[] {
     return this.data.reviews || [];
+  }
+
+  getVendorReviews(vendorId: string): ReviewItem[] {
+    const vendorProds = this.getVendorProducts(vendorId).map((p) => String(p.id));
+    const prodSet = new Set(vendorProds);
+    return (this.data.reviews || []).filter(
+      (r) => String(r.vendorId) === String(vendorId) || prodSet.has(String(r.productId))
+    );
   }
 
   addReview(review: ReviewItem): ReviewItem {

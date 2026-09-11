@@ -22,6 +22,8 @@ import {
   Edit,
   Power,
   User,
+  Eye,
+  FileText,
 } from 'lucide-react';
 import { useAuth, PRESET_VENDORS } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -46,6 +48,7 @@ export const VendorPortal: React.FC = () => {
   const [deletingProduct, setDeletingProduct] = useState<any | null>(null);
   const [deleteReason, setDeleteReason] = useState<string>('Empty Stock (0 Units Left)');
   const [loading, setLoading] = useState(true);
+  const [selectedOrderDetails, setSelectedOrderDetails] = useState<any | null>(null);
 
   // Edit Product State
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
@@ -66,12 +69,17 @@ export const VendorPortal: React.FC = () => {
     isBestSeller: false,
     isNewArrival: false,
     image: '',
+    additionalImages: [] as string[],
     shortDescription: '',
     description: '',
   });
 
   const openEditModal = (p: any) => {
     setEditingProduct(p);
+    const existingImages = Array.isArray(p.images) ? p.images.map((img: any) => (typeof img === 'string' ? img : img.url)) : [];
+    const mainImg = p.image || existingImages[0] || '';
+    const addImgs = existingImages.length > 1 ? existingImages.slice(1) : (p.additionalImages || []);
+
     setEditFormData({
       name: p.name || '',
       category: p.category || 'STEM & Robotics',
@@ -82,11 +90,12 @@ export const VendorPortal: React.FC = () => {
       stock: p.stock ?? 0,
       isBestSeller: Boolean(p.isBestSeller),
       isNewArrival: Boolean(p.isNewArrival),
-      image: p.image || '',
+      image: mainImg,
+      additionalImages: addImgs,
       shortDescription: p.shortDescription || '',
       description: p.description || '',
     });
-    setEditImageFileName(p.image ? 'Current Product Image' : '');
+    setEditImageFileName(mainImg ? 'Current Product Image' : '');
     setEditImageFileSize('');
   };
 
@@ -107,10 +116,16 @@ export const VendorPortal: React.FC = () => {
     const reader = new FileReader();
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
-      setEditFormData((prev) => ({ ...prev, image: dataUrl }));
+      setEditFormData((prev) => {
+        if (!prev.image) {
+          return { ...prev, image: dataUrl };
+        } else {
+          return { ...prev, additionalImages: [...(prev.additionalImages || []), dataUrl] };
+        }
+      });
       setEditImageFileName(file.name);
       setEditImageFileSize(formattedSize);
-      showToast(`Updated photo "${file.name}" ready! 📸`, 'success');
+      showToast(`Photo angle "${file.name}" added to edit list! 📸`, 'success');
     };
     reader.readAsDataURL(file);
   };
@@ -124,6 +139,9 @@ export const VendorPortal: React.FC = () => {
     }
 
     setUpdatingProduct(true);
+    const allUrls = [editFormData.image, ...(editFormData.additionalImages || [])].filter(Boolean);
+    const imagesList = allUrls.map((url, idx) => ({ id: String(idx + 1), url, alt: `Angle ${idx + 1}` }));
+
     const updatedData = {
       ...editFormData,
       basePrice: Number(editFormData.basePrice),
@@ -132,6 +150,8 @@ export const VendorPortal: React.FC = () => {
       stock: Number(editFormData.stock),
       isBestSeller: Boolean(editFormData.isBestSeller),
       isNewArrival: Boolean(editFormData.isNewArrival),
+      image: allUrls[0] || editFormData.image,
+      images: imagesList,
     };
 
     try {
@@ -172,6 +192,39 @@ export const VendorPortal: React.FC = () => {
     }
   };
 
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vendors/${currentVendorId}/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      }).catch(() => {});
+
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      }).catch(() => {});
+
+      setVendorOrders((prev) =>
+        prev.map((ord) => (ord.id === orderId || ord.orderNumber === orderId ? { ...ord, status: newStatus } : ord))
+      );
+
+      if (newStatus === 'Accepted' || newStatus === 'Processing') {
+        showToast(`Order "${orderId}" Accepted! 🟢 Customer order is now in progress.`, 'success');
+      } else if (newStatus === 'Rejected') {
+        showToast(`Order "${orderId}" Rejected! 🔴 Customer order has been rejected.`, 'error');
+      } else {
+        showToast(`Order "${orderId}" status updated to ${newStatus}.`, 'info');
+      }
+    } catch (err) {
+      console.error('Failed to update order status:', err);
+      setVendorOrders((prev) =>
+        prev.map((ord) => (ord.id === orderId || ord.orderNumber === orderId ? { ...ord, status: newStatus } : ord))
+      );
+    }
+  };
+
   // Sync tab with URL search parameter
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -201,6 +254,7 @@ export const VendorPortal: React.FC = () => {
     isBestSeller: false,
     isNewArrival: false,
     image: '',
+    additionalImages: [] as string[],
     shortDescription: '',
     description: '',
   });
@@ -210,22 +264,46 @@ export const VendorPortal: React.FC = () => {
   const fetchVendorData = async () => {
     setLoading(true);
     try {
-      const [prodsRes, ordersRes, reviewsRes] = await Promise.all([
+      const [prodsRes, ordersRes, reviewsRes, vendorReviewsRes] = await Promise.all([
         fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vendors/${currentVendorId}/products`),
         fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vendors/${currentVendorId}/orders`),
         fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/reviews`),
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vendors/${currentVendorId}/reviews`).catch(() => null),
       ]);
+
+      let prodsList: any[] = [];
       if (prodsRes.ok) {
-        const prods = await prodsRes.json();
-        setVendorProducts(prods);
+        prodsList = await prodsRes.json();
+        setVendorProducts(prodsList);
       } else if (adminProducts && adminProducts.length > 0) {
         const filtered = adminProducts.filter((p: any) => p.vendorId === currentVendorId || !p.vendorId);
-        setVendorProducts(filtered.length > 0 ? filtered : adminProducts);
+        prodsList = filtered.length > 0 ? filtered : adminProducts;
+        setVendorProducts(prodsList);
       }
+
       if (ordersRes.ok) {
         const ords = await ordersRes.json();
         setVendorOrders(ords);
       }
+
+      // Populate Vendor Product Reviews
+      let fetchedReviews: any[] = [];
+      if (vendorReviewsRes && vendorReviewsRes.ok) {
+        fetchedReviews = await vendorReviewsRes.json();
+      }
+      
+      if (!Array.isArray(fetchedReviews) || fetchedReviews.length === 0) {
+        if (reviewsRes.ok) {
+          const allRevs = await reviewsRes.json();
+          if (Array.isArray(allRevs)) {
+            const prodIds = new Set(prodsList.map((p: any) => String(p.id)));
+            fetchedReviews = allRevs.filter((r: any) =>
+              String(r.vendorId) === String(currentVendorId) || prodIds.has(String(r.productId))
+            );
+          }
+        }
+      }
+      setVendorReviews(Array.isArray(fetchedReviews) ? fetchedReviews : []);
     } catch (err) {
       console.error('Failed to load vendor data:', err);
       if (adminProducts && adminProducts.length > 0) {
@@ -296,7 +374,13 @@ export const VendorPortal: React.FC = () => {
     const reader = new FileReader();
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
-      setFormData((prev) => ({ ...prev, image: dataUrl }));
+      setFormData((prev) => {
+        if (!prev.image) {
+          return { ...prev, image: dataUrl, additionalImages: prev.additionalImages || [] };
+        } else {
+          return { ...prev, additionalImages: [...(prev.additionalImages || []), dataUrl] };
+        }
+      });
       setImageFileName(file.name);
       setImageFileSize(formattedSize);
       showToast(`Photo "${file.name}" ready! 📸`, 'success');
@@ -330,20 +414,24 @@ export const VendorPortal: React.FC = () => {
     setIsDragging(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
-      processImageFile(file);
+      Array.from(e.dataTransfer.files).forEach((file) => processImageFile(file));
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      processImageFile(file);
+      Array.from(e.target.files).forEach((file) => processImageFile(file));
     }
   };
 
   const handleRemoveImage = () => {
-    setFormData((prev) => ({ ...prev, image: '' }));
+    setFormData((prev) => {
+      if (prev.additionalImages && prev.additionalImages.length > 0) {
+        const [nextMain, ...rest] = prev.additionalImages;
+        return { ...prev, image: nextMain, additionalImages: rest };
+      }
+      return { ...prev, image: '', additionalImages: [] };
+    });
     setImageFileName('');
     setImageFileSize('');
     if (fileInputRef.current) {
@@ -360,6 +448,9 @@ export const VendorPortal: React.FC = () => {
     }
 
     setSubmitting(true);
+    const allUrls = [formData.image, ...(formData.additionalImages || [])].filter(Boolean);
+    const imagesList = allUrls.map((url, idx) => ({ id: String(idx + 1), url, alt: `Angle ${idx + 1}` }));
+
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vendors/${currentVendorId}/products`, {
         method: 'POST',
@@ -372,6 +463,8 @@ export const VendorPortal: React.FC = () => {
           stock: Number(formData.stock),
           isBestSeller: Boolean(formData.isBestSeller),
           isNewArrival: Boolean(formData.isNewArrival),
+          image: allUrls[0] || formData.image,
+          images: imagesList,
         }),
       });
 
@@ -390,6 +483,7 @@ export const VendorPortal: React.FC = () => {
           isBestSeller: false,
           isNewArrival: false,
           image: '',
+          additionalImages: [],
           shortDescription: '',
           description: '',
         });
@@ -461,10 +555,10 @@ export const VendorPortal: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto no-scrollbar scroll-smooth">
         <button
           onClick={() => setActiveTab('products')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+          className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'products'
               ? 'bg-indigo-600 text-white shadow-xs'
               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -475,7 +569,7 @@ export const VendorPortal: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('add')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+          className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'add'
               ? 'bg-amber-600 text-white shadow-xs'
               : 'text-slate-600 hover:bg-amber-50 hover:text-amber-800'
@@ -486,7 +580,7 @@ export const VendorPortal: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('orders')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+          className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'orders'
               ? 'bg-indigo-600 text-white shadow-xs'
               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -497,7 +591,7 @@ export const VendorPortal: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('profile')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+          className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'profile'
               ? 'bg-indigo-600 text-white shadow-xs'
               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -508,7 +602,7 @@ export const VendorPortal: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('reviews')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+          className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'reviews'
               ? 'bg-indigo-600 text-white shadow-xs'
               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -833,110 +927,194 @@ export const VendorPortal: React.FC = () => {
               </div>
             </div>
 
-            {/* DRAG & DROP PHOTO UPLOADER */}
-            <div>
+            {/* DRAG & DROP MULTI-PHOTO ANGLE UPLOADER */}
+            <div className="space-y-3">
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs font-black text-slate-800 flex items-center gap-1.5">
                   <ImageIcon size={14} className="text-rose-500" />
-                  <span>Product Image (Drag & Drop or Browse) *</span>
+                  <span>Product Photos &amp; Multiple Angles (Front, Back, Side, Packaging) *</span>
                 </label>
                 <button
                   type="button"
                   onClick={() => setUseUrlInput(!useUrlInput)}
-                  className="text-[11px] text-rose-600 hover:text-rose-700 font-bold underline flex items-center gap-1"
+                  className="text-[11px] text-rose-600 hover:text-rose-700 font-bold underline flex items-center gap-1 cursor-pointer"
                 >
                   <LinkIcon size={12} />
-                  {useUrlInput ? 'Switch to Drag & Drop File Upload' : 'Enter Web Image URL Instead'}
+                  {useUrlInput ? 'Switch to Drag & Drop Upload' : 'Enter Web Image URL Instead'}
                 </button>
               </div>
 
               {!useUrlInput ? (
-                <div
-                  onDragEnter={handleDragEnter}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer relative ${
-                    isDragging
-                      ? 'border-rose-500 bg-rose-50 scale-[1.01]'
-                      : formData.image
-                      ? 'border-emerald-400 bg-emerald-50/40'
-                      : 'border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400'
-                  }`}
-                  onClick={() => {
-                    if (!formData.image && fileInputRef.current) {
-                      fileInputRef.current.click();
-                    }
-                  }}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
+                <div className="space-y-3">
+                  <div
+                    onDragEnter={handleDragEnter}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsDragging(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        Array.from(e.dataTransfer.files).forEach((file) => processImageFile(file));
+                      }
+                    }}
+                    className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer relative ${
+                      isDragging
+                        ? 'border-rose-500 bg-rose-50 scale-[1.01]'
+                        : formData.image
+                        ? 'border-emerald-400 bg-emerald-50/40'
+                        : 'border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400'
+                    }`}
+                    onClick={() => {
+                      if (fileInputRef.current) fileInputRef.current.click();
+                    }}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          Array.from(e.target.files).forEach((file) => processImageFile(file));
+                        }
+                      }}
+                      className="hidden"
+                    />
 
-                  {formData.image ? (
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="relative w-36 h-36 rounded-2xl overflow-hidden shadow-md border-2 border-white">
-                        <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                    <div className="flex flex-col items-center gap-2 py-3">
+                      <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-rose-500 shadow-xs">
+                        <UploadCloud size={24} />
+                      </div>
+                      <div className="font-black text-xs text-slate-800">
+                        Drag &amp; drop multiple photo angles here, or <span className="text-rose-600 underline">browse files</span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 font-medium">
+                        Upload front view, back view, side angles, or box package images (select multiple files)
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Multi-Photo Angles Thumbnails Display */}
+                  {formData.image && (
+                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                      <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                        <span>Uploaded Product Photo Angles ({1 + (formData.additionalImages?.length || 0)} photos):</span>
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveImage();
+                          onClick={() => {
+                            if (fileInputRef.current) fileInputRef.current.click();
                           }}
-                          className="absolute top-1 right-1 bg-rose-600 text-white p-1 rounded-full shadow hover:bg-rose-700"
-                          title="Remove image"
+                          className="text-[11px] font-black text-rose-600 hover:underline flex items-center gap-1 cursor-pointer"
                         >
-                          <Trash2 size={14} />
+                          <PackagePlus size={13} /> + Add Another Angle Photo
                         </button>
                       </div>
-                      <div className="text-xs font-bold text-slate-800">
-                        {imageFileName || 'Selected Product Photo'}
-                        {imageFileSize && <span className="text-slate-500 ml-1.5">({imageFileSize})</span>}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (fileInputRef.current) fileInputRef.current.click();
-                        }}
-                        className="text-[11px] font-bold text-rose-600 hover:underline"
-                      >
-                        Click to change photo
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2 py-4">
-                      <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-rose-500 shadow-sm">
-                        <UploadCloud size={28} />
-                      </div>
-                      <div className="font-bold text-sm text-slate-800">
-                        Drag and drop your toy photo here
-                      </div>
-                      <div className="text-xs text-slate-500">
-                        or <span className="text-rose-600 font-bold underline">browse from your computer</span> (PNG, JPG, WEBP)
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-1">
-                        High-resolution photos supported (up to 25MB)
+
+                      <div className="flex flex-wrap items-center gap-3 pt-1">
+                        {/* Primary Angle Photo */}
+                        <div className="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-emerald-500 shadow-xs bg-white group">
+                          <img src={formData.image} alt="Angle 1" className="w-full h-full object-cover" />
+                          <span className="absolute bottom-0 inset-x-0 bg-emerald-600 text-white text-[9px] font-black text-center py-0.5 uppercase tracking-wider">
+                            Main Angle
+                          </span>
+                          <button
+                            type="button"
+                            onClick={handleRemoveImage}
+                            className="absolute top-1 right-1 bg-rose-600 text-white p-1 rounded-full shadow opacity-90 hover:opacity-100 cursor-pointer"
+                            title="Remove main photo"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+
+                        {/* Additional Angles */}
+                        {formData.additionalImages?.map((url, idx) => (
+                          <div key={idx} className="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-slate-300 shadow-xs bg-white group">
+                            <img src={url} alt={`Angle ${idx + 2}`} className="w-full h-full object-cover" />
+                            <span className="absolute bottom-0 inset-x-0 bg-slate-800/80 text-white text-[9px] font-bold text-center py-0.5 uppercase tracking-wider">
+                              Angle #{idx + 2}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  additionalImages: prev.additionalImages.filter((_, i) => i !== idx),
+                                }));
+                              }}
+                              className="absolute top-1 right-1 bg-rose-600 text-white p-1 rounded-full shadow opacity-90 hover:opacity-100 cursor-pointer"
+                              title="Remove this angle"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
                 </div>
               ) : (
-                <input
-                  type="url"
-                  placeholder="https://example.com/toy-photo.jpg"
-                  value={formData.image}
-                  onChange={(e) => {
-                    setFormData({ ...formData, image: e.target.value });
-                    setImageFileName(e.target.value.split('/').pop() || 'Web Photo');
-                    setImageFileSize('');
-                  }}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500"
-                />
+                <div className="space-y-2">
+                  <input
+                    type="url"
+                    placeholder="Main photo URL: https://example.com/toy-front.jpg"
+                    value={formData.image}
+                    onChange={(e) => {
+                      setFormData({ ...formData, image: e.target.value });
+                    }}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  />
+
+                  {/* Add Extra Angle URL */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="url"
+                      id="extraAngleUrlInput"
+                      placeholder="Add another angle URL: https://example.com/toy-back.jpg"
+                      className="flex-1 px-3 py-2 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const input = document.getElementById('extraAngleUrlInput') as HTMLInputElement;
+                        if (input && input.value.trim()) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            additionalImages: [...(prev.additionalImages || []), input.value.trim()],
+                          }));
+                          showToast('Added additional angle URL! 📷', 'success');
+                          input.value = '';
+                        }
+                      }}
+                      className="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl cursor-pointer"
+                    >
+                      + Add Angle
+                    </button>
+                  </div>
+
+                  {formData.additionalImages && formData.additionalImages.length > 0 && (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {formData.additionalImages.map((u, i) => (
+                        <div key={i} className="flex items-center gap-1 text-[11px] bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+                          <span className="truncate max-w-[160px]">Angle #{i + 2}: {u}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                additionalImages: prev.additionalImages.filter((_, idx) => idx !== i),
+                              }));
+                            }}
+                            className="text-rose-600 hover:text-rose-800 font-bold ml-1"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
@@ -1071,7 +1249,16 @@ export const VendorPortal: React.FC = () => {
                 <div key={ord.id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-slate-100">
                     <div>
-                      <div className="font-bold text-slate-900 text-sm">{ord.orderNumber}</div>
+                      <div className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <span>{ord.orderNumber}</span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedOrderDetails(ord)}
+                          className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-200 flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <Eye size={12} /> View Customer &amp; Product Info
+                        </button>
+                      </div>
                       <div className="text-xs text-slate-400">Date: {new Date(ord.createdAt || Date.now()).toLocaleDateString()}</div>
                     </div>
                     <div className="text-right">
@@ -1080,8 +1267,12 @@ export const VendorPortal: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Customer Information Card */}
-                  <div className="p-3.5 bg-amber-50/70 border border-amber-200 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+                  {/* Customer Information Card (Clickable) */}
+                  <div
+                    onClick={() => setSelectedOrderDetails(ord)}
+                    className="p-3.5 bg-amber-50/70 hover:bg-amber-100/80 border border-amber-200 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs cursor-pointer transition-all group"
+                    title="Click to view full customer delivery details"
+                  >
                     <div className="flex items-center gap-2">
                       <User size={15} className="text-amber-600" />
                       <span className="font-bold text-slate-700">Customer:</span>
@@ -1102,23 +1293,82 @@ export const VendorPortal: React.FC = () => {
                           <span>{ord.shippingAddress.city}, {ord.shippingAddress.state}</span>
                         </div>
                       )}
+                      <span className="text-indigo-600 font-black text-[11px] underline flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                        <Eye size={12} /> View Details
+                      </span>
                     </div>
                   </div>
 
-                  {/* Items list */}
+                  {/* Items list (Clickable product rows) */}
                   <div className="space-y-2">
                     {ord.items.map((it: any, i: number) => (
-                      <div key={i} className="flex items-center justify-between text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
+                      <div
+                        key={i}
+                        onClick={() => setSelectedOrderDetails(ord)}
+                        className="flex items-center justify-between text-xs bg-slate-50 hover:bg-indigo-50/60 p-3 rounded-xl border border-slate-100 hover:border-indigo-200 transition-all cursor-pointer group"
+                        title="Click to view product information and customer address"
+                      >
                         <div className="flex items-center gap-3">
-                          <img src={it.image} alt="" className="w-11 h-11 object-cover rounded-lg bg-white border border-slate-200" />
+                          <img src={it.image} alt="" className="w-11 h-11 object-cover rounded-lg bg-white border border-slate-200 group-hover:scale-105 transition-transform" />
                           <div>
-                            <div className="font-bold text-slate-900">{it.name}</div>
+                            <div className="font-bold text-slate-900 group-hover:text-indigo-700 transition-colors flex items-center gap-1.5">
+                              <span>{it.name}</span>
+                              <span className="text-[10px] text-indigo-600 font-bold bg-indigo-100/80 px-2 py-0.5 rounded-full opacity-80 group-hover:opacity-100 transition-opacity">
+                                👁️ View Info
+                              </span>
+                            </div>
                             <div className="text-slate-400 text-[10px]">Quantity: {it.quantity} unit(s)</div>
                           </div>
                         </div>
                         <div className="font-black text-slate-900 text-sm">₹{it.price * it.quantity}</div>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Shopkeeper Accept / Reject & Status Action Bar */}
+                  <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/90 p-3.5 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-700">Order Decision:</span>
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateOrderStatus(ord.id || ord.orderNumber, 'Accepted')}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
+                          ord.status === 'Accepted' || ord.status === 'Processing'
+                            ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-400/40'
+                            : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-300'
+                        }`}
+                      >
+                        <CheckCircle2 size={14} /> Accept Order 🟢
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateOrderStatus(ord.id || ord.orderNumber, 'Rejected')}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
+                          ord.status === 'Rejected'
+                            ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-400/40'
+                            : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-300'
+                        }`}
+                      >
+                        <XCircle size={14} /> Reject Order 🔴
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-500">Update Status:</span>
+                      <select
+                        value={ord.status || 'Pending'}
+                        onChange={(e) => handleUpdateOrderStatus(ord.id || ord.orderNumber, e.target.value)}
+                        className="px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                      >
+                        <option value="Pending">Pending Review</option>
+                        <option value="Accepted">Accepted 🟢</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped 🚚</option>
+                        <option value="Delivered">Delivered 🎉</option>
+                        <option value="Rejected">Rejected 🔴</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1154,24 +1404,36 @@ export const VendorPortal: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {vendorReviews.map(r => (
-                  <div key={r.id} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-start">
-                     <img src={r.productImage} alt={r.productName} className="w-16 h-16 rounded-xl object-cover" />
-                     <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                           <h4 className="font-bold text-sm text-slate-900">{r.productName}</h4>
-                           <span className="text-xs text-slate-400">{r.date}</span>
+                {vendorReviews.map((r) => {
+                  const matchingProd = vendorProducts.find((p) => String(p.id) === String(r.productId));
+                  const prodImage = r.productImage || matchingProd?.image || 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=200&q=80';
+                  const prodTitle = r.productName || matchingProd?.name || 'Toy Product';
+
+                  return (
+                    <div key={r.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row gap-4 items-start">
+                      <img src={prodImage} alt={prodTitle} className="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-2xs shrink-0" />
+                      <div className="flex-1 space-y-1">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <h4 className="font-bold text-sm text-slate-900">{prodTitle}</h4>
+                          <span className="text-xs text-slate-400 font-medium">{r.date || 'Recent'}</span>
                         </div>
-                        <div className="flex items-center gap-0.5 text-amber-400 my-1">
+                        <div className="flex items-center gap-1 text-amber-400 my-1">
                           {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} size={12} className={i < r.rating ? 'fill-amber-400' : 'text-slate-200'} />
+                            <Star key={i} size={13} className={i < Number(r.rating || 5) ? 'fill-amber-400 text-amber-400' : 'text-slate-200'} />
                           ))}
+                          <span className="text-xs font-black text-slate-700 ml-1.5">{r.rating || 5}.0</span>
                         </div>
-                        <p className="text-sm text-slate-700 italic mt-2">"{r.comment}"</p>
-                        <p className="text-xs text-slate-500 mt-1">- {r.customerName}</p>
-                     </div>
-                  </div>
-                ))}
+                        <p className="text-xs sm:text-sm text-slate-800 bg-slate-50 p-3 rounded-xl border border-slate-100 italic leading-relaxed">
+                          "{r.comment || 'Great product!'}"
+                        </p>
+                        <div className="text-xs text-slate-500 font-medium pt-1">
+                          Reviewer: <span className="font-bold text-slate-800">{r.customerName || 'Verified Customer'}</span>
+                          {r.customerEmail && <span className="text-slate-400 ml-1">({r.customerEmail})</span>}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1409,17 +1671,17 @@ export const VendorPortal: React.FC = () => {
                 </div>
               </div>
 
-              {/* Photo Uploader for Edit Modal */}
-              <div>
+              {/* Multi-Photo Uploader for Edit Modal */}
+              <div className="space-y-3">
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-black text-slate-800 flex items-center gap-1.5">
                     <ImageIcon size={14} className="text-amber-600" />
-                    <span>Product Photo *</span>
+                    <span>Product Photos &amp; Multiple Angles *</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => setEditUseUrlInput(!editUseUrlInput)}
-                    className="text-[11px] text-amber-700 hover:text-amber-800 font-bold underline flex items-center gap-1"
+                    className="text-[11px] text-amber-700 hover:text-amber-800 font-bold underline flex items-center gap-1 cursor-pointer"
                   >
                     <LinkIcon size={12} />
                     {editUseUrlInput ? 'Switch to File Upload' : 'Enter Image URL Instead'}
@@ -1427,51 +1689,138 @@ export const VendorPortal: React.FC = () => {
                 </div>
 
                 {!editUseUrlInput ? (
-                  <div className="border-2 border-dashed border-slate-300 rounded-2xl p-4 bg-slate-50 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      {editFormData.image ? (
-                        <img src={editFormData.image} alt="Preview" className="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-xs" />
-                      ) : (
-                        <div className="w-16 h-16 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400">
-                          <ImageIcon size={24} />
-                        </div>
-                      )}
-                      <div>
-                        <div className="text-xs font-bold text-slate-800 line-clamp-1">
-                          {editImageFileName || 'Product Photo'}
-                        </div>
-                        <div className="text-[11px] text-slate-400">
-                          Click browse to replace current image
+                  <div className="space-y-3">
+                    <div className="border-2 border-dashed border-slate-300 rounded-2xl p-4 bg-slate-50 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        {editFormData.image ? (
+                          <img src={editFormData.image} alt="Preview" className="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-xs" />
+                        ) : (
+                          <div className="w-16 h-16 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400">
+                            <ImageIcon size={24} />
+                          </div>
+                        )}
+                        <div>
+                          <div className="text-xs font-bold text-slate-800 line-clamp-1">
+                            {editImageFileName || 'Product Photo Gallery'}
+                          </div>
+                          <div className="text-[11px] text-slate-400">
+                            Select photos to append additional angles to this toy catalog item
+                          </div>
                         </div>
                       </div>
+                      <input
+                        ref={editFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            Array.from(e.target.files).forEach((file) => processEditImageFile(file));
+                          }
+                        }}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => editFileInputRef.current?.click()}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors shrink-0 cursor-pointer"
+                      >
+                        + Add Photo Angle
+                      </button>
                     </div>
-                    <input
-                      ref={editFileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files.length > 0) {
-                          processEditImageFile(e.target.files[0]);
-                        }
-                      }}
-                      className="hidden"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => editFileInputRef.current?.click()}
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
-                    >
-                      Browse Photo
-                    </button>
+
+                    {/* Edit Modal Thumbnails */}
+                    {editFormData.image && (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                        <div className="text-xs font-bold text-slate-700">
+                          Product Angle Photos ({1 + (editFormData.additionalImages?.length || 0)} photos):
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3">
+                          {/* Main image */}
+                          <div className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-emerald-500 shadow-xs bg-white">
+                            <img src={editFormData.image} alt="Main Angle" className="w-full h-full object-cover" />
+                            <span className="absolute bottom-0 inset-x-0 bg-emerald-600 text-white text-[8px] font-black text-center py-0.5 uppercase">
+                              Main
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditFormData((prev) => {
+                                  if (prev.additionalImages && prev.additionalImages.length > 0) {
+                                    const [nextMain, ...rest] = prev.additionalImages;
+                                    return { ...prev, image: nextMain, additionalImages: rest };
+                                  }
+                                  return { ...prev, image: '', additionalImages: [] };
+                                });
+                              }}
+                              className="absolute top-1 right-1 bg-rose-600 text-white p-0.5 rounded-full shadow hover:opacity-100 opacity-90 cursor-pointer"
+                              title="Remove main photo"
+                            >
+                              <Trash2 size={10} />
+                            </button>
+                          </div>
+
+                          {/* Additional angles */}
+                          {editFormData.additionalImages?.map((url, idx) => (
+                            <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-slate-300 shadow-xs bg-white">
+                              <img src={url} alt={`Angle ${idx + 2}`} className="w-full h-full object-cover" />
+                              <span className="absolute bottom-0 inset-x-0 bg-slate-800/80 text-white text-[8px] font-bold text-center py-0.5 uppercase">
+                                Angle #{idx + 2}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditFormData((prev) => ({
+                                    ...prev,
+                                    additionalImages: prev.additionalImages.filter((_, i) => i !== idx),
+                                  }));
+                                }}
+                                className="absolute top-1 right-1 bg-rose-600 text-white p-0.5 rounded-full shadow hover:opacity-100 opacity-90 cursor-pointer"
+                                title="Remove angle photo"
+                              >
+                                <Trash2 size={10} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <input
-                    type="url"
-                    placeholder="https://example.com/toy-photo.jpg"
-                    value={editFormData.image}
-                    onChange={(e) => setEditFormData({ ...editFormData, image: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  />
+                  <div className="space-y-2">
+                    <input
+                      type="url"
+                      placeholder="https://example.com/toy-photo.jpg"
+                      value={editFormData.image}
+                      onChange={(e) => setEditFormData({ ...editFormData, image: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="url"
+                        id="editExtraAngleUrl"
+                        placeholder="Add extra angle URL: https://example.com/toy-side.jpg"
+                        className="flex-1 px-3 py-2 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const el = document.getElementById('editExtraAngleUrl') as HTMLInputElement;
+                          if (el && el.value.trim()) {
+                            setEditFormData((prev) => ({
+                              ...prev,
+                              additionalImages: [...(prev.additionalImages || []), el.value.trim()],
+                            }));
+                            showToast('Added additional photo URL!', 'success');
+                            el.value = '';
+                          }
+                        }}
+                        className="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl cursor-pointer"
+                      >
+                        + Add Angle
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -1537,6 +1886,176 @@ export const VendorPortal: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Customer & Product Information Modal for Shopkeeper */}
+      {selectedOrderDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-6 my-auto animate-in zoom-in-95 duration-150 relative">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                  <ShoppingBag size={20} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900">
+                    Order Details #{selectedOrderDetails.orderNumber || selectedOrderDetails.id}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Placed on {new Date(selectedOrderDetails.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedOrderDetails(null)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+              >
+                <XCircle size={22} />
+              </button>
+            </div>
+
+            {/* Customer Information Card */}
+            <div className="bg-amber-50/80 border border-amber-200 p-4.5 rounded-2xl space-y-3">
+              <div className="flex items-center gap-2 text-xs font-black text-amber-900 uppercase tracking-wider">
+                <User size={16} className="text-amber-600" />
+                <span>Customer Contact &amp; Delivery Information</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+                <div className="bg-white p-3.5 rounded-xl border border-amber-200/80 shadow-2xs">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Customer Name</span>
+                  <span className="font-black text-slate-900 text-sm">{selectedOrderDetails.customerName}</span>
+                </div>
+
+                <div className="bg-white p-3.5 rounded-xl border border-amber-200/80 shadow-2xs">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Email Address</span>
+                  <span className="font-bold text-slate-800">{selectedOrderDetails.customerEmail || 'N/A'}</span>
+                </div>
+
+                {selectedOrderDetails.shippingAddress?.phone && (
+                  <div className="bg-white p-3.5 rounded-xl border border-amber-200/80 shadow-2xs">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Phone Number</span>
+                    <span className="font-bold text-slate-900 flex items-center gap-1.5 mt-0.5">
+                      <Phone size={13} className="text-amber-600" />
+                      {selectedOrderDetails.shippingAddress.phone}
+                    </span>
+                  </div>
+                )}
+
+                <div className="bg-white p-3.5 rounded-xl border border-amber-200/80 shadow-2xs">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Delivery Address</span>
+                  <div className="font-semibold text-slate-800 mt-0.5 leading-snug">
+                    {selectedOrderDetails.shippingAddress?.street && <div>{selectedOrderDetails.shippingAddress.street}</div>}
+                    <div>
+                      {selectedOrderDetails.shippingAddress?.city || 'Mumbai'}, {selectedOrderDetails.shippingAddress?.state || 'Maharashtra'} {selectedOrderDetails.shippingAddress?.zipCode || selectedOrderDetails.shippingAddress?.pincode || ''}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Purchased Product Details */}
+            <div className="space-y-3">
+              <div className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <Package size={15} className="text-rose-500" />
+                <span>Ordered Toy Products ({selectedOrderDetails.items?.length || 0})</span>
+              </div>
+
+              <div className="space-y-3">
+                {selectedOrderDetails.items?.map((item: any, idx: number) => (
+                  <div key={idx} className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 w-full sm:w-auto">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-16 h-16 object-cover rounded-xl bg-white border border-slate-200 shadow-2xs shrink-0"
+                      />
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-sm line-clamp-1">{item.name}</h4>
+                        <div className="text-xs text-slate-500 font-semibold mt-0.5">
+                          Unit Price: <span className="font-bold text-slate-800">₹{item.price}</span> • Quantity: <span className="font-bold text-indigo-600">{item.quantity} unit(s)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-right sm:text-right w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200">
+                      <div className="text-xs text-slate-400 font-medium">Subtotal Earnings</div>
+                      <div className="text-base font-black text-slate-900">₹{item.price * item.quantity}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Total Earnings & Order Status Bar */}
+            <div className="p-4 bg-slate-100/80 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Order Earnings</div>
+                <div className="text-xl font-black text-slate-900">₹{selectedOrderDetails.totalAmount}</div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-600">Current Status:</span>
+                <span className={`px-3 py-1 rounded-full text-xs font-black uppercase ${
+                  selectedOrderDetails.status === 'Accepted' || selectedOrderDetails.status === 'Delivered'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : selectedOrderDetails.status === 'Rejected'
+                    ? 'bg-rose-100 text-rose-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {selectedOrderDetails.status || 'Pending'}
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Accept/Reject & Action Bar */}
+            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/90 p-4 rounded-2xl">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-700">Action:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleUpdateOrderStatus(selectedOrderDetails.id || selectedOrderDetails.orderNumber, 'Accepted');
+                    setSelectedOrderDetails((prev: any) => prev ? { ...prev, status: 'Accepted' } : null);
+                  }}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
+                    selectedOrderDetails.status === 'Accepted' || selectedOrderDetails.status === 'Processing'
+                      ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-400/40'
+                      : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-300'
+                  }`}
+                >
+                  <CheckCircle2 size={14} /> Accept Order 🟢
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleUpdateOrderStatus(selectedOrderDetails.id || selectedOrderDetails.orderNumber, 'Rejected');
+                    setSelectedOrderDetails((prev: any) => prev ? { ...prev, status: 'Rejected' } : null);
+                  }}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
+                    selectedOrderDetails.status === 'Rejected'
+                      ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-400/40'
+                      : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-300'
+                  }`}
+                >
+                  <XCircle size={14} /> Reject Order 🔴
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedOrderDetails(null)}
+                className="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl cursor-pointer"
+              >
+                Close Details
+              </button>
+            </div>
           </div>
         </div>
       )}

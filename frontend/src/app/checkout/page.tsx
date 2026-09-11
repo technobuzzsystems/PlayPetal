@@ -12,13 +12,13 @@ export default function CheckoutPage() {
   const { cart, subtotal, deliveryFee, discountAmount, grandTotal, clearCart } = useCart();
 
   const [formData, setFormData] = useState({
-    fullName: "Aryan Sharma",
-    phone: "9876543210",
-    email: "aryan@example.com",
-    street: "Flat 402, Lotus Residency, MG Road",
-    city: "Mumbai",
-    state: "Maharashtra",
-    pincode: "400001",
+    fullName: "",
+    phone: "",
+    email: "",
+    street: "",
+    city: "",
+    state: "",
+    pincode: "",
     paymentMethod: "Online UPI",
   });
 
@@ -157,6 +157,7 @@ export default function CheckoutPage() {
                   <input
                     required
                     type="text"
+                    placeholder="Enter your full name"
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-[#202124] focus:outline-none focus:border-[#D90429] focus:ring-2 focus:ring-[#D90429]/30 transition-all"
@@ -167,6 +168,7 @@ export default function CheckoutPage() {
                   <input
                     required
                     type="tel"
+                    placeholder="10-digit mobile number"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-[#202124] focus:outline-none focus:border-[#D90429] focus:ring-2 focus:ring-[#D90429]/30 transition-all"
@@ -179,6 +181,7 @@ export default function CheckoutPage() {
                 <input
                   required
                   type="email"
+                  placeholder="name@example.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-[#202124] focus:outline-none focus:border-[#D90429] focus:ring-2 focus:ring-[#D90429]/30 transition-all"
@@ -190,6 +193,7 @@ export default function CheckoutPage() {
                 <input
                   required
                   type="text"
+                  placeholder="House/Flat No., Street, Area, Landmark"
                   value={formData.street}
                   onChange={(e) => setFormData({ ...formData, street: e.target.value })}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-[#202124] focus:outline-none focus:border-[#D90429] focus:ring-2 focus:ring-[#D90429]/30 transition-all"
@@ -202,6 +206,7 @@ export default function CheckoutPage() {
                   <input
                     required
                     type="text"
+                    placeholder="City"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-[#202124] focus:outline-none focus:border-[#D90429] focus:ring-2 focus:ring-[#D90429]/30 transition-all"
@@ -212,6 +217,7 @@ export default function CheckoutPage() {
                   <input
                     required
                     type="text"
+                    placeholder="State"
                     value={formData.state}
                     onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-[#202124] focus:outline-none focus:border-[#D90429] focus:ring-2 focus:ring-[#D90429]/30 transition-all"
@@ -222,6 +228,7 @@ export default function CheckoutPage() {
                   <input
                     required
                     type="text"
+                    placeholder="6-digit PIN"
                     value={formData.pincode}
                     onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-[#202124] focus:outline-none focus:border-[#D90429] focus:ring-2 focus:ring-[#D90429]/30 transition-all"
@@ -283,7 +290,7 @@ export default function CheckoutPage() {
               <div className="space-y-3 max-h-60 overflow-y-auto pr-1 mb-4">
                 {cart.map((it) => (
                   <div key={it.id} className="flex items-center gap-3 text-xs bg-slate-50 p-2 rounded-xl border border-slate-200">
-                    <img src={it.img} alt="" className="w-12 h-12 rounded-lg object-cover bg-white flex-shrink-0" />
+                    <img src={it.img || (it as any).image || "https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&q=80"} alt="" className="w-12 h-12 rounded-lg object-cover bg-white flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="font-extrabold text-[#202124] truncate">{it.name}</div>
                       <div className="text-[10px] text-[#2196F3] font-bold">Sold by: {it.vendorName || "Play Petal Store"}</div>
