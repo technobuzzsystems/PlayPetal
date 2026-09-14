@@ -12,13 +12,13 @@ export default function CheckoutPage() {
   const { cart, subtotal, deliveryFee, discountAmount, grandTotal, clearCart } = useCart();
 
   const [formData, setFormData] = useState({
-    fullName: "Aryan Sharma",
-    phone: "9876543210",
-    email: "aryan@example.com",
-    street: "Flat 402, Lotus Residency, MG Road",
-    city: "Mumbai",
-    state: "Maharashtra",
-    pincode: "400001",
+    fullName: "",
+    phone: "",
+    email: "",
+    street: "",
+    city: "",
+    state: "",
+    pincode: "",
     paymentMethod: "Online UPI",
   });
 
