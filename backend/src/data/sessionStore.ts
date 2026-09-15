@@ -40,11 +40,42 @@ export class SessionStore {
     const id = crypto.randomBytes(32).toString('hex');
     const now = new Date();
     const expiresAt = new Date(now.getTime() + ABSOLUTE_TTL_MS);
+    const cleanEmail = data.email.toLowerCase().trim();
+
+    // 1. Resolve exact PostgreSQL User.id to guarantee Session.userId === User.id invariant
+    let targetUserId = data.userId;
+    try {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { id: data.userId },
+            { email: cleanEmail }
+          ]
+        }
+      });
+
+      if (!existingUser) {
+        const createdUser = await prisma.user.create({
+          data: {
+            id: data.userId,
+            email: cleanEmail,
+            name: cleanEmail.split('@')[0],
+            password: 'hashed-password',
+            role: data.role,
+          }
+        });
+        targetUserId = createdUser.id;
+      } else {
+        targetUserId = existingUser.id;
+      }
+    } catch (err: any) {
+      console.error('[SessionStore] User resolution error:', err.message);
+    }
 
     const session: Session = {
       id,
-      userId: data.userId,
-      email: data.email.toLowerCase().trim(),
+      userId: targetUserId,
+      email: cleanEmail,
       role: data.role,
       vendorId: data.vendorId,
       status: data.status || 'ACTIVE',
@@ -55,16 +86,16 @@ export class SessionStore {
       expiresAt: expiresAt.toISOString(),
     };
 
-    // 1. Cache immediately in memory
+    // 2. Cache in memory with guaranteed Session.userId === User.id
     this.cache.set(id, session);
 
-    // 2. Persist to PostgreSQL Session table
+    // 3. Persist to PostgreSQL Session table
     try {
       await prisma.session.create({
         data: {
           id,
-          userId: data.userId,
-          email: session.email,
+          userId: targetUserId,
+          email: cleanEmail,
           role: session.role,
           vendorId: session.vendorId || null,
           status: session.status,

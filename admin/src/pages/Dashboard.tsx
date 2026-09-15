@@ -12,6 +12,20 @@ import { Calendar } from 'lucide-react';
 export const Dashboard: React.FC = () => {
   const [activeDateFilter, setActiveDateFilter] = useState<'today' | 'week' | 'month'>('today');
   const { products, orders, customers } = useAdmin();
+  const [subscriberCount, setSubscriberCount] = useState<string>('0');
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+  React.useEffect(() => {
+    fetch(`${API_URL}/newsletter/stats`, { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.stats) {
+          setSubscriberCount(data.stats.activeSubscribers.toString());
+        }
+      })
+      .catch((err) => console.warn('Failed to fetch newsletter stats for dashboard:', err));
+  }, [API_URL]);
 
   // Dynamically compute store metrics from active local state according to selected date filter
   const metrics = React.useMemo(() => {
@@ -96,8 +110,8 @@ export const Dashboard: React.FC = () => {
         }
       />
 
-      {/* 4 Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+      {/* 5 Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-5">
         <StatCard
           title="Total Sales"
           value={metrics.sales}
@@ -129,6 +143,14 @@ export const Dashboard: React.FC = () => {
           isPositive={true}
           timeframe={metrics.timeframe}
           iconName="Package"
+        />
+        <StatCard
+          title="Subscribers"
+          value={subscriberCount}
+          change="+100%"
+          isPositive={true}
+          timeframe="active emails"
+          iconName="Mail"
         />
       </div>
 

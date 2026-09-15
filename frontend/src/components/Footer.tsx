@@ -16,18 +16,69 @@ import {
   Mail,
   CheckCircle2,
   Lock,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<{
+    type: 'success' | 'already' | 'error';
+    message: string;
+  } | null>(null);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim()) {
-      setSubscribed(true);
-      setEmail('');
-      setTimeout(() => setSubscribed(false), 5000);
+    setFeedback(null);
+
+    const clean = email.trim();
+    if (!clean) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(clean)) {
+      setFeedback({ type: 'error', message: 'Please enter a valid email address.' });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/newsletter/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: clean, source: 'homepage' }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setFeedback({
+          type: 'error',
+          message: data.message || data.error || 'Unable to subscribe right now. Please try again.',
+        });
+        return;
+      }
+
+      if (data.isAlreadySubscribed) {
+        setFeedback({
+          type: 'already',
+          message: "You're already subscribed.",
+        });
+      } else {
+        setFeedback({
+          type: 'success',
+          message: "You're subscribed! Welcome to the PlayPetal Club.",
+        });
+        setEmail('');
+      }
+    } catch (err) {
+      console.error('Newsletter subscribe error:', err);
+      setFeedback({
+        type: 'error',
+        message: 'Unable to subscribe right now. Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -115,25 +166,48 @@ export default function Footer() {
                   <input
                     type="email"
                     required
+                    disabled={isSubmitting}
                     placeholder="Enter your email address..."
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-5 py-3.5 rounded-2xl bg-white text-[#202124] placeholder-slate-400 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-yellow-300/50 shadow-inner"
+                    className="w-full px-5 py-3.5 rounded-2xl bg-white text-[#202124] placeholder-slate-400 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-yellow-300/50 shadow-inner disabled:opacity-75"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="px-7 py-3.5 rounded-2xl bg-[#202124] hover:bg-black text-white font-bold text-sm shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 group whitespace-nowrap cursor-pointer"
+                  disabled={isSubmitting}
+                  className="px-7 py-3.5 rounded-2xl bg-[#202124] hover:bg-black text-white font-bold text-sm shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 group whitespace-nowrap cursor-pointer disabled:opacity-75"
                 >
-                  <span>Subscribe</span>
-                  <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform" />
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Subscribing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Subscribe</span>
+                      <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform" />
+                    </>
+                  )}
                 </button>
               </div>
 
-              {subscribed && (
-                <div className="mt-3 flex items-center gap-2 text-xs font-bold text-yellow-200 bg-black/20 backdrop-blur-xs px-4 py-2 rounded-xl border border-white/20 animate-fade-in">
-                  <CheckCircle2 className="w-4 h-4 text-green-400" />
-                  <span>Yay! You're officially subscribed to PlayPetal fun! 🎉</span>
+              {feedback && (
+                <div
+                  className={`mt-3 flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-xl border backdrop-blur-xs animate-fade-in ${
+                    feedback.type === 'success'
+                      ? 'text-yellow-100 bg-black/30 border-yellow-300/40'
+                      : feedback.type === 'already'
+                      ? 'text-amber-100 bg-black/30 border-amber-300/40'
+                      : 'text-red-100 bg-black/30 border-red-300/40'
+                  }`}
+                >
+                  {feedback.type === 'error' ? (
+                    <AlertCircle className="w-4 h-4 text-red-300 shrink-0" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 text-green-300 shrink-0" />
+                  )}
+                  <span>{feedback.message}</span>
                 </div>
               )}
             </form>

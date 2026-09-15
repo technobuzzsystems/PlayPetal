@@ -2,7 +2,7 @@
 
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight, Truck, ShieldCheck, RefreshCcw, Headphones, Sun, Sparkles, Star, Heart } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
@@ -15,49 +15,97 @@ export default function Home() {
 
   // Slider State
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [videoErrorCount, setVideoErrorCount] = useState<Record<number, boolean>>({});
+  const [allVideosFailed, setAllVideosFailed] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const slides = [
     {
       id: 1,
-      video: "/videos/video1.mp4",
+      video: "/videos/Video%201.mp4",
+      videoAlt: "/videos/video1.mp4",
       image: "/videos/frame1.jpg",
+      fallbackImage: "/hero-play.jpg",
       badge: "🎈 Play & Learn Together",
       heading: "Learn Through",
       highlight: "Play & Fun!",
       subtitle: "Outdoor adventures, joyful cartoon friends, and educational toys for bright growing minds.",
-      cta: "Discover More",
     },
     {
       id: 2,
-      video: "/videos/video2.mp4",
+      video: "/videos/Video%202.mp4",
+      videoAlt: "/videos/video2.mp4",
       image: "/videos/frame2.jpg",
+      fallbackImage: "/hero-adventures.jpg",
       badge: "🏎️ Speed & Action Fun",
       heading: "The Great",
       highlight: "Toy Car Race!",
       subtitle: "Zoom into fun with high-speed RC racing cars, superhero tracks, and stunt vehicles.",
-      cta: "Start Adventure",
     },
     {
       id: 3,
-      video: "/videos/video3.mp4",
+      video: "/videos/Video%203.mp4",
+      videoAlt: "/videos/video3.mp4",
       image: "/videos/frame3.jpg",
+      fallbackImage: "/hero-wonderland.jpg",
       badge: "🦖 Magical Surprise Kingdom",
       heading: "Discover The",
       highlight: "Magical Dinosaur!",
       subtitle: "Unwrap pure joy with magical eggs, robot friends, and cuddly buddies with up to 50% OFF.",
-      cta: "Grab Offers",
     },
   ];
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-    }, 9000);
-    return () => clearInterval(timer);
+  const nextSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   }, [slides.length]);
 
-  const nextSlide = () => setCurrentSlide(prev => (prev === slides.length - 1 ? 0 : prev + 1));
-  const prevSlide = () => setCurrentSlide(prev => (prev === 0 ? slides.length - 1 : prev - 1));
+  const prevSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+  }, [slides.length]);
+
+  // Handle video error gracefully
+  const handleVideoError = (slideIndex: number) => {
+    setVideoErrorCount((prev) => {
+      const updated = { ...prev, [slideIndex]: true };
+      if (Object.keys(updated).length >= slides.length) {
+        setAllVideosFailed(true);
+      }
+      return updated;
+    });
+  };
+
+  // Safe Autoplay Handling with React Ref
+  useEffect(() => {
+    const el = videoRef.current;
+    if (el) {
+      el.defaultMuted = true;
+      el.muted = true;
+      const playPromise = el.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Autoplay rejection is safely ignored
+        });
+      }
+    }
+  }, [currentSlide]);
+
+  // Tab Visibility Handler to save resources when tab is backgrounded
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const el = videoRef.current;
+      if (!el) return;
+      if (document.hidden) {
+        el.pause();
+      } else {
+        el.muted = true;
+        el.play().catch(() => {});
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   // Circular Top Categories
   const categoryCircles = [
@@ -193,7 +241,7 @@ export default function Home() {
       </div>
 
       {/* 🚀 HERO SLIDER 🚀 */}
-      <section className="w-full relative h-[60vh] sm:h-[68vh] md:h-[74vh] max-h-[720px] min-h-[460px] group cursor-pointer overflow-hidden select-none bg-[#FFFDF9]">
+      <section className="w-full relative h-[60vh] sm:h-[68vh] md:h-[74vh] max-h-[720px] min-h-[460px] group overflow-hidden select-none bg-[#FFFDF9]">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
@@ -202,38 +250,43 @@ export default function Home() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.7, ease: "easeInOut" }}
             className="absolute inset-0 w-full h-full overflow-hidden"
-            onClick={() => router.push('/shop')}
           >
-            {/* Background Video */}
+            {/* Background Video or Image Fallback */}
             <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
-              <video
-                key={slides[currentSlide].video}
-                className="hero-background-video absolute inset-0 w-full h-full object-cover object-center motion-reduce:hidden"
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="auto"
-                poster={slides[currentSlide].image}
-                ref={(el) => {
-                  if (el) {
-                    el.defaultMuted = true;
-                    el.muted = true;
-                    el.play().catch(() => {});
-                  }
-                }}
-              >
-                <source src={slides[currentSlide].video} type="video/mp4" />
+              {!allVideosFailed && !videoErrorCount[currentSlide] ? (
+                <video
+                  ref={videoRef}
+                  key={slides[currentSlide].video}
+                  className="hero-background-video absolute inset-0 w-full h-full object-cover object-center motion-reduce:hidden"
+                  autoPlay
+                  muted
+                  playsInline
+                  preload="auto"
+                  poster={slides[currentSlide].image}
+                  aria-hidden="true"
+                  tabIndex={-1}
+                  onEnded={() => nextSlide()}
+                  onError={() => handleVideoError(currentSlide)}
+                >
+                  <source src={slides[currentSlide].video} type="video/mp4" />
+                  <source src={slides[currentSlide].videoAlt} type="video/mp4" />
+                  <img
+                    src={slides[currentSlide].image || slides[currentSlide].fallbackImage}
+                    alt="Hero Background"
+                    className="w-full h-full object-cover object-center"
+                  />
+                </video>
+              ) : (
                 <img
-                  src={slides[currentSlide].image}
-                  alt="Hero Background"
+                  src={slides[currentSlide].image || slides[currentSlide].fallbackImage}
+                  alt="Hero Background Fallback"
                   className="w-full h-full object-cover object-center"
                 />
-              </video>
+              )}
             </div>
 
             {/* Light Subtle Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/70 via-slate-900/40 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/75 via-slate-900/45 to-transparent pointer-events-none" />
 
             {/* Hero Content */}
             <div className="absolute inset-0 flex items-center">
@@ -260,45 +313,62 @@ export default function Home() {
                     {slides[currentSlide].subtitle}
                   </p>
 
-                  <Link href="/shop" onClick={(e) => e.stopPropagation()}>
-                    <motion.button 
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="bg-[#D90429] hover:bg-[#B7092B] text-white px-8 py-3.5 rounded-full font-black text-sm sm:text-base shadow-lg flex items-center gap-3 transition-all cursor-pointer"
-                    >
-                      {slides[currentSlide].cta} <ArrowRight size={18} />
-                    </motion.button>
-                  </Link>
+                  {/* Dual Action CTA Buttons */}
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                    <Link href="/products" onClick={(e) => e.stopPropagation()}>
+                      <motion.button 
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-[#D90429] hover:bg-[#B7092B] text-white px-7 py-3 rounded-full font-black text-sm sm:text-base shadow-lg flex items-center gap-2 transition-all cursor-pointer"
+                        aria-label="Explore Toys"
+                      >
+                        <span>Explore Toys</span>
+                        <ArrowRight size={18} />
+                      </motion.button>
+                    </Link>
+
+                    <Link href="/shop" onClick={(e) => e.stopPropagation()}>
+                      <motion.button 
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-slate-900 hover:bg-slate-800 text-white px-7 py-3 rounded-full font-black text-sm sm:text-base shadow-md flex items-center gap-2 transition-all cursor-pointer border border-slate-700"
+                        aria-label="Shop Now"
+                      >
+                        <span>Shop Now</span>
+                      </motion.button>
+                    </Link>
+                  </div>
                 </motion.div>
               </div>
             </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Carousel Buttons */}
+        {/* Carousel Nav Buttons */}
         <button 
           onClick={(e) => { e.stopPropagation(); prevSlide(); }} 
-          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#202124] hover:text-[#D90429] p-3.5 rounded-full backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 shadow-xl z-20 cursor-pointer border border-slate-200"
-          title="Previous Slide"
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#202124] hover:text-[#D90429] p-3.5 rounded-full backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 shadow-xl z-20 cursor-pointer border border-slate-200"
+          aria-label="Previous Slide"
         >
           <ChevronLeft size={26} />
         </button>
         <button 
           onClick={(e) => { e.stopPropagation(); nextSlide(); }} 
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#202124] hover:text-[#D90429] p-3.5 rounded-full backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 shadow-xl z-20 cursor-pointer border border-slate-200"
-          title="Next Slide"
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#202124] hover:text-[#D90429] p-3.5 rounded-full backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 shadow-xl z-20 cursor-pointer border border-slate-200"
+          aria-label="Next Slide"
         >
           <ChevronRight size={26} />
         </button>
 
-        {/* Dots */}
+        {/* Indicator Dots */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full border border-slate-200">
           {slides.map((_, idx) => (
             <button 
               key={idx}
               onClick={(e) => { e.stopPropagation(); setCurrentSlide(idx); }}
+              aria-label={`Go to slide ${idx + 1}`}
               className={`h-3 rounded-full transition-all duration-300 cursor-pointer shadow-xs ${
-                currentSlide === idx ? 'w-10 bg-[#D90429]' : 'w-3 bg-slate-300'
+                currentSlide === idx ? 'w-10 bg-[#D90429]' : 'w-3 bg-slate-300 hover:bg-slate-400'
               }`}
             />
           ))}
@@ -424,10 +494,10 @@ export default function Home() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
           {[
-            { label: "UNDER", amount: "700", maxPrice: 700, bg: "bg-blue-50/70 border-blue-200 hover:border-[#2196F3]", btn: "bg-[#2196F3] text-white" },
-            { label: "UNDER", amount: "900", maxPrice: 900, bg: "bg-purple-50/70 border-purple-200 hover:border-[#9C27B0]", btn: "bg-[#9C27B0] text-white" },
-            { label: "UNDER", amount: "1200", maxPrice: 1200, bg: "bg-pink-50/70 border-pink-200 hover:border-[#F7255A]", btn: "bg-[#F7255A] text-white" },
-            { label: "ABOVE", amount: "1200", minPrice: 1200, bg: "bg-amber-50/70 border-amber-200 hover:border-[#FF9800]", btn: "bg-[#FF9800] text-white" },
+            { label: "UNDER", amount: "4999", maxPrice: 4999, bg: "bg-blue-50/70 border-blue-200 hover:border-[#2196F3]", btn: "bg-[#2196F3] text-white" },
+            { label: "UNDER", amount: "7999", maxPrice: 7999, bg: "bg-purple-50/70 border-purple-200 hover:border-[#9C27B0]", btn: "bg-[#9C27B0] text-white" },
+            { label: "UNDER", amount: "9999", maxPrice: 9999, bg: "bg-pink-50/70 border-pink-200 hover:border-[#F7255A]", btn: "bg-[#F7255A] text-white" },
+            { label: "ABOVE", amount: "14999", minPrice: 14999, bg: "bg-amber-50/70 border-amber-200 hover:border-[#FF9800]", btn: "bg-[#FF9800] text-white" },
           ].map((tier, idx) => (
             <Link
               key={idx}

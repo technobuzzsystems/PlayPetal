@@ -105,13 +105,19 @@ export function calculateWarrantyScore(warrantyType: WarrantyType): number {
   }
 }
 
+export interface BuyBoxOptions {
+  pincode?: string;
+  serviceableSellerIds?: Set<string>;
+}
+
 /**
  * Evaluates all competing SellerOffers for a MasterProduct and deterministically selects
  * the winning Buy Box offer.
  */
 export function evaluateBuyBox(
   masterProductId: string,
-  offers: OfferWithRelations[]
+  offers: OfferWithRelations[],
+  options?: BuyBoxOptions
 ): BuyBoxResult {
   const calculatedAt = new Date().toISOString();
   const eligibleCandidates: {
@@ -123,6 +129,17 @@ export function evaluateBuyBox(
   // Step 1: Filter through Hard Eligibility Gates
   for (const offer of offers) {
     const reasons: string[] = [];
+
+    // Gate 0: Delivery Serviceability Gate
+    if (options?.serviceableSellerIds) {
+      if (!options.serviceableSellerIds.has(offer.sellerId)) {
+        reasons.push(
+          `Seller '${offer.seller?.shopName || offer.sellerId}' does not deliver to pincode ${
+            options.pincode || 'selected'
+          }`
+        );
+      }
+    }
 
     // Gate 1: Offer Status & Moderation
     if (offer.status !== OfferStatus.ACTIVE) {

@@ -14,6 +14,7 @@ import {
   Image as ImageIcon,
   Sparkles,
   TicketPercent,
+  Mail,
   LayoutTemplate,
   Images,
   Star,
@@ -66,13 +67,14 @@ export const Sidebar: React.FC = () => {
 
   const isLinkActive = (path: string) => {
     if (isVendor) {
-      if (path.includes('tab=products')) return location.search.includes('tab=products');
-      if (path.includes('tab=add')) return location.search.includes('tab=add');
-      if (path.includes('tab=orders')) return location.search.includes('tab=orders');
-      if (path.includes('tab=profile')) return location.search.includes('tab=profile');
-      if (path === '/vendor-portal') {
-        return location.pathname === '/vendor-portal' && (!location.search || location.search === '' || location.search === '?tab=products');
+      const tabParam = new URLSearchParams(location.search).get('tab');
+      if (path.includes('tab=dashboard') || path === '/vendor-portal') {
+        return location.pathname === '/vendor-portal' && (!tabParam || tabParam === 'dashboard');
       }
+      if (path.includes('tab=products')) return tabParam === 'products';
+      if (path.includes('tab=add')) return tabParam === 'add';
+      if (path.includes('tab=orders')) return tabParam === 'orders';
+      if (path.includes('tab=profile')) return tabParam === 'profile';
     }
     if (path === '/admin/dashboard' && (location.pathname === '/' || location.pathname === '/admin' || location.pathname === '/admin/dashboard')) {
       return true;
@@ -97,7 +99,7 @@ export const Sidebar: React.FC = () => {
   const vendorNavItems: NavGroup[] = [
     {
       name: 'Shop Dashboard',
-      path: '/vendor-portal',
+      path: '/vendor-portal?tab=dashboard',
       icon: <Store className="w-4.5 h-4.5 text-[#D90429]" />,
     },
     {
@@ -177,6 +179,7 @@ export const Sidebar: React.FC = () => {
         { name: 'Banners', path: '/admin/banners', icon: <ImageIcon className="w-4 h-4 text-slate-400" /> },
         { name: 'Collections', path: '/admin/collections', icon: <Sparkles className="w-4 h-4 text-slate-400" /> },
         { name: 'Coupons & Deals', path: '/admin/coupons', icon: <TicketPercent className="w-4 h-4 text-slate-400" /> },
+        { name: 'Newsletter Subscribers', path: '/admin/newsletter', icon: <Mail className="w-4 h-4 text-slate-400" /> },
       ],
     },
     {

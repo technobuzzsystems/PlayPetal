@@ -1,8 +1,11 @@
 import { Request, Response } from 'express';
 import { dbStore } from '../data/dbStore';
+import { checkSellerServiceability, getServiceableSellerIds } from '../services/serviceabilityService';
 
 export const getProducts = async (req: Request, res: Response) => {
   try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+
     const {
       categoryId,
       category,
@@ -20,6 +23,7 @@ export const getProducts = async (req: Request, res: Response) => {
       sortBy,
       allStatus,
       status,
+      pincode,
     } = req.query;
 
     const filter: any = {};
@@ -41,6 +45,27 @@ export const getProducts = async (req: Request, res: Response) => {
     if (sortBy) filter.sortBy = String(sortBy);
 
     const products = dbStore.getProducts(filter);
+
+    const cleanPincode = pincode ? String(pincode).trim() : '';
+    if (cleanPincode && /^[1-9][0-9]{5}$/.test(cleanPincode)) {
+      const vendorIds = Array.from(new Set(products.map((p: any) => p.vendorId || 'vendor-1')));
+      const serviceableSet = await getServiceableSellerIds(cleanPincode, vendorIds);
+
+      const enrichedProducts = products.map((p: any) => {
+        const vId = p.vendorId || 'vendor-1';
+        const isServ = serviceableSet.has(vId);
+        return {
+          ...p,
+          isServiceable: isServ,
+          serviceabilityMessage: isServ
+            ? 'Delivery is available to your pincode.'
+            : 'Service is not available in your area. Please select a different address.',
+          pincode: cleanPincode,
+        };
+      });
+      return res.json(enrichedProducts);
+    }
+
     res.json(products);
   } catch (error) {
     console.error('Failed to fetch products:', error);
@@ -50,11 +75,29 @@ export const getProducts = async (req: Request, res: Response) => {
 
 export const getProductById = async (req: Request, res: Response) => {
   try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+
     const id = String(req.params.id);
+    const pincode = req.query.pincode ? String(req.query.pincode).trim() : '';
+
     const product = dbStore.getProductById(id);
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
+
+    if (pincode && /^[1-9][0-9]{5}$/.test(pincode)) {
+      const vId = product.vendorId || 'vendor-1';
+      const isServ = await checkSellerServiceability(vId, pincode);
+      return res.json({
+        ...product,
+        isServiceable: isServ,
+        serviceabilityMessage: isServ
+          ? 'Delivery is available to your pincode.'
+          : 'Service is not available in your area. Please select a different address.',
+        pincode,
+      });
+    }
+
     res.json(product);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch product' });

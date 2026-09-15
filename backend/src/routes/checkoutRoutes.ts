@@ -1,8 +1,50 @@
 import { Router, Request, Response } from 'express';
 import { orderService } from '../services/orderService';
 import { prisma } from '../prisma/client';
+import { checkCartServiceability } from '../services/serviceabilityService';
 
 const router = Router();
+
+/**
+ * POST /api/checkout/serviceability
+ * Check delivery serviceability for cart items against customer pincode
+ */
+router.post('/serviceability', async (req: Request, res: Response) => {
+  try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    const { pincode, items } = req.body;
+
+    if (!pincode || typeof pincode !== 'string') {
+      return res.status(400).json({ error: 'INVALID_INPUT', message: 'A valid PIN code string is required.' });
+    }
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'INVALID_INPUT', message: 'items array is required.' });
+    }
+
+    const result = await checkCartServiceability(pincode, items);
+
+    if (!result.isServiceable) {
+      return res.status(409).json({
+        error: 'DELIVERY_NOT_AVAILABLE',
+        code: 'DELIVERY_NOT_AVAILABLE',
+        message: 'Service is not available in your area. Please select a different address.',
+        pincode: result.pincode,
+        unserviceableItems: result.unserviceableItems,
+      });
+    }
+
+    res.json({
+      success: true,
+      isServiceable: true,
+      pincode: result.pincode,
+      message: 'Delivery is available for all items in your cart.',
+    });
+  } catch (error: any) {
+    console.error('Serviceability check failed:', error);
+    res.status(500).json({ error: 'Failed to evaluate delivery serviceability.', message: error.message });
+  }
+});
 
 /**
  * POST /api/checkout/reserve
@@ -11,13 +53,26 @@ const router = Router();
  */
 router.post('/reserve', async (req: Request, res: Response) => {
   try {
-    const { items, customerId, sessionId } = req.body;
+    const { items, customerId, sessionId, pincode } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
         error: 'INVALID_REQUEST',
         message: 'items array is required with at least one item.',
       });
+    }
+
+    // Check serviceability if pincode provided
+    if (pincode) {
+      const serviceability = await checkCartServiceability(String(pincode), items);
+      if (!serviceability.isServiceable) {
+        return res.status(409).json({
+          error: 'DELIVERY_NOT_AVAILABLE',
+          code: 'DELIVERY_NOT_AVAILABLE',
+          message: 'Service is not available in your area. Please select a different address.',
+          unserviceableItems: serviceability.unserviceableItems,
+        });
+      }
     }
 
     // Resolve items (support both offerId and legacy productId adapter)

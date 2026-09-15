@@ -5,7 +5,7 @@
 import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import { requireAuth, requireRole, requireActiveAccount } from '../middleware/auth';
-import { shippingService, ShippingActor } from '../services/shippingService';
+import { shippingService, ShippingActor, ShippingWorkflowError } from '../services/shippingService';
 
 const router = Router();
 
@@ -32,20 +32,44 @@ router.post(
       const shipment = await shippingService.createShipmentForSuborder(suborderId, actor);
       res.status(201).json(shipment);
     } catch (error: any) {
+      // 1. Structured Error Classification (ShippingWorkflowError or explicit statusCode)
+      if (error instanceof ShippingWorkflowError || typeof error.statusCode === 'number') {
+        const statusCode = error.statusCode || 400;
+        return res.status(statusCode).json({
+          error: error.message,
+          message: error.message,
+        });
+      }
+
+      // 2. Known existing application error message checks
       if (error.message && error.message.includes('FORBIDDEN')) {
         return res.status(403).json({ error: 'FORBIDDEN', message: error.message });
       }
       if (error.message && error.message.includes('not found')) {
         return res.status(404).json({ error: 'NOT_FOUND', message: error.message });
       }
+
+      // Backwards-compatibility fallback for business-rule conflict messages
       const isClientError =
         error.message &&
-        (error.message.includes('Cannot create shipment') ||
+        (error.message.includes('Online payment') ||
+          error.message.includes('Cannot create shipment') ||
           error.message.includes('unpaid') ||
           error.message.includes('cancelled') ||
-          error.message.includes('already'));
+          error.message.includes('already') ||
+          error.message.includes('eligible') ||
+          error.message.includes('Unknown payment method'));
 
-      res.status(isClientError ? 400 : 500).json({ error: error.message || 'Failed to create shipment.' });
+      if (isClientError) {
+        return res.status(400).json({ error: error.message, message: error.message });
+      }
+
+      // 3. Genuine unexpected server/runtime failure
+      console.error('[Shipping API Creation Error]:', error);
+      res.status(500).json({
+        error: 'An unexpected internal error occurred during shipment creation.',
+        message: 'An unexpected internal error occurred during shipment creation.',
+      });
     }
   }
 );
@@ -93,6 +117,53 @@ router.get('/shipments/:id', async (req: Request, res: Response) => {
     res.status(500).json({ error: error.message || 'Failed to retrieve shipment tracking.' });
   }
 });
+
+// ============================================================================
+// GET /api/customer/orders/:orderId/tracking or /api/shipping/customer/orders/:orderId/tracking
+// Customer live delivery tracking endpoint for parent orders.
+// Protected by authenticated customer ownership verification.
+// Returns 404 for unauthorized access to protect against order ID enumeration.
+// ============================================================================
+const handleCustomerOrderTracking = async (req: Request, res: Response) => {
+  try {
+    const orderId = String(req.params.orderId);
+    const guestToken = String(
+      req.headers['x-guest-token'] || req.query.guestAccessToken || req.query.token || ''
+    ).trim();
+
+    let actor: ShippingActor;
+    if (req.user) {
+      actor = {
+        id: req.user.userId || req.user.id,
+        role: req.user.role,
+        vendorId: req.user.vendorId,
+        email: req.user.email,
+      };
+    } else if (guestToken) {
+      actor = {
+        id: 'guest',
+        role: 'CUSTOMER',
+        guestAccessToken: guestToken,
+      };
+    } else {
+      return res.status(401).json({ error: 'Authentication required to inspect order tracking.' });
+    }
+
+    const tracking = await shippingService.getCustomerOrderTracking(orderId, actor);
+    res.json(tracking);
+  } catch (error: any) {
+    if (error.message && error.message.includes('NOT_FOUND')) {
+      return res.status(404).json({ error: 'NOT_FOUND', message: 'Order not found.' });
+    }
+    if (error.message && error.message.includes('FORBIDDEN')) {
+      return res.status(403).json({ error: 'FORBIDDEN', message: error.message });
+    }
+    res.status(500).json({ error: error.message || 'Failed to retrieve order tracking.' });
+  }
+};
+
+router.get('/customer/orders/:orderId/tracking', handleCustomerOrderTracking);
+router.get('/orders/:orderId/tracking', handleCustomerOrderTracking);
 
 // ============================================================================
 // POST /api/shipping/webhook

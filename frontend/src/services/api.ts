@@ -31,6 +31,9 @@ export interface Product {
   specifications?: Record<string, string>;
   features?: string[];
   createdAt?: string;
+  isServiceable?: boolean;
+  serviceabilityMessage?: string;
+  pincode?: string;
 }
 
 export interface Category {
@@ -284,16 +287,17 @@ export const api = {
       const res = await fetch(`${API_BASE}/products${qs}`, { cache: 'no-store' });
       if (!res.ok) throw new Error('API fetch failed');
       const data = await res.json();
-      return Array.isArray(data) && data.length > 0 ? data : FALLBACK_PRODUCTS;
+      return Array.isArray(data) ? data : [];
     } catch (err) {
-      console.warn('Using fallback products due to fetch failure:', err);
-      return FALLBACK_PRODUCTS;
+      console.warn('Network error fetching products from API:', err);
+      return [];
     }
   },
 
-  async getProductById(id: string): Promise<Product | null> {
+  async getProductById(id: string, pincode?: string): Promise<Product | null> {
     try {
-      const res = await fetch(`${API_BASE}/products/${id}`, { cache: 'no-store' });
+      const qs = pincode ? `?pincode=${encodeURIComponent(pincode)}` : '';
+      const res = await fetch(`${API_BASE}/products/${id}${qs}`, { cache: 'no-store' });
       if (!res.ok) throw new Error('API fetch failed');
       return await res.json();
     } catch (err) {
@@ -440,6 +444,67 @@ export const api = {
       body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error('Failed to submit review');
+    return await res.json();
+  },
+
+  async getCustomerOrderTracking(orderId: string): Promise<any> {
+    const res = await fetch(`${API_BASE}/customer/orders/${orderId}/tracking`, {
+      cache: 'no-store',
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: 'Failed to fetch order tracking.' }));
+      throw new Error(err.message || 'Failed to fetch order tracking.');
+    }
+    return await res.json();
+  },
+
+  async getShipmentTracking(shipmentOrSuborderId: string): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE}/customer/orders/${shipmentOrSuborderId}/tracking`, {
+        cache: 'no-store',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallthrough to shipment lookup
+    }
+
+    const res = await fetch(`${API_BASE}/shipping/shipments/${shipmentOrSuborderId}`, {
+      cache: 'no-store',
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: 'Failed to fetch shipment tracking.' }));
+      throw new Error(err.message || 'Failed to fetch shipment tracking.');
+    }
+    return await res.json();
+  },
+
+  async createShipment(suborderId: string): Promise<any> {
+    const res = await fetch(`${API_BASE}/shipping/suborders/${suborderId}/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Failed to create shipment.');
+    }
+    return await res.json();
+  },
+
+  async getShippingReconciliation(): Promise<any> {
+    const res = await fetch(`${API_BASE}/shipping/admin/reconciliation`, {
+      cache: 'no-store',
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Failed to fetch shipping reconciliation.');
+    }
     return await res.json();
   },
 };

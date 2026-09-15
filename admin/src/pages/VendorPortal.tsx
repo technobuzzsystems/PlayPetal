@@ -1,8 +1,9 @@
 // @ts-nocheck
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Store,
+  LayoutDashboard,
   PackagePlus,
   Package,
   ShoppingBag,
@@ -28,9 +29,12 @@ import {
 import { useAuth, PRESET_VENDORS } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useAdmin } from '../context/AdminContext';
+import { VendorDashboardView } from '../components/vendor/VendorDashboardView';
+import { Orders } from './Orders';
 
 export const VendorPortal: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, switchVendor } = useAuth();
   const { showToast } = useToast();
   const { products: adminProducts, deleteProduct: adminDeleteProduct, updateProduct: adminUpdateProduct } = useAdmin();
@@ -39,15 +43,99 @@ export const VendorPortal: React.FC = () => {
   const currentVendorId = user?.vendorId || 'vendor-1';
   const currentShopName = user?.shopName || 'ABC Toys Wonderland';
 
-  const [activeTab, setActiveTab] = useState<'products' | 'add' | 'orders' | 'profile' | 'reviews'>('products');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'add' | 'orders' | 'profile' | 'reviews' | 'delivery'>('dashboard');
   const [vendorProducts, setVendorProducts] = useState<any[]>([]);
   const [vendorOrders, setVendorOrders] = useState<any[]>([]);
   const [vendorReviews, setVendorReviews] = useState<any[]>([]);
+  const [pincodes, setPincodes] = useState<any[]>([]);
+  const [newPincodeInput, setNewPincodeInput] = useState('');
+  const [addingPincode, setAddingPincode] = useState(false);
   const [editingStockId, setEditingStockId] = useState<string | null>(null);
   const [newStock, setNewStock] = useState<number>(0);
   const [deletingProduct, setDeletingProduct] = useState<any | null>(null);
   const [deleteReason, setDeleteReason] = useState<string>('Empty Stock (0 Units Left)');
   const [loading, setLoading] = useState(true);
+
+  const fetchDeliveryPincodes = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vendor/delivery-pincodes?sellerId=${currentVendorId}`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPincodes(data.pincodes || []);
+      }
+    } catch (err) {
+      console.warn('Failed to load vendor pincodes:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchDeliveryPincodes();
+  }, [currentVendorId, activeTab]);
+
+  const handleAddPincode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanPin = newPincodeInput.trim();
+    if (!/^[1-9][0-9]{5}$/.test(cleanPin)) {
+      showToast('Please enter a valid 6-digit Indian PIN code (e.g. 400001).', 'error');
+      return;
+    }
+    setAddingPincode(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vendor/delivery-pincodes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ sellerId: currentVendorId, pincode: cleanPin }),
+      });
+      if (res.ok) {
+        showToast(`PIN Code ${cleanPin} added to your delivery coverage! 🚚`, 'success');
+        setNewPincodeInput('');
+        fetchDeliveryPincodes();
+      } else {
+        const data = await res.json();
+        showToast(data.message || 'Failed to add PIN code.', 'error');
+      }
+    } catch (err) {
+      showToast('Network error adding PIN code.', 'error');
+    } finally {
+      setAddingPincode(false);
+    }
+  };
+
+  const handleTogglePincode = async (id: string, currentStatus: boolean) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vendor/delivery-pincodes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ isActive: !currentStatus }),
+      });
+      if (res.ok) {
+        showToast('Delivery coverage updated.', 'success');
+        fetchDeliveryPincodes();
+      }
+    } catch (err) {
+      showToast('Failed to update PIN code status.', 'error');
+    }
+  };
+
+  const handleDeletePincode = async (id: string) => {
+    if (!confirm('Remove this PIN code from your delivery coverage?')) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vendor/delivery-pincodes/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        showToast('PIN code removed from delivery coverage.', 'success');
+        fetchDeliveryPincodes();
+      }
+    } catch (err) {
+      showToast('Failed to remove PIN code.', 'error');
+    }
+  };
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<any | null>(null);
 
   // Edit Product State
@@ -192,45 +280,63 @@ export const VendorPortal: React.FC = () => {
     }
   };
 
+  const [processingOrderId, setProcessingOrderId] = useState<string | null>(null);
+
   const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
+    if (processingOrderId === orderId) return;
+    setProcessingOrderId(orderId);
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vendors/${currentVendorId}/orders/${orderId}/status`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vendors/${currentVendorId}/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ status: newStatus }),
-      }).catch(() => {});
+      });
 
-      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      }).catch(() => {});
+      const data = await res.json().catch(() => ({}));
 
-      setVendorOrders((prev) =>
-        prev.map((ord) => (ord.id === orderId || ord.orderNumber === orderId ? { ...ord, status: newStatus } : ord))
-      );
+      if (res.ok && data.success) {
+        setVendorOrders((prev) =>
+          prev.map((ord) => (ord.id === orderId || ord.orderNumber === orderId ? { ...ord, status: newStatus } : ord))
+        );
 
-      if (newStatus === 'Accepted' || newStatus === 'Processing') {
-        showToast(`Order "${orderId}" Accepted! 🟢 Customer order is now in progress.`, 'success');
-      } else if (newStatus === 'Rejected') {
-        showToast(`Order "${orderId}" Rejected! 🔴 Customer order has been rejected.`, 'error');
+        if (newStatus === 'Accepted' || newStatus === 'Processing') {
+          showToast(`Order "${orderId}" Accepted! 🟢 Customer order is now in progress.`, 'success');
+        } else if (newStatus === 'Rejected') {
+          showToast(`Order "${orderId}" Rejected! 🔴 Customer order has been rejected.`, 'error');
+        } else {
+          showToast(`Order "${orderId}" status updated to ${newStatus}.`, 'info');
+        }
       } else {
-        showToast(`Order "${orderId}" status updated to ${newStatus}.`, 'info');
+        const errorMsg = data.message || data.error || 'Failed to update order status.';
+        showToast(errorMsg, 'error');
+        if (data.order && data.order.status) {
+          setVendorOrders((prev) =>
+            prev.map((ord) => (ord.id === orderId || ord.orderNumber === orderId ? { ...ord, status: data.order.status } : ord))
+          );
+        }
       }
     } catch (err) {
       console.error('Failed to update order status:', err);
-      setVendorOrders((prev) =>
-        prev.map((ord) => (ord.id === orderId || ord.orderNumber === orderId ? { ...ord, status: newStatus } : ord))
-      );
+      showToast('Network error updating order status.', 'error');
+    } finally {
+      setProcessingOrderId(null);
     }
   };
 
-  // Sync tab with URL search parameter
+  const handleTabChange = (tab: 'dashboard' | 'products' | 'add' | 'orders' | 'profile' | 'reviews' | 'delivery') => {
+    setActiveTab(tab);
+    navigate(`/vendor-portal?tab=${tab}`, { replace: false });
+  };
+
+  // Sync tab with URL search parameter (authoritative single source of truth)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
-    if (tabParam === 'products' || tabParam === 'add' || tabParam === 'orders' || tabParam === 'profile') {
-      setActiveTab(tabParam);
+    if (!tabParam || tabParam === 'dashboard') {
+      setActiveTab('dashboard');
+    } else if (['products', 'add', 'orders', 'profile', 'reviews', 'delivery'].includes(tabParam)) {
+      setActiveTab(tabParam as any);
     }
   }, [location.search]);
 
@@ -557,7 +663,18 @@ export const VendorPortal: React.FC = () => {
       {/* Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto max-w-full scrollbar-none">
         <button
-          onClick={() => setActiveTab('products')}
+          onClick={() => handleTabChange('dashboard')}
+          className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
+            activeTab === 'dashboard'
+              ? 'bg-indigo-600 text-white shadow-xs font-black'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+          }`}
+        >
+          <LayoutDashboard size={14} /> Dashboard Overview
+        </button>
+
+        <button
+          onClick={() => handleTabChange('products')}
           className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'products'
               ? 'bg-indigo-600 text-white shadow-xs'
@@ -568,7 +685,7 @@ export const VendorPortal: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('add')}
+          onClick={() => handleTabChange('add')}
           className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'add'
               ? 'bg-amber-600 text-white shadow-xs'
@@ -579,7 +696,7 @@ export const VendorPortal: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('orders')}
+          onClick={() => handleTabChange('orders')}
           className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'orders'
               ? 'bg-indigo-600 text-white shadow-xs'
@@ -590,7 +707,7 @@ export const VendorPortal: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('profile')}
+          onClick={() => handleTabChange('profile')}
           className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'profile'
               ? 'bg-indigo-600 text-white shadow-xs'
@@ -601,7 +718,7 @@ export const VendorPortal: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('reviews')}
+          onClick={() => handleTabChange('reviews')}
           className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'reviews'
               ? 'bg-indigo-600 text-white shadow-xs'
@@ -610,7 +727,111 @@ export const VendorPortal: React.FC = () => {
         >
           <Star size={14} /> My Reviews ({vendorReviews.length})
         </button>
+
+        <button
+          onClick={() => handleTabChange('delivery')}
+          className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
+            activeTab === 'delivery'
+              ? 'bg-rose-600 text-white shadow-xs'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+          }`}
+        >
+          <MapPin size={14} /> Serviceable Areas ({pincodes.length})
+        </button>
       </div>
+
+      {/* TAB: DASHBOARD OVERVIEW */}
+      {activeTab === 'dashboard' && (
+        <VendorDashboardView
+          vendorId={currentVendorId}
+          onNavigateTab={(tab) => handleTabChange(tab as any)}
+        />
+      )}
+
+      {/* TAB: DELIVERY AREAS */}
+      {activeTab === 'delivery' && (
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                <MapPin size={20} className="text-rose-600" /> Delivery Areas &amp; Serviceable Pincodes
+              </h2>
+              <p className="text-xs text-slate-500 font-medium">
+                Define the 6-digit Indian PIN codes where your shop provides toy deliveries.
+              </p>
+            </div>
+            <div className="px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-full text-xs font-bold">
+              {pincodes.length === 0 ? 'All-India Default (No Restrictions)' : `${pincodes.length} Specific Areas Active`}
+            </div>
+          </div>
+
+          {/* Add Pincode Form */}
+          <form onSubmit={handleAddPincode} className="flex flex-col sm:flex-row gap-3 max-w-md">
+            <input
+              type="text"
+              required
+              placeholder="Enter 6-digit PIN Code (e.g. 400001)"
+              value={newPincodeInput}
+              onChange={(e) => setNewPincodeInput(e.target.value)}
+              className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-rose-600"
+            />
+            <button
+              type="submit"
+              disabled={addingPincode}
+              className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs shadow-sm transition-all cursor-pointer disabled:opacity-50"
+            >
+              {addingPincode ? 'Adding...' : '+ Add Area'}
+            </button>
+          </form>
+
+          {/* Pincodes Grid */}
+          {pincodes.length === 0 ? (
+            <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+              <MapPin size={32} className="text-slate-300 mx-auto mb-2" />
+              <p className="text-xs font-bold text-slate-600">No specific delivery PIN codes configured.</p>
+              <p className="text-[11px] text-slate-400 mt-1">
+                Your items will be deliverable nationwide by default. Add specific PIN codes above to restrict delivery to selected areas.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {pincodes.map((pin) => (
+                <div
+                  key={pin.id}
+                  className={`p-3 rounded-xl border flex items-center justify-between transition-all ${
+                    pin.isActive ? 'bg-emerald-50/50 border-emerald-300' : 'bg-slate-50 border-slate-200 opacity-60'
+                  }`}
+                >
+                  <div>
+                    <span className="font-mono font-black text-xs text-slate-900 block">{pin.pincode}</span>
+                    <span className={`text-[10px] font-bold ${pin.isActive ? 'text-emerald-700' : 'text-slate-500'}`}>
+                      {pin.isActive ? '● Active' : '○ Inactive'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleTogglePincode(pin.id, pin.isActive)}
+                      className="p-1 text-slate-400 hover:text-indigo-600 cursor-pointer"
+                      title={pin.isActive ? 'Deactivate Pincode' : 'Activate Pincode'}
+                    >
+                      <Power size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeletePincode(pin.id)}
+                      className="p-1 text-slate-400 hover:text-red-600 cursor-pointer"
+                      title="Remove Pincode"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
         {/* TAB 1: MY PRODUCTS */}
       {activeTab === 'products' && (
@@ -1140,6 +1361,46 @@ export const VendorPortal: React.FC = () => {
               />
             </div>
 
+            {/* DELIVERY COVERAGE & SERVICEABLE PINCODES */}
+            <div className="bg-emerald-50/90 p-4 sm:p-5 rounded-2xl border border-emerald-200 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <MapPin size={15} className="text-emerald-600" /> Delivery Coverage &amp; Serviceable Areas
+                  </h4>
+                  <p className="text-xs text-slate-600 mt-0.5 font-medium">
+                    Delivery coverage is managed at seller level. Changes apply immediately to all your products. (<strong className="text-emerald-800 font-black">{pincodes.filter(p => p.isActive).length} active PIN code(s)</strong>)
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('delivery')}
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <MapPin size={13} /> Manage Delivery Areas 🚚
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                {pincodes.length === 0 ? (
+                  <span className="text-xs font-bold text-rose-600 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200">
+                    ⚠️ Delivery area not configured (0 PIN codes). Customers cannot order until a serviceable PIN code is added.
+                  </span>
+                ) : (
+                  pincodes.map((pin) => (
+                    <span
+                      key={pin.id}
+                      className={`text-xs font-bold px-2.5 py-1 rounded-lg border ${
+                        pin.isActive ? 'bg-white text-emerald-800 border-emerald-300 shadow-2xs' : 'bg-slate-100 text-slate-400 border-slate-200 line-through'
+                      }`}
+                    >
+                      {pin.pincode}
+                    </span>
+                  ))
+                )}
+              </div>
+            </div>
+
             {/* CUSTOMER BADGES & ORDERING TAGS */}
             <div className="bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-3">
               <div>
@@ -1219,162 +1480,7 @@ export const VendorPortal: React.FC = () => {
 
       {/* TAB 3: VENDOR ORDERS & CUSTOMERS */}
       {activeTab === 'orders' && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-lg font-bold text-slate-900">Your Toy Orders & Customers</h2>
-              <p className="text-xs text-slate-500">Shows orders and customer delivery info for toys sold by your shop.</p>
-            </div>
-            <button
-              onClick={fetchVendorData}
-              className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 font-bold bg-white px-3 py-1.5 rounded-lg border border-slate-200"
-            >
-              <RefreshCw size={13} className={loading ? 'animate-spin' : ''} /> Refresh
-            </button>
-          </div>
-
-          {loading ? (
-            <div className="bg-white rounded-2xl p-12 text-center text-slate-500 font-bold border border-slate-200">
-              Loading Orders...
-            </div>
-          ) : vendorOrders.length === 0 ? (
-            <div className="bg-white rounded-2xl p-12 text-center border border-slate-200">
-              <div className="text-4xl mb-2">≡ƒ¢ì∩╕Å</div>
-              <h3 className="font-bold text-slate-800">No Orders Received Yet</h3>
-              <p className="text-xs text-slate-500 mt-1">When customers order toys sold by your store, they will appear here with customer contact and delivery details.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {vendorOrders.map((ord) => (
-                <div key={ord.id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-slate-100">
-                    <div>
-                      <div className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                        <span>{ord.orderNumber}</span>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedOrderDetails(ord)}
-                          className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-200 flex items-center gap-1 transition-colors cursor-pointer"
-                        >
-                          <Eye size={12} /> View Customer &amp; Product Info
-                        </button>
-                      </div>
-                      <div className="text-xs text-slate-400">Date: {new Date(ord.createdAt || Date.now()).toLocaleDateString()}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-base font-black text-slate-900">Your Earnings: ₹{ord.totalAmount}</div>
-                      <div className="text-xs font-bold text-emerald-600">{ord.status}</div>
-                    </div>
-                  </div>
-
-                  {/* Customer Information Card (Clickable) */}
-                  <div
-                    onClick={() => setSelectedOrderDetails(ord)}
-                    className="p-3.5 bg-amber-50/70 hover:bg-amber-100/80 border border-amber-200 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs cursor-pointer transition-all group"
-                    title="Click to view full customer delivery details"
-                  >
-                    <div className="flex items-center gap-2">
-                      <User size={15} className="text-amber-600" />
-                      <span className="font-bold text-slate-700">Customer:</span>
-                      <span className="font-black text-slate-900">{ord.customerName}</span>
-                      {ord.customerEmail && <span className="text-slate-500 font-normal">({ord.customerEmail})</span>}
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-4 text-slate-600">
-                      {ord.shippingAddress?.phone && (
-                        <div className="flex items-center gap-1">
-                          <Phone size={13} className="text-amber-600" />
-                          <span className="font-bold text-slate-800">{ord.shippingAddress.phone}</span>
-                        </div>
-                      )}
-                      {ord.shippingAddress?.city && (
-                        <div className="flex items-center gap-1">
-                          <MapPin size={13} className="text-amber-600" />
-                          <span>{ord.shippingAddress.city}, {ord.shippingAddress.state}</span>
-                        </div>
-                      )}
-                      <span className="text-indigo-600 font-black text-[11px] underline flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                        <Eye size={12} /> View Details
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Items list (Clickable product rows) */}
-                  <div className="space-y-2">
-                    {ord.items.map((it: any, i: number) => (
-                      <div
-                        key={i}
-                        onClick={() => setSelectedOrderDetails(ord)}
-                        className="flex items-center justify-between text-xs bg-slate-50 hover:bg-indigo-50/60 p-3 rounded-xl border border-slate-100 hover:border-indigo-200 transition-all cursor-pointer group"
-                        title="Click to view product information and customer address"
-                      >
-                        <div className="flex items-center gap-3">
-                          <img src={it.image} alt="" className="w-11 h-11 object-cover rounded-lg bg-white border border-slate-200 group-hover:scale-105 transition-transform" />
-                          <div>
-                            <div className="font-bold text-slate-900 group-hover:text-indigo-700 transition-colors flex items-center gap-1.5">
-                              <span>{it.name}</span>
-                              <span className="text-[10px] text-indigo-600 font-bold bg-indigo-100/80 px-2 py-0.5 rounded-full opacity-80 group-hover:opacity-100 transition-opacity">
-                                👁️ View Info
-                              </span>
-                            </div>
-                            <div className="text-slate-400 text-[10px]">Quantity: {it.quantity} unit(s)</div>
-                          </div>
-                        </div>
-                        <div className="font-black text-slate-900 text-sm">₹{it.price * it.quantity}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Shopkeeper Accept / Reject & Status Action Bar */}
-                  <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/90 p-3.5 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-700">Order Decision:</span>
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateOrderStatus(ord.id || ord.orderNumber, 'Accepted')}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-                          ord.status === 'Accepted' || ord.status === 'Processing'
-                            ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-400/40'
-                            : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-300'
-                        }`}
-                      >
-                        <CheckCircle2 size={14} /> Accept Order 🟢
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateOrderStatus(ord.id || ord.orderNumber, 'Rejected')}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-                          ord.status === 'Rejected'
-                            ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-400/40'
-                            : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-300'
-                        }`}
-                      >
-                        <XCircle size={14} /> Reject Order 🔴
-                      </button>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-500">Update Status:</span>
-                      <select
-                        value={ord.status || 'Pending'}
-                        onChange={(e) => handleUpdateOrderStatus(ord.id || ord.orderNumber, e.target.value)}
-                        className="px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
-                      >
-                        <option value="Pending">Pending Review</option>
-                        <option value="Accepted">Accepted 🟢</option>
-                        <option value="Processing">Processing</option>
-                        <option value="Shipped">Shipped 🚚</option>
-                        <option value="Delivered">Delivered 🎉</option>
-                        <option value="Rejected">Rejected 🔴</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <Orders />
       )}
 
       
@@ -1842,6 +1948,49 @@ export const VendorPortal: React.FC = () => {
                   onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
                   className="w-full p-3 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
+              </div>
+
+              {/* DELIVERY COVERAGE & SERVICEABLE PINCODES */}
+              <div className="bg-emerald-50/90 p-4 rounded-2xl border border-emerald-200 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <span className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <MapPin size={14} className="text-emerald-600" /> Delivery Coverage &amp; Serviceable Areas
+                    </span>
+                    <span className="text-[11px] text-slate-600 block mt-0.5 font-medium">
+                      Configured PIN codes for your shop: <strong className="text-emerald-800 font-bold">{pincodes.filter(p => p.isActive).length} active PIN code(s)</strong>
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingProduct(null);
+                      setActiveTab('delivery');
+                    }}
+                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+                  >
+                    <MapPin size={12} /> Manage Areas 🚚
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1 pt-1">
+                  {pincodes.length === 0 ? (
+                    <span className="text-[11px] font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200">
+                      ⚠️ Delivery area not configured (0 PIN codes). Customers cannot order until a PIN code is added.
+                    </span>
+                  ) : (
+                    pincodes.map((pin) => (
+                      <span
+                        key={pin.id}
+                        className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border ${
+                          pin.isActive ? 'bg-white text-emerald-800 border-emerald-300' : 'bg-slate-100 text-slate-400 border-slate-200 line-through'
+                        }`}
+                      >
+                        {pin.pincode}
+                      </span>
+                    ))
+                  )}
+                </div>
               </div>
 
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">

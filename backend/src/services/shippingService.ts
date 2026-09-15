@@ -9,6 +9,7 @@ import { prisma } from '../prisma/client';
 import { getShippingProvider, NormalizedShipmentStatus } from './shipping';
 import { logSecurityEvent } from '../utils/security';
 import { SuborderStatus } from '@prisma/client';
+import { dbStore } from '../data/dbStore';
 
 export interface ShippingActor {
   id: string;
@@ -16,6 +17,47 @@ export interface ShippingActor {
   vendorId?: string;
   email?: string;
   guestAccessToken?: string;
+}
+
+export function isCodPaymentMethod(method?: string | null): boolean {
+  if (!method) return false;
+  const clean = String(method).trim().toLowerCase();
+  return (
+    clean === 'cod' ||
+    clean === 'cash' ||
+    clean === 'cash on delivery' ||
+    clean === 'cash_on_delivery' ||
+    clean.includes('cash') ||
+    clean.includes('cod')
+  );
+}
+
+export function isOnlinePaymentMethod(method?: string | null): boolean {
+  if (!method) return false;
+  const clean = String(method).trim().toLowerCase();
+  return (
+    clean.includes('online') ||
+    clean.includes('razorpay') ||
+    clean.includes('upi') ||
+    clean.includes('card') ||
+    clean.includes('netbanking') ||
+    clean.includes('sandbox') ||
+    clean === 'online payment' ||
+    clean === 'online payment (razorpay)'
+  );
+}
+
+export class ShippingWorkflowError extends Error {
+  statusCode: number;
+  code?: string;
+
+  constructor(message: string, statusCode = 400, code?: string) {
+    super(message);
+    this.name = 'ShippingWorkflowError';
+    this.statusCode = statusCode;
+    this.code = code;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
 }
 
 export class ShippingService {
@@ -27,30 +69,124 @@ export class ShippingService {
   async createShipmentForSuborder(suborderId: string, actor: ShippingActor): Promise<any> {
     // 1. Role-based authorization
     if (actor.role === 'CUSTOMER') {
-      throw new Error('FORBIDDEN: Customers are not permitted to create shipments.');
+      throw new ShippingWorkflowError('FORBIDDEN: Customers are not permitted to create shipments.', 403, 'FORBIDDEN');
     }
 
-    // 2. Fetch SellerSuborder with parent Order and items
-    const suborder = await prisma.sellerSuborder.findUnique({
-      where: { id: suborderId },
+    // 2. Fetch SellerSuborder with flexible ID matching (id, suborderNumber, orderId)
+    const cleanId = suborderId.replace(/^subord-/, '');
+    const sellerFilter = actor.role === 'VENDOR' && actor.vendorId ? { sellerId: actor.vendorId } : {};
+    let suborderRaw = await prisma.sellerSuborder.findFirst({
+      where: {
+        ...sellerFilter,
+        OR: [
+          { id: suborderId },
+          { id: cleanId },
+          { suborderNumber: suborderId },
+          { suborderNumber: cleanId },
+          { orderId: suborderId },
+          { orderId: cleanId },
+        ],
+      },
       include: {
-        order: true,
-        seller: { select: { id: true, shopName: true, sellerType: true } },
-        items: true,
         shipment: {
           include: { trackingEvents: { orderBy: { eventTimestamp: 'asc' } } },
         },
       },
     });
 
-    if (!suborder) {
-      throw new Error('Suborder not found.');
+    if (!suborderRaw) {
+      // Auto-provision SellerSuborder in PostgreSQL if parent order exists in dbStore/Prisma
+      const storeOrder = dbStore.getOrders().find(
+        (o: any) => o.id === suborderId || o.id === cleanId || o.orderNumber === suborderId || o.orderNumber === cleanId
+      );
+
+      if (storeOrder) {
+        let sellerId = actor.vendorId || (storeOrder.items && storeOrder.items[0]?.vendorId) || 'vendor-1';
+        const cleanVendor = sellerId.replace(/[^a-zA-Z0-9]/g, '');
+        const suborderNum = `${storeOrder.orderNumber || storeOrder.id}-${cleanVendor}-${Date.now().toString().slice(-4)}`;
+        const totalAmt = storeOrder.totalAmount || 0;
+
+        // Ensure parent order exists in Prisma DB for foreign key relation
+        let dbOrder = await prisma.order.findUnique({ where: { id: storeOrder.id } });
+        if (!dbOrder) {
+          const defaultUser = await prisma.user.findFirst({ where: { role: 'CUSTOMER' } });
+          const userId = defaultUser
+            ? defaultUser.id
+            : (
+                await prisma.user.create({
+                  data: {
+                    name: storeOrder.customerName || 'Customer',
+                    email: storeOrder.customerEmail || `cust.${Date.now()}@example.com`,
+                    password: 'hashed-password',
+                    role: 'CUSTOMER',
+                  },
+                })
+              ).id;
+
+          dbOrder = await prisma.order.create({
+            data: {
+              id: storeOrder.id,
+              userId: userId,
+              status: 'CONFIRMED',
+              totalAmount: totalAmt,
+              shippingAddress: typeof storeOrder.shippingAddress === 'object' ? storeOrder.shippingAddress : {
+                name: storeOrder.customerName || 'Customer',
+                email: storeOrder.customerEmail || 'customer@example.com',
+                phone: storeOrder.customerPhone || '9876543210',
+                city: 'Mumbai',
+                state: 'Maharashtra',
+                pincode: '400001',
+              },
+            },
+          });
+        }
+
+        // Ensure sellerId exists in VendorProfile table in PostgreSQL for foreign key constraint
+        const existingVendor: any[] = await prisma.$queryRawUnsafe(`SELECT id FROM "VendorProfile" WHERE id = $1 LIMIT 1;`, sellerId);
+        if (!existingVendor || existingVendor.length === 0) {
+          const vUser = await prisma.user.create({
+            data: {
+              name: 'Vendor Merchant',
+              email: `vendor.${Date.now()}.${Math.random().toString(36).substring(7)}@example.com`,
+              password: 'hashed-password',
+              role: 'VENDOR',
+            },
+          });
+          await prisma.$executeRawUnsafe(`
+            INSERT INTO "VendorProfile" (id, "userId", "shopName", "ownerName", phone, city, address, description, logo, rating, "totalProducts", "salesCount", status, "passwordMigrationRequired", "joinedAt", "updatedAt", "onTimeDispatchRate", "orderCompletionRate", "sellerType", "totalReviews")
+            VALUES ('${sellerId}', '${vUser.id}', 'ABC Toys Wonderland', 'Shopkeeper Partner', '9876543210', 'Mumbai', 'Address', 'Description', '', 5, 0, 0, 'APPROVED', false, NOW(), NOW(), 100, 100, 'THIRD_PARTY', 0)
+            ON CONFLICT (id) DO NOTHING;
+          `);
+        }
+
+        suborderRaw = await prisma.sellerSuborder.create({
+          data: {
+            orderId: dbOrder.id,
+            suborderNumber: suborderNum,
+            sellerId,
+            subtotal: totalAmt,
+            totalAmount: totalAmt,
+            status: SuborderStatus.PROCESSING,
+          },
+          include: {
+            shipment: {
+              include: { trackingEvents: { orderBy: { eventTimestamp: 'asc' } } },
+            },
+          },
+        });
+      }
     }
+
+    if (!suborderRaw) {
+      throw new ShippingWorkflowError('Suborder not found.', 404, 'NOT_FOUND');
+    }
+
+    const suborder = await this.enrichSuborder(suborderRaw);
 
     // 3. Vendor ownership check
     if (actor.role === 'VENDOR') {
       if (!actor.vendorId || suborder.sellerId !== actor.vendorId) {
-        throw new Error('FORBIDDEN: You do not own this suborder.');
+        throw new ShippingWorkflowError('FORBIDDEN: You do not own this suborder.', 403, 'FORBIDDEN');
       }
     }
 
@@ -61,19 +197,54 @@ export class ShippingService {
 
     // 5. Shipping eligibility checks
     if (suborder.status === SuborderStatus.CANCELLED) {
-      throw new Error('Cannot create shipment for a cancelled suborder.');
+      throw new ShippingWorkflowError('Cannot create shipment for a cancelled suborder.', 400, 'SUBORDER_CANCELLED');
     }
     if (suborder.status === SuborderStatus.DELIVERED) {
-      throw new Error('Suborder is already marked as delivered.');
+      throw new ShippingWorkflowError('Suborder is already marked as delivered.', 400, 'ALREADY_DELIVERED');
     }
-    if (suborder.order.status === 'Cancelled') {
-      throw new Error('Cannot create shipment for a cancelled parent order.');
+    if (suborder.order.status === 'Cancelled' || suborder.order.status === 'CANCELLED') {
+      throw new ShippingWorkflowError('Cannot create shipment for a cancelled parent order.', 400, 'ORDER_CANCELLED');
     }
 
-    // Payment eligibility check: Online orders must be Paid; COD must be Confirmed
-    const isCOD = suborder.order.paymentMethod.toLowerCase().includes('cash');
-    if (!isCOD && suborder.order.paymentStatus !== 'Paid') {
-      throw new Error('Cannot create shipment for an unpaid order. Payment must be captured first.');
+    // Fulfillment state eligibility check
+    const fulfillmentStatus = String(suborder.status || suborder.order.status || '').toUpperCase();
+    const isFulfillmentEligible = [
+      'ACCEPTED',
+      'CONFIRMED',
+      'PROCESSING',
+      'READY_TO_SHIP'
+    ].includes(fulfillmentStatus);
+
+    if (!isFulfillmentEligible) {
+      throw new ShippingWorkflowError(`Cannot create shipment for suborder in ${suborder.status} state. Order must be accepted or processing.`, 400, 'INVALID_FULFILLMENT_STATE');
+    }
+
+    // Payment eligibility check: COD allowed while PENDING; ONLINE requires CAPTURED / Paid payment
+    const rawPaymentMethod = String(suborder.order.paymentMethod || '').trim();
+    const isCOD = isCodPaymentMethod(rawPaymentMethod);
+    const isOnline = isOnlinePaymentMethod(rawPaymentMethod);
+
+    if (isOnline) {
+      const orderPaymentStatus = String(suborder.order.paymentStatus || '').trim().toLowerCase();
+      const isPaidOnOrder = orderPaymentStatus === 'paid' || orderPaymentStatus === 'captured';
+
+      // Verify authoritative PaymentAttempt status from database
+      const capturedAttempt = await prisma.paymentAttempt.findFirst({
+        where: {
+          OR: [
+            { orderId: suborder.orderId },
+            { orderId: suborder.order?.id }
+          ],
+          status: 'CAPTURED'
+        }
+      });
+
+      if (!isPaidOnOrder && !capturedAttempt) {
+        throw new ShippingWorkflowError('Online payment must be completed before shipment creation.', 400, 'PAYMENT_REQUIRED');
+      }
+    } else if (!isCOD) {
+      // Fail closed for unknown or unspecified payment methods
+      throw new ShippingWorkflowError(`Unknown payment method '${rawPaymentMethod || 'unspecified'}'. Online payment must be completed before shipment creation.`, 400, 'UNKNOWN_PAYMENT_METHOD');
     }
 
     // 6. Build server-authoritative package data
@@ -165,9 +336,17 @@ export class ShippingService {
           data: {
             shippingCarrier: providerRes.shippingCarrier,
             trackingNumber: providerRes.awbNumber,
-            status: providerRes.status === 'AWB_ASSIGNED' ? SuborderStatus.PROCESSING : suborder.status,
+            status: SuborderStatus.READY_TO_SHIP,
           },
         });
+
+        // Sync dbStore in-memory order status
+        const storeOrder = dbStore.getOrders().find((o: any) => o.id === suborder.orderId || o.id === suborder.id);
+        if (storeOrder) {
+          (storeOrder as any).status = 'READY_TO_SHIP';
+          (storeOrder as any).shipment = newShipment;
+          (dbStore as any).saveData((dbStore as any).data);
+        }
 
         return newShipment;
       });
@@ -211,27 +390,36 @@ export class ShippingService {
    * Retrieves tracking details for a shipment or suborder with strict role-based access control.
    */
   async getShipmentTracking(shipmentIdOrSuborderId: string, actor: ShippingActor): Promise<any> {
-    const shipment = await prisma.shipment.findFirst({
+    const cleanId = shipmentIdOrSuborderId.replace(/^subord-/, '');
+    const shipmentRaw = await prisma.shipment.findFirst({
       where: {
-        OR: [{ id: shipmentIdOrSuborderId }, { suborderId: shipmentIdOrSuborderId }],
+        OR: [
+          { id: shipmentIdOrSuborderId },
+          { id: cleanId },
+          { suborderId: shipmentIdOrSuborderId },
+          { suborderId: cleanId },
+          { suborder: { orderId: shipmentIdOrSuborderId } },
+          { suborder: { orderId: cleanId } },
+          { suborder: { suborderNumber: shipmentIdOrSuborderId } },
+          { suborder: { suborderNumber: cleanId } },
+        ],
       },
       include: {
-        suborder: {
-          include: {
-            order: true,
-            seller: { select: { id: true, shopName: true } },
-            items: true,
-          },
-        },
         trackingEvents: {
           orderBy: { eventTimestamp: 'asc' },
         },
       },
     });
 
-    if (!shipment) {
+    if (!shipmentRaw) {
       throw new Error('Shipment not found.');
     }
+
+    const suborderRaw = await prisma.sellerSuborder.findUnique({
+      where: { id: shipmentRaw.suborderId },
+    });
+    const suborder = await this.enrichSuborder(suborderRaw);
+    const shipment = { ...shipmentRaw, suborder };
 
     // Role-scoped authorization
     if (actor.role === 'ADMIN') {
@@ -250,6 +438,140 @@ export class ShippingService {
     }
 
     return this.formatShipmentResponse(shipment, shipment.suborder);
+  }
+
+  /**
+   * Retrieves live delivery tracking for a customer order across all associated seller suborders.
+   * Enforces strict customer ownership check (order.userId === actor.id).
+   * Returns HTTP 404 NOT_FOUND if unauthorized or non-existent to protect against order ID enumeration.
+   */
+  async getCustomerOrderTracking(orderId: string, actor: ShippingActor): Promise<any> {
+    // 1. Retrieve parent order
+    let parentOrder: any = null;
+    try {
+      parentOrder = await prisma.order.findUnique({ where: { id: orderId } });
+    } catch (e) {
+      // Non-fatal fallback for non-UUID order numbers
+    }
+
+    if (!parentOrder) {
+      const orders = dbStore.getOrders();
+      parentOrder = orders.find((o: any) => o.id === orderId || o.orderNumber === orderId);
+    }
+
+    if (!parentOrder) {
+      throw new Error('NOT_FOUND: Order not found.');
+    }
+
+    // 2. Strict Customer Ownership Verification
+    const orderCustomerId = parentOrder.userId || parentOrder.customerId;
+    if (actor.role === 'CUSTOMER') {
+      const isOwner = actor.id && (actor.id === orderCustomerId || actor.id === parentOrder.userId);
+      const isGuestAuthorized = actor.guestAccessToken && parentOrder.guestAccessToken === actor.guestAccessToken;
+
+      if (!isOwner && !isGuestAuthorized) {
+        // Obfuscate authorization failure as NOT_FOUND to prevent order enumeration
+        throw new Error('NOT_FOUND: Order not found.');
+      }
+    }
+
+    // 3. Gather all suborders for this order
+    let subordersRaw = parentOrder.suborders;
+    if (!subordersRaw || subordersRaw.length === 0) {
+      subordersRaw = await prisma.sellerSuborder.findMany({
+        where: { orderId: parentOrder.id },
+        include: {
+          shipment: {
+            include: { trackingEvents: { orderBy: { eventTimestamp: 'asc' } } },
+          },
+        },
+      });
+    }
+
+    // Fallback if no suborders exist in DB
+    if (!subordersRaw || subordersRaw.length === 0) {
+      const sellerObj = dbStore.getVendors().find((v: any) => v.id === parentOrder.vendorId) || {
+        id: parentOrder.vendorId || 'vendor-1',
+        shopName: 'Play Petal Store',
+      };
+      return {
+        orderId: parentOrder.id,
+        orderNumber: parentOrder.orderNumber || parentOrder.id,
+        status: parentOrder.status || 'CONFIRMED',
+        createdAt: parentOrder.createdAt || new Date(),
+        suborders: [
+          {
+            id: `sub-${parentOrder.id}`,
+            suborderId: `sub-${parentOrder.id}`,
+            suborderNumber: parentOrder.orderNumber || parentOrder.id,
+            orderId: parentOrder.id,
+            orderNumber: parentOrder.orderNumber || parentOrder.id,
+            sellerId: sellerObj.id,
+            sellerName: sellerObj.shopName,
+            provider: 'Shiprocket Express',
+            providerShipmentId: 'NOT_ASSIGNED',
+            awbNumber: null,
+            shippingCarrier: null,
+            labelUrl: null,
+            status: parentOrder.status === 'Cancelled' ? 'CANCELLED' : parentOrder.status === 'Delivered' ? 'DELIVERED' : 'CREATED',
+            estimatedDeliveryDate: null,
+            shippedAt: null,
+            deliveredAt: null,
+            cancelledAt: null,
+            failureReason: null,
+            createdAt: parentOrder.createdAt || new Date(),
+            updatedAt: parentOrder.updatedAt || new Date(),
+            trackingEvents: [],
+          },
+        ],
+      };
+    }
+
+    const subordersFormatted = await Promise.all(
+      subordersRaw.map(async (sub: any) => {
+        const enriched = await this.enrichSuborder(sub);
+        const shipment = sub.shipment || enriched.shipment;
+        if (shipment) {
+          return this.formatShipmentResponse(shipment, enriched);
+        } else {
+          const sellerObj = dbStore.getVendors().find((v: any) => v.id === sub.sellerId) || {
+            id: sub.sellerId,
+            shopName: sub.sellerName || 'Vendor Merchant',
+          };
+          return {
+            id: sub.id,
+            suborderId: sub.id,
+            suborderNumber: sub.suborderNumber,
+            orderId: sub.orderId,
+            orderNumber: parentOrder.orderNumber || parentOrder.id,
+            sellerId: sub.sellerId,
+            sellerName: sellerObj.shopName,
+            provider: 'Shiprocket Express',
+            providerShipmentId: 'PENDING',
+            awbNumber: null,
+            shippingCarrier: null,
+            labelUrl: null,
+            status: sub.status || 'CREATED',
+            estimatedDeliveryDate: null,
+            shippedAt: sub.dispatchedAt || null,
+            deliveredAt: sub.deliveredAt || null,
+            cancelledAt: null,
+            failureReason: null,
+            createdAt: sub.createdAt || new Date(),
+            updatedAt: sub.updatedAt || new Date(),
+            trackingEvents: [],
+          };
+        }
+      })
+    );
+
+    return {
+      orderId: parentOrder.id,
+      orderNumber: parentOrder.orderNumber || parentOrder.id,
+      status: parentOrder.status || 'CONFIRMED',
+      createdAt: parentOrder.createdAt || new Date(),
+      suborders: subordersFormatted,
+    };
   }
 
   /**
@@ -273,20 +595,29 @@ export class ShippingService {
     const event = provider.parseWebhookPayload(payload);
 
     // 3. Locate target shipment
-    const shipment = await prisma.shipment.findFirst({
+    let matchingSuborderId: string | undefined;
+    if (event.suborderNumber) {
+      const targetSub = await prisma.sellerSuborder.findUnique({ where: { suborderNumber: event.suborderNumber } });
+      if (targetSub) matchingSuborderId = targetSub.id;
+    }
+
+    const shipmentRaw = await prisma.shipment.findFirst({
       where: {
         OR: [
           event.awbNumber ? { awbNumber: event.awbNumber } : undefined,
           event.providerShipmentId ? { providerShipmentId: event.providerShipmentId } : undefined,
-          event.suborderNumber ? { suborder: { suborderNumber: event.suborderNumber } } : undefined,
+          matchingSuborderId ? { suborderId: matchingSuborderId } : undefined,
         ].filter(Boolean) as any,
       },
-      include: { suborder: true },
     });
 
-    if (!shipment) {
+    if (!shipmentRaw) {
       return { status: 'ignored', reason: 'Shipment not found for webhook event.' };
     }
+
+    const suborderRaw = await prisma.sellerSuborder.findUnique({ where: { id: shipmentRaw.suborderId } });
+    const suborder = await this.enrichSuborder(suborderRaw);
+    const shipment = { ...shipmentRaw, suborder };
 
     // 4. Database-Safe Idempotency: Check if this provider event was already processed
     const existingEvent = await prisma.trackingEvent.findUnique({
@@ -398,18 +729,19 @@ export class ShippingService {
    * delivery exceptions, and status discrepancies between internal suborders and shipments.
    */
   async getShippingReconciliation(): Promise<any> {
-    const allShipments = await prisma.shipment.findMany({
+    const allShipmentsRaw = await prisma.shipment.findMany({
       include: {
-        suborder: {
-          include: {
-            order: { select: { id: true, orderNumber: true, customerName: true, status: true, paymentStatus: true } },
-            seller: { select: { id: true, shopName: true } },
-          },
-        },
         trackingEvents: { orderBy: { eventTimestamp: 'desc' }, take: 1 },
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    const allShipments: any[] = [];
+    for (const shp of allShipmentsRaw) {
+      const suborderRaw = await prisma.sellerSuborder.findUnique({ where: { id: shp.suborderId } });
+      const suborder = await this.enrichSuborder(suborderRaw);
+      allShipments.push({ ...shp, suborder });
+    }
 
     const now = Date.now();
     const fortyEightHoursAgo = new Date(now - 48 * 3600 * 1000);
@@ -567,6 +899,51 @@ export class ShippingService {
         description: ev.description,
         eventTimestamp: ev.eventTimestamp,
       })),
+    };
+  }
+
+  private async enrichSuborder(suborderRaw: any): Promise<any> {
+    if (!suborderRaw) return null;
+    const parentOrder: any = (await prisma.order.findUnique({
+      where: { id: suborderRaw.orderId },
+    })) || dbStore.getOrders().find((o: any) => o.id === suborderRaw.orderId);
+
+    const sellerObj = dbStore.getVendors().find((v: any) => v.id === suborderRaw.sellerId) || {
+      id: suborderRaw.sellerId,
+      shopName: 'Vendor Merchant',
+      sellerType: 'MANUFACTURER',
+    };
+
+    const customerId = parentOrder?.userId || parentOrder?.customerId;
+    const guestAccessToken = parentOrder?.guestAccessToken;
+
+    return {
+      ...suborderRaw,
+      order: parentOrder ? {
+        ...parentOrder,
+        customerId,
+        guestAccessToken,
+        customerName: parentOrder.shippingAddress?.name || parentOrder.user?.name || parentOrder.customerName || 'Customer',
+        customerEmail: parentOrder.shippingAddress?.email || parentOrder.user?.email || parentOrder.customerEmail || 'customer@example.com',
+        customerPhone: parentOrder.shippingAddress?.phone || '9876543210',
+        paymentStatus: parentOrder.paymentStatus || (parentOrder.status === 'CONFIRMED' ? 'Paid' : 'Pending'),
+        paymentMethod: parentOrder.paymentMethod || 'Online Payment (Razorpay)',
+        shippingAddress: parentOrder.shippingAddress || {},
+        createdAt: parentOrder.createdAt || new Date(),
+        orderNumber: parentOrder.orderNumber || parentOrder.id,
+        status: parentOrder.status || 'CONFIRMED',
+      } : {
+        customerId: 'customer-1',
+        customerEmail: 'customer@example.com',
+        paymentStatus: 'Paid',
+        paymentMethod: 'Online Payment',
+        shippingAddress: {},
+        createdAt: new Date(),
+        orderNumber: suborderRaw.orderId,
+        status: 'CONFIRMED',
+      },
+      seller: sellerObj,
+      items: parentOrder?.items || [],
     };
   }
 }

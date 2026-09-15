@@ -6,12 +6,13 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import GoogleLoginButton from "../../components/GoogleLoginButton";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { login } = useAuth();
+  const { refreshSession, login } = useAuth();
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -20,6 +21,7 @@ export default function LoginPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/customers/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
       
@@ -30,6 +32,7 @@ export default function LoginPage() {
       }
       
       login(data.customer);
+      await refreshSession();
       router.push("/");
     } catch (err) {
       alert("Error connecting to server. Is the backend running?");
@@ -48,15 +51,15 @@ export default function LoginPage() {
       <div className="max-w-4xl w-full bg-white rounded-3xl shadow-xl flex flex-col md:flex-row overflow-hidden relative z-10 border border-slate-200">
         
         {/* Left Side: Visual / Brand */}
-        <div className="w-full md:w-1/2 bg-[#D90429] p-10 flex flex-col justify-center text-white relative overflow-hidden">
+        <div className="w-full md:w-1/2 bg-[#D90429] p-6 sm:p-10 flex flex-col justify-center text-white relative overflow-hidden">
           <div className="relative z-10">
-            <Link href="/" className="inline-block mb-8">
-              <span className="text-4xl font-black tracking-tight text-white flex items-center gap-1">
-                Toy<span className="text-[#FFD43B]">Joy</span>
+            <Link href="/" className="inline-block mb-6 sm:mb-8">
+              <span className="text-3xl sm:text-4xl font-black tracking-tight text-white flex items-center gap-1">
+                Play<span className="text-[#FFD43B]">Petal</span>
               </span>
             </Link>
-            <h2 className="text-3xl font-black mb-4 leading-tight text-white">Welcome Back to the Magic! ✨</h2>
-            <p className="text-white/90 font-medium text-sm leading-relaxed mb-8">
+            <h2 className="text-2xl sm:text-3xl font-black mb-3 sm:mb-4 leading-tight text-white">Welcome Back to the Magic! ✨</h2>
+            <p className="text-white/90 font-medium text-xs sm:text-sm leading-relaxed mb-6 sm:mb-8">
               Log in to track your orders, view your wishlist, and earn Play Points on every magical purchase.
             </p>
             
@@ -117,6 +120,13 @@ export default function LoginPage() {
               <span>Login to Account</span>
               <ArrowRight size={16} />
             </button>
+
+            <div className="relative my-4 flex items-center justify-center">
+              <div className="border-t border-slate-200 w-full"></div>
+              <span className="bg-white px-3 text-xs font-bold text-slate-400 uppercase tracking-wider relative">Or continue with</span>
+            </div>
+
+            <GoogleLoginButton />
           </form>
         </div>
 

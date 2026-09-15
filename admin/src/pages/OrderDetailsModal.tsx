@@ -3,20 +3,31 @@ import { Modal } from '../components/ui/Modal';
 import { StatusBadge } from '../components/ui/Badge';
 import { useAdmin } from '../context/AdminContext';
 import type { Order } from '../types';
-import { Mail, Phone, MapPin, Calendar, CreditCard, CheckCircle2, Flame, Sparkles } from 'lucide-react';
+import { Mail, Phone, MapPin, Calendar, CreditCard, CheckCircle2, Flame, Sparkles, Truck } from 'lucide-react';
 
 interface OrderDetailsModalProps {
   order: Order;
   isOpen: boolean;
   onClose: () => void;
+  onTrackDelivery?: (orderNumber: string) => void;
 }
 
 export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   order,
   isOpen,
   onClose,
+  onTrackDelivery,
 }) => {
   const { products } = useAdmin();
+
+  const statusUpper = (order.status || 'Pending').toUpperCase();
+  const isTrackable =
+    statusUpper === 'READY_TO_SHIP' ||
+    statusUpper === 'SHIPPED' ||
+    statusUpper === 'IN_TRANSIT' ||
+    statusUpper === 'OUT_FOR_DELIVERY' ||
+    statusUpper === 'DELIVERED' ||
+    statusUpper === 'COMPLETED';
 
   return (
     <Modal
@@ -31,12 +42,23 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             <span className="font-semibold">Order Status:</span>
             <StatusBadge status={order.status} />
           </div>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
-          >
-            Close
-          </button>
+          <div className="flex items-center gap-2">
+            {isTrackable && onTrackDelivery && (
+              <button
+                onClick={() => onTrackDelivery(order.orderNumber)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 transition-colors shadow-2xs cursor-pointer"
+              >
+                <Truck className="w-3.5 h-3.5" />
+                <span>Track Live Delivery</span>
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
         </div>
       }
     >

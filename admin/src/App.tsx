@@ -19,6 +19,7 @@ import { Customers } from './pages/Customers';
 import { Banners } from './pages/Banners';
 import { Collections } from './pages/Collections';
 import { Coupons } from './pages/Coupons';
+import { NewsletterSubscribers } from './pages/NewsletterSubscribers';
 import { HomepageCMS } from './pages/HomepageCMS';
 import { MediaLibrary } from './pages/MediaLibrary';
 import { Reviews } from './pages/Reviews';
@@ -108,6 +109,9 @@ export const App: React.FC = () => {
                   <Route path="/collections" element={<Collections />} />
                   <Route path="/admin/coupons" element={<Coupons />} />
                   <Route path="/coupons" element={<Coupons />} />
+                  <Route path="/admin/newsletter" element={<NewsletterSubscribers />} />
+                  <Route path="/newsletter" element={<NewsletterSubscribers />} />
+                  <Route path="/newsletter-subscribers" element={<NewsletterSubscribers />} />
                   <Route path="/admin/homepage" element={<HomepageCMS />} />
                   <Route path="/homepage" element={<HomepageCMS />} />
                   <Route path="/admin/media" element={<MediaLibrary />} />

@@ -6,13 +6,14 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, User, ArrowRight } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import GoogleLoginButton from "../../components/GoogleLoginButton";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { login } = useAuth();
+  const { refreshSession, login } = useAuth();
   const router = useRouter();
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -21,6 +22,7 @@ export default function SignupPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/customers/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ name, email, password }),
       });
       
@@ -31,6 +33,7 @@ export default function SignupPage() {
       }
       
       login(data.customer);
+      await refreshSession();
       router.push("/");
     } catch (err) {
       alert("Error connecting to server. Is the backend running?");
@@ -132,6 +135,13 @@ export default function SignupPage() {
               <span>Create Account</span>
               <ArrowRight size={16} />
             </button>
+
+            <div className="relative my-4 flex items-center justify-center">
+              <div className="border-t border-slate-200 w-full"></div>
+              <span className="bg-white px-3 text-xs font-bold text-slate-400 uppercase tracking-wider relative">Or signup with</span>
+            </div>
+
+            <GoogleLoginButton />
           </form>
         </div>
 

@@ -30,5 +30,208 @@
     "password": "B2uZt97m54TkxcU",
     "playPoints": 50,
     "createdAt": "2026-09-11T11:07:44.361Z"
+  },
+  {
+    "id": "cst-1789463231995",
+    "name": "Sudarshan Bangar",
+    "email": "bangarsudarshan@gmail.com",
+    "password": "pass123",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T09:07:11.995Z"
+  },
+  {
+    "id": "cst-g-1789414852748-34524e14",
+    "name": "Sudarshan Bangar",
+    "email": "sudarshanbangar88@gmail.com",
+    "googleSub": "101539691909551599283",
+    "password": "google_oauth_101539691909551599283",
+    "playPoints": 100,
+    "createdAt": "2026-09-15T09:24:17.842Z"
+  },
+  {
+    "id": "b792aee6-9d26-499a-90ca-39abf4f96895",
+    "name": "Customer A",
+    "email": "custa_1789473599069@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T11:59:59.178Z"
+  },
+  {
+    "id": "aa6ca421-cc3d-42ae-b0d5-1121fccd2a5f",
+    "name": "Customer B",
+    "email": "custb_1789473599206@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T11:59:59.214Z"
+  },
+  {
+    "id": "b5550b6b-007b-46b8-9bf8-ee751d4adfc5",
+    "name": "Customer A",
+    "email": "custa_1789473617183@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:00:17.191Z"
+  },
+  {
+    "id": "7f768509-53c4-4b1f-ad16-8a735326108a",
+    "name": "Customer B",
+    "email": "custb_1789473617196@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:00:17.203Z"
+  },
+  {
+    "id": "7e521421-6eae-4f40-bba0-f2db67bc59af",
+    "name": "Customer A",
+    "email": "custa_1789473656100@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:00:56.207Z"
+  },
+  {
+    "id": "f0a51242-1fb2-410d-8cf9-75f14eb7b652",
+    "name": "Customer B",
+    "email": "custb_1789473656215@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:00:56.222Z"
+  },
+  {
+    "id": "ff0b6738-7514-4942-be29-cf2002a1a8ee",
+    "name": "Customer A",
+    "email": "custa_1789473687320@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:01:27.426Z"
+  },
+  {
+    "id": "fcadecd9-c0cc-433e-a879-5516063cae09",
+    "name": "Customer B",
+    "email": "custb_1789473687440@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:01:27.445Z"
+  },
+  {
+    "id": "91c4b521-1e88-4fd2-b91c-57865db86c2a",
+    "name": "Customer A",
+    "email": "custa_1789473722661@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:02:02.672Z"
+  },
+  {
+    "id": "9bc14075-73f5-49ad-9963-9edbeeb532a7",
+    "name": "Customer B",
+    "email": "custb_1789473722678@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:02:02.683Z"
+  },
+  {
+    "id": "354880df-d218-4cdc-a713-f7489b290885",
+    "name": "Customer A",
+    "email": "custa_1789473735450@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:02:15.521Z"
+  },
+  {
+    "id": "2a44044f-a222-42b8-b19b-11779f23b54e",
+    "name": "Customer B",
+    "email": "custb_1789473735527@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:02:15.530Z"
+  },
+  {
+    "id": "1c328d90-0a12-4daa-ba91-9bac6e66dd76",
+    "name": "Customer A",
+    "email": "custa_1789473743188@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:02:23.197Z"
+  },
+  {
+    "id": "4243a32e-0110-4931-80b4-f3ffa9cba099",
+    "name": "Customer B",
+    "email": "custb_1789473743201@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:02:23.204Z"
+  },
+  {
+    "id": "5e8ede08-abee-4937-bd8b-6c440493c773",
+    "name": "Customer A",
+    "email": "custa_1789473763070@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:02:43.118Z"
+  },
+  {
+    "id": "9c4cd03d-ae21-4bb0-8463-8bd337b7bea5",
+    "name": "Customer B",
+    "email": "custb_1789473763126@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:02:43.131Z"
+  },
+  {
+    "id": "a4e5d06a-7136-4c28-b727-d42c5514de9c",
+    "name": "Customer A",
+    "email": "custa_1789473784232@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:03:04.241Z"
+  },
+  {
+    "id": "e5aa0010-6228-48b4-ba71-05fded6f58dd",
+    "name": "Customer B",
+    "email": "custb_1789473784244@example.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T12:03:04.248Z"
+  },
+  {
+    "id": "679b3b06-04a1-4249-bd4a-c36eeb6331ba",
+    "name": "Test Customer",
+    "email": "testcustomer@playpetal.com",
+    "password": "Password123!",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T17:44:08.719Z",
+    "phone": "+91 9876543210"
+  },
+  {
+    "id": "b154249b-2276-48b5-a33f-ca43bbbc2dcb",
+    "name": "Google Account User (Dev)",
+    "email": "google.user@example.com",
+    "googleSub": "dev_google_sub_12345",
+    "password": "google_oauth_dev_google_sub_12345",
+    "playPoints": 100,
+    "createdAt": "2026-09-15T18:33:57.229Z"
+  },
+  {
+    "id": "bccec558-05f1-44bf-b31b-83b6f5736260",
+    "name": "User B",
+    "email": "testuserb_1789497237331@example.com",
+    "password": "password123",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T18:33:57.336Z"
+  },
+  {
+    "id": "1f70adb9-4714-45b6-b371-01fcd975a906",
+    "name": "User B",
+    "email": "testuserb_1789497275136@example.com",
+    "password": "password123",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T18:34:35.145Z"
+  },
+  {
+    "id": "dfee8fa7-d87b-4c4b-9c28-5cb806f2ae62",
+    "name": "User B",
+    "email": "testuserb_1789497417479@example.com",
+    "password": "password123",
+    "playPoints": 50,
+    "createdAt": "2026-09-15T18:36:57.484Z"
   }
 ]

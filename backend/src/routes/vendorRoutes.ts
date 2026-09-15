@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { dbStore } from '../data/dbStore';
+import { sessionStore } from '../data/sessionStore';
+import { COOKIE_NAME, getCookieOptions } from '../middleware/auth';
 
 const router = Router();
 
@@ -14,7 +16,7 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 // POST Register new shopkeeper/vendor
-router.post('/register', (req: Request, res: Response) => {
+router.post('/register', async (req: Request, res: Response) => {
   try {
     const { name, ownerName, shopName, email, phone, city, address, description, password } = req.body;
     const finalOwnerName = (name || ownerName || shopName || '').trim();
@@ -30,28 +32,39 @@ router.post('/register', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'A shopkeeper with this email already exists.' });
     }
 
-    const created = dbStore.createVendor({
+    const newVendor = dbStore.addVendor({
       name: finalOwnerName,
       shopName: finalShopName,
       email: finalEmail,
       phone: phone || '',
       city: city || 'Mumbai',
       address: address || '',
-      description: description || '',
+      description: description || 'Verified toy merchant partner on Play Petal Marketplace.',
     });
+
+    const session = await sessionStore.create({
+      userId: newVendor.id,
+      email: newVendor.email,
+      role: 'VENDOR',
+      vendorId: newVendor.id,
+      name: newVendor.name,
+    });
+
+    res.cookie(COOKIE_NAME, session.id, getCookieOptions());
 
     res.status(201).json({
       success: true,
-      message: 'Shopkeeper account registered successfully! You can now start adding toys.',
-      vendor: created,
+      message: 'Shopkeeper registered and logged in successfully!',
+      token: session.id,
+      vendor: newVendor,
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to register vendor' });
+    res.status(500).json({ error: 'Failed to register shopkeeper' });
   }
 });
 
 // POST Login shopkeeper
-router.post('/login', (req: Request, res: Response) => {
+router.post('/login', async (req: Request, res: Response) => {
   try {
     const { identifier, email, username, emailOrPhone, password } = req.body;
     const rawId = identifier || email || username || emailOrPhone || '';
@@ -74,9 +87,20 @@ router.post('/login', (req: Request, res: Response) => {
       return res.status(401).json({ error: 'No shopkeeper found with this email or username.' });
     }
 
+    const session = await sessionStore.create({
+      userId: vendor.id,
+      email: vendor.email,
+      role: 'VENDOR',
+      vendorId: vendor.id,
+      name: vendor.name,
+    });
+
+    res.cookie(COOKIE_NAME, session.id, getCookieOptions());
+
     res.json({
       success: true,
       message: 'Shopkeeper login successful!',
+      token: session.id,
       vendor,
     });
   } catch (error) {
@@ -93,6 +117,23 @@ router.get('/:id', (req: Request, res: Response) => {
     res.json(vendor);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch vendor' });
+  }
+});
+
+// GET vendor dashboard metrics
+router.get('/:vendorId/dashboard', (req: Request, res: Response) => {
+  try {
+    const vendorId = String(req.params.vendorId);
+    if (req.user && req.user.role === 'VENDOR') {
+      const userVendorId = req.user.vendorId || req.user.userId;
+      if (userVendorId && userVendorId !== vendorId) {
+        return res.status(403).json({ error: 'FORBIDDEN', message: 'Access denied: Cannot view another vendor\'s dashboard.' });
+      }
+    }
+    const summary = dbStore.getVendorDashboardSummary(vendorId);
+    res.json(summary);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch vendor dashboard summary' });
   }
 });
 
@@ -130,14 +171,99 @@ router.post('/:vendorId/products', (req: Request, res: Response) => {
   }
 });
 
+import { shippingService, ShippingActor } from '../services/shippingService';
+
 // GET vendor orders
 router.get('/:vendorId/orders', (req: Request, res: Response) => {
   try {
     const vendorId = String(req.params.vendorId);
+    if (req.user && req.user.role === 'VENDOR') {
+      const userVendorId = req.user.vendorId || req.user.userId;
+      if (userVendorId && userVendorId !== vendorId) {
+        return res.status(403).json({ error: 'FORBIDDEN', message: 'Access denied: Cannot view another vendor\'s orders.' });
+      }
+    }
     const orders = dbStore.getVendorOrders(vendorId);
     res.json(orders);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch vendor orders' });
+  }
+});
+
+// GET vendor order delivery tracking
+router.get('/:vendorId/orders/:suborderId/tracking', async (req: Request, res: Response) => {
+  try {
+    const vendorId = String(req.params.vendorId);
+    const suborderId = String(req.params.suborderId);
+
+    if (req.user && req.user.role === 'VENDOR') {
+      const userVendorId = req.user.vendorId || req.user.userId;
+      if (userVendorId && userVendorId !== vendorId) {
+        return res.status(403).json({ error: 'FORBIDDEN', message: 'Access denied: Cannot track another vendor\'s shipments.' });
+      }
+    }
+
+    const actor: ShippingActor = req.user
+      ? {
+          id: req.user.userId || req.user.id,
+          role: req.user.role,
+          vendorId: req.user.vendorId || vendorId,
+          email: req.user.email,
+        }
+      : {
+          id: vendorId,
+          role: 'VENDOR',
+          vendorId: vendorId,
+        };
+
+    const tracking = await shippingService.getShipmentTracking(suborderId, actor);
+    res.json(tracking);
+  } catch (error: any) {
+    if (error.message && error.message.includes('FORBIDDEN')) {
+      return res.status(403).json({ error: 'FORBIDDEN', message: error.message });
+    }
+    if (error.message && error.message.includes('not found')) {
+      return res.status(404).json({ error: 'NOT_FOUND', message: error.message });
+    }
+    res.status(500).json({ error: error.message || 'Failed to retrieve vendor order tracking.' });
+  }
+});
+
+// PATCH vendor order status (Vendor Decision with Atomic Guards)
+router.patch('/:vendorId/orders/:orderId/status', (req: Request, res: Response) => {
+  try {
+    const vendorId = String(req.params.vendorId);
+    const orderId = String(req.params.orderId);
+    const { status, reason } = req.body;
+
+    if (req.user && req.user.role === 'VENDOR') {
+      const userVendorId = req.user.vendorId || req.user.userId;
+      if (userVendorId && userVendorId !== vendorId) {
+        return res.status(403).json({ error: 'FORBIDDEN', message: 'Access denied: Cannot modify another vendor\'s order.' });
+      }
+    }
+
+    if (!status) {
+      return res.status(400).json({ error: 'Status is required.' });
+    }
+
+    const result = dbStore.updateVendorOrderStatus(vendorId, orderId, status, reason);
+    if (!result.success) {
+      if (result.code === 'FORBIDDEN') {
+        return res.status(403).json({ error: 'FORBIDDEN', message: result.message });
+      }
+      if (result.code === 'NOT_FOUND') {
+        return res.status(404).json({ error: 'NOT_FOUND', message: result.message });
+      }
+      if (result.code === 'ALREADY_FINAL') {
+        return res.status(409).json({ error: 'ALREADY_FINAL', message: result.message, order: result.order });
+      }
+      return res.status(400).json({ error: result.message });
+    }
+
+    res.json({ success: true, message: result.message, order: result.order });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update vendor order status' });
   }
 });
 

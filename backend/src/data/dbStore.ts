@@ -436,192 +436,7 @@ export const defaultCategories: CategoryItem[] = [
   },
 ];
 
-export const defaultProducts: ProductItem[] = [
-  {
-    id: 'prod-1',
-    name: '4WD Rock Crawler RC Monster Truck',
-    slug: '4wd-rock-crawler-rc-monster-truck',
-    sku: 'RC-TRUCK-4WD',
-    category: 'Cars & Vehicles',
-    categoryId: 'cat-2',
-    brand: 'Hot Wheels',
-    ageGroup: '6 - 8 Years',
-    vendorId: 'vendor-2',
-    vendorName: 'Kids World Collectibles',
-    vendorRating: 4.8,
-    basePrice: 1999,
-    salePrice: 1499,
-    price: 1499,
-    discount: 25,
-    stock: 28,
-    status: 'APPROVED',
-    isActive: true,
-    isFeatured: true,
-    isBestSeller: true,
-    isNewArrival: false,
-    rating: 4.9,
-    salesCount: 142,
-    image: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=600&h=600&fit=crop',
-    images: [
-      { url: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=600&h=600&fit=crop' },
-      { url: 'https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?w=600&h=600&fit=crop' }
-    ],
-    shortDescription: 'Heavy-duty 4WD all-terrain monster crawler with 2.4GHz anti-interference controller.',
-    description: 'Equipped with dual high-torque motors, realistic spring suspensions, and non-slip rubber tires designed to climb over grass, sand, and pebbles with ease.',
-    specifications: {
-      'Scale': '1:16 High Speed',
-      'Battery': 'Rechargeable 7.4V Li-ion (included)',
-      'Range': 'Up to 50 meters',
-      'Material': 'Durable ABS alloy plastic'
-    },
-    features: ['2.4GHz remote control', 'Independent 4-wheel suspension', 'Shock-resistant bumpers', 'USB fast charging'],
-    createdAt: '2026-02-01T10:00:00.000Z'
-  },
-  {
-    id: 'prod-2',
-    name: 'RoboSmart Programmable AI Coding Robot',
-    slug: 'robosmart-programmable-ai-coding-robot',
-    sku: 'STEM-ROBO-01',
-    category: 'STEM & Robotics',
-    categoryId: 'cat-3',
-    brand: 'LEGO',
-    ageGroup: '9 - 12 Years',
-    vendorId: 'vendor-1',
-    vendorName: 'ABC Toys Wonderland',
-    vendorRating: 4.9,
-    basePrice: 3499,
-    salePrice: 2799,
-    price: 2799,
-    discount: 20,
-    stock: 15,
-    status: 'APPROVED',
-    isActive: true,
-    isFeatured: true,
-    isBestSeller: true,
-    isNewArrival: true,
-    rating: 5.0,
-    salesCount: 88,
-    image: 'https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=600&h=600&fit=crop',
-    images: [
-      { url: 'https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=600&h=600&fit=crop' },
-      { url: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=600&h=600&fit=crop' }
-    ],
-    shortDescription: 'Smart interactive educational robot that teaches visual block coding and obstacle navigation.',
-    description: 'Empowers children to build problem-solving skills with intuitive scratch-style drag-and-drop mobile app coding, voice recognition, and ultrasonic path navigation.',
-    specifications: {
-      'Connectivity': 'Bluetooth 5.0 App Controlled',
-      'Sensors': 'Infrared & Ultrasonic sensors',
-      'Power': 'Rechargeable USB-C lithium cell',
-      'Compatibility': 'iOS and Android tablets & phones'
-    },
-    features: ['Obstacle avoidance', 'Customizable dance & voice routines', '30+ coding learning missions', 'Scratch visual programming'],
-    createdAt: '2026-02-10T11:30:00.000Z'
-  },
-  {
-    id: 'prod-3',
-    name: 'Jumbo Cuddle Golden Bear Plushie (60cm)',
-    slug: 'jumbo-cuddle-golden-bear-plushie',
-    sku: 'PLUSH-BEAR-60',
-    category: 'Soft Toys',
-    categoryId: 'cat-1',
-    brand: 'Melissa & Doug',
-    ageGroup: '0 - 2 Years',
-    vendorId: 'vendor-3',
-    vendorName: 'Toy Planet & Hobbies',
-    vendorRating: 4.7,
-    basePrice: 1499,
-    salePrice: 999,
-    price: 999,
-    discount: 33,
-    stock: 35,
-    status: 'APPROVED',
-    isActive: true,
-    isFeatured: true,
-    isBestSeller: true,
-    isNewArrival: false,
-    rating: 4.8,
-    salesCount: 210,
-    image: 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=600&h=600&fit=crop',
-    images: [
-      { url: 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=600&h=600&fit=crop' },
-      { url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&h=600&fit=crop' }
-    ],
-    shortDescription: 'Super soft hypoallergenic organic cotton huggable teddy bear with silky plush fur.',
-    description: 'Crafted with premium organic cotton and child-safe stitched safety eyes. Perfect bedtime companion that provides soothing warmth and emotional comfort for toddlers and kids.',
-    specifications: {
-      'Height': '60 cm / 24 inches',
-      'Filling': '100% Recycled Polyfill',
-      'Care': 'Machine washable gentle cycle',
-      'Safety': 'EN71 & BIS certified non-toxic'
-    },
-    features: ['Ultra-soft velvety touch', 'Child-safe embroidered eyes', 'Washable cover', 'Hypoallergenic fabric'],
-    createdAt: '2026-02-15T09:15:00.000Z'
-  },
-  {
-    id: 'prod-4',
-    name: 'Wooden Alphabet & Number Puzzle Board',
-    slug: 'wooden-alphabet-number-puzzle-board',
-    sku: 'WOOD-PUZZLE-01',
-    category: 'Toys',
-    categoryId: 'cat-1',
-    brand: 'Melissa & Doug',
-    ageGroup: '3 - 5 Years',
-    vendorId: 'vendor-1',
-    vendorName: 'ABC Toys Wonderland',
-    vendorRating: 4.9,
-    basePrice: 899,
-    salePrice: 499,
-    price: 499,
-    discount: 44,
-    stock: 40,
-    status: 'APPROVED',
-    isActive: true,
-    isFeatured: true,
-    isBestSeller: true,
-    isNewArrival: true,
-    rating: 4.8,
-    salesCount: 165,
-    image: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=600&h=600&fit=crop',
-    images: [
-      { url: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=600&h=600&fit=crop' }
-    ],
-    shortDescription: 'Colorful eco-friendly wooden puzzle board with chunky smooth-edge alphabet pieces.',
-    description: 'Helps toddlers develop motor skills, letter recognition, and hand-eye coordination with non-toxic natural wood finishes.',
-    createdAt: '2026-02-18T10:00:00.000Z'
-  },
-  {
-    id: 'prod-5',
-    name: 'Speedy Friction-Powered Stunt Racing Car',
-    slug: 'speedy-friction-powered-stunt-racing-car',
-    sku: 'RACE-STUNT-02',
-    category: 'Cars & Vehicles',
-    categoryId: 'cat-2',
-    brand: 'Hot Wheels',
-    ageGroup: '3 - 5 Years',
-    vendorId: 'vendor-2',
-    vendorName: 'Kids World Collectibles',
-    vendorRating: 4.8,
-    basePrice: 1199,
-    salePrice: 799,
-    price: 799,
-    discount: 33,
-    stock: 50,
-    status: 'APPROVED',
-    isActive: true,
-    isFeatured: true,
-    isBestSeller: true,
-    isNewArrival: false,
-    rating: 4.7,
-    salesCount: 220,
-    image: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=600&h=600&fit=crop',
-    images: [
-      { url: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=600&h=600&fit=crop' }
-    ],
-    shortDescription: 'High-velocity 360-degree push-and-go friction stunt car with shock-proof bumpers.',
-    description: 'Runs on push power with zero batteries required. Flips and rolls over obstacles smoothly on high-grip rubber tires.',
-    createdAt: '2026-02-20T12:00:00.000Z'
-  }
-];
+export const defaultProducts: ProductItem[] = [];
 
 export const defaultBanners: BannerItem[] = [
   {
@@ -690,7 +505,7 @@ class LocalDbStore {
           brands: parsed.brands && parsed.brands.length > 0 ? parsed.brands : defaultBrands,
           ageGroups: parsed.ageGroups && parsed.ageGroups.length > 0 ? parsed.ageGroups : defaultAgeGroups,
           offers: parsed.offers && parsed.offers.length > 0 ? parsed.offers : defaultOffers,
-          products: parsed.products && parsed.products.length > 0 ? this.enrichExistingProducts(parsed.products) : defaultProducts,
+          products: Array.isArray(parsed.products) ? this.enrichExistingProducts(parsed.products) : [],
           categories: parsed.categories && parsed.categories.length > 0 ? parsed.categories : defaultCategories,
           orders: parsed.orders || [],
           reviews: parsed.reviews || [],
@@ -703,7 +518,7 @@ class LocalDbStore {
           brands: defaultBrands,
           ageGroups: defaultAgeGroups,
           offers: defaultOffers,
-          products: defaultProducts,
+          products: [],
           categories: defaultCategories,
           orders: [],
           reviews: [],
@@ -718,7 +533,7 @@ class LocalDbStore {
         brands: defaultBrands,
         ageGroups: defaultAgeGroups,
         offers: defaultOffers,
-        products: defaultProducts,
+        products: [],
         categories: defaultCategories,
         orders: [],
         reviews: [],
@@ -1153,7 +968,29 @@ class LocalDbStore {
 
   // --- ORDERS ---
   getOrders(): OrderItem[] {
-    return this.data.orders;
+    return this.data.orders.map((order) => {
+      const sellerId = (order.items && order.items[0]?.vendorId) || 'vendor-1';
+      const subId = (order as any).suborderId || (order as any).suborders?.[0]?.id || `subord-${order.id}`;
+      const defaultPaymentMethod = order.paymentMethod || 'Cash on Delivery';
+      const defaultPaymentStatus = order.paymentStatus || (String(order.status || '').toUpperCase() === 'CONFIRMED' || String(order.status || '').toUpperCase() === 'PAID' ? 'Paid' : 'Pending');
+
+      return {
+        ...order,
+        paymentMethod: defaultPaymentMethod,
+        paymentStatus: defaultPaymentStatus,
+        suborderId: subId,
+        suborders: (order as any).suborders || [
+          {
+            id: subId,
+            suborderNumber: `${order.orderNumber || order.id}-S1`,
+            orderId: order.id,
+            sellerId,
+            status: String(order.status || 'PENDING').toUpperCase() === 'ACCEPTED' ? 'ACCEPTED' : (order.status || 'PENDING'),
+            shipment: (order as any).shipment || null,
+          },
+        ],
+      };
+    });
   }
 
   getVendorOrders(vendorId: string): OrderItem[] {
@@ -1163,12 +1000,229 @@ class LocalDbStore {
       .map((order) => {
         const vendorItems = order.items.filter((it) => it.vendorId === vendorId);
         const vendorSubtotal = vendorItems.reduce((sum, it) => sum + it.price * it.quantity, 0);
+        const matchedSub = (order as any).suborders?.find((s: any) => s.sellerId === vendorId);
+        const subId = matchedSub?.id || (order as any).suborderId || `subord-${order.id}`;
+        const defaultPaymentMethod = order.paymentMethod || 'Cash on Delivery';
+        const defaultPaymentStatus = order.paymentStatus || (String(order.status || '').toUpperCase() === 'CONFIRMED' || String(order.status || '').toUpperCase() === 'PAID' ? 'Paid' : 'Pending');
+
         return {
           ...order,
+          paymentMethod: defaultPaymentMethod,
+          paymentStatus: defaultPaymentStatus,
           items: vendorItems,
           totalAmount: vendorSubtotal,
+          suborderId: subId,
+          suborders: (order as any).suborders || [
+            {
+              id: subId,
+              suborderNumber: `${order.orderNumber || order.id}-S1`,
+              orderId: order.id,
+              sellerId: vendorId,
+              status: String(order.status || 'PENDING').toUpperCase() === 'ACCEPTED' ? 'ACCEPTED' : (order.status || 'PENDING'),
+              shipment: (order as any).shipment || null,
+            },
+          ],
         };
       });
+  }
+
+  getVendorDashboardSummary(vendorId: string) {
+    const vendorProducts = this.getVendorProducts(vendorId);
+    const vendorOrders = this.getVendorOrders(vendorId);
+    const allReviews = this.data.reviews || [];
+    const vendorProductIds = new Set(vendorProducts.map((p) => String(p.id)));
+    const vendorReviews = allReviews.filter(
+      (r: any) => String(r.vendorId) === String(vendorId) || vendorProductIds.has(String(r.productId))
+    );
+
+    let pendingOrders = 0;
+    let acceptedOrders = 0;
+    let processingOrders = 0;
+    let readyToShipOrders = 0;
+    let shippedOrders = 0;
+    let deliveredOrders = 0;
+    let completedOrders = 0;
+    let cancelledOrders = 0;
+    let rejectedOrders = 0;
+
+    let totalGrossSales = 0;
+
+    vendorOrders.forEach((o) => {
+      const status = String(o.status || 'Pending').toLowerCase();
+      totalGrossSales += Number(o.totalAmount) || 0;
+
+      if (status === 'pending') pendingOrders++;
+      else if (status === 'accepted') acceptedOrders++;
+      else if (status === 'confirmed' || status === 'processing') processingOrders++;
+      else if (status === 'ready_to_ship') readyToShipOrders++;
+      else if (status === 'shipped' || status === 'in_transit' || status === 'out_for_delivery') shippedOrders++;
+      else if (status === 'delivered') deliveredOrders++;
+      else if (status === 'completed') completedOrders++;
+      else if (status === 'cancelled') cancelledOrders++;
+      else if (status === 'rejected') rejectedOrders++;
+    });
+
+    const totalProducts = vendorProducts.length;
+    const lowStockProducts = vendorProducts.filter((p) => (p.stock ?? 0) > 0 && (p.stock ?? 0) <= 10).length;
+    const outOfStockProducts = vendorProducts.filter((p) => (p.stock ?? 0) === 0).length;
+
+    const shipmentDistribution: Record<string, number> = {
+      CREATED: 0,
+      AWB_ASSIGNED: 0,
+      PICKUP_SCHEDULED: 0,
+      PICKED_UP: 0,
+      IN_TRANSIT: 0,
+      OUT_FOR_DELIVERY: 0,
+      DELIVERED: 0,
+      FAILED: 0,
+      RTO: 0,
+      CANCELLED: 0,
+    };
+
+    let activeShipments = 0;
+    vendorOrders.forEach((o) => {
+      const statusUpper = String(o.status || 'PENDING').toUpperCase();
+      if (['SHIPPED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'READY_TO_SHIP'].includes(statusUpper)) {
+        activeShipments++;
+      }
+      if (shipmentDistribution[statusUpper] !== undefined) {
+        shipmentDistribution[statusUpper]++;
+      }
+    });
+
+    const availablePayout = vendorOrders
+      .filter((o) => ['completed', 'delivered'].includes(String(o.status || '').toLowerCase()))
+      .reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
+
+    const reservedPayout = vendorOrders
+      .filter((o) => ['pending', 'accepted', 'processing', 'confirmed', 'shipped', 'ready_to_ship'].includes(String(o.status || '').toLowerCase()))
+      .reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
+
+    const buildSalesTrend = (days: number) => {
+      const now = new Date();
+      const trendMap: Record<string, { date: string; revenue: number; orders: number }> = {};
+
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        trendMap[dateStr] = { date: dateStr, revenue: 0, orders: 0 };
+      }
+
+      vendorOrders.forEach((o) => {
+        const orderDateStr = (o.createdAt || o.date || '').split('T')[0];
+        if (trendMap[orderDateStr]) {
+          trendMap[orderDateStr].revenue += Number(o.totalAmount || 0);
+          trendMap[orderDateStr].orders += 1;
+        }
+      });
+
+      return Object.values(trendMap);
+    };
+
+    const topProducts = [...vendorProducts]
+      .sort((a, b) => (b.salesCount || 0) - (a.salesCount || 0) || (b.price || 0) - (a.price || 0))
+      .slice(0, 5)
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        image: p.image || (p.images && p.images[0]?.url) || '',
+        unitsSold: p.salesCount || 0,
+        revenue: (p.salesCount || 0) * (p.price || p.basePrice || 0),
+        stock: p.stock ?? 0,
+      }));
+
+    const inventoryAlerts = vendorProducts
+      .filter((p) => (p.stock ?? 0) <= 10)
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        stock: p.stock ?? 0,
+        status: (p.stock ?? 0) === 0 ? 'Out of Stock' : 'Low Stock',
+      }));
+
+    const totalReviews = vendorReviews.length;
+    const avgRating = totalReviews > 0
+      ? Number((vendorReviews.reduce((sum, r) => sum + Number(r.rating || 5), 0) / totalReviews).toFixed(1))
+      : 5.0;
+
+    const ratingBreakdown = {
+      5: vendorReviews.filter((r) => Math.round(Number(r.rating || 0)) === 5).length,
+      4: vendorReviews.filter((r) => Math.round(Number(r.rating || 0)) === 4).length,
+      3: vendorReviews.filter((r) => Math.round(Number(r.rating || 0)) === 3).length,
+      2: vendorReviews.filter((r) => Math.round(Number(r.rating || 0)) === 2).length,
+      1: vendorReviews.filter((r) => Math.round(Number(r.rating || 0)) === 1).length,
+    };
+
+    const recentOrders = vendorOrders.slice(0, 8).map((o) => ({
+      id: o.id,
+      orderNumber: o.orderNumber || `#ORD-${o.id}`,
+      date: (o.date || o.createdAt || '').slice(0, 10),
+      customerName: o.customerName || 'Customer',
+      productSummary: o.productSummary || (o.items && o.items[0]?.productName) || 'Items',
+      totalAmount: Number(o.totalAmount || 0),
+      status: o.status || 'Pending',
+      shipmentStatus: o.shipment?.status || (['Shipped', 'DELIVERED'].includes(o.status) ? 'IN_TRANSIT' : 'CREATED'),
+      suborderId: (o as any).suborders?.[0]?.id || `subord-${o.id}`,
+    }));
+
+    return {
+      kpi: {
+        totalOrders: vendorOrders.length,
+        pendingOrders,
+        acceptedOrders,
+        processingOrders,
+        readyToShipOrders,
+        shippedOrders,
+        deliveredOrders,
+        completedOrders,
+        cancelledOrders,
+        rejectedOrders,
+        totalProducts,
+        lowStockProducts,
+        outOfStockProducts,
+        activeShipments,
+        totalGrossSales,
+        pendingPayout: availablePayout,
+        reservedPayout,
+        paidPayout: 0,
+        failedPayout: 0,
+        totalReviews,
+        averageRating: avgRating,
+      },
+      salesTrends: {
+        '7d': buildSalesTrend(7),
+        '30d': buildSalesTrend(30),
+        '90d': buildSalesTrend(90),
+        '1y': buildSalesTrend(365),
+      },
+      lifecycle: {
+        new: pendingOrders,
+        acceptedProcessing: acceptedOrders + processingOrders,
+        readyToShip: readyToShipOrders,
+        shippedInTransit: shippedOrders,
+        delivered: deliveredOrders,
+        completed: completedOrders,
+        cancelledRejected: cancelledOrders + rejectedOrders,
+        returnRefund: 0,
+      },
+      shipments: shipmentDistribution,
+      financials: {
+        available: availablePayout,
+        reserved: reservedPayout,
+        paid: 0,
+        failed: 0,
+      },
+      recentOrders,
+      topProducts,
+      inventoryAlerts,
+      reviews: {
+        totalReviews,
+        averageRating: avgRating,
+        ratingBreakdown,
+        recentReviews: vendorReviews.slice(0, 5),
+      },
+    };
   }
 
   createOrder(order: Partial<OrderItem>): OrderItem {
@@ -1192,9 +1246,11 @@ class LocalDbStore {
     const deliveryFee = subtotal > 999 ? 0 : 99;
     const totalAmount = order.totalAmount || (subtotal - discount + deliveryFee);
 
-    const newOrder: OrderItem = {
+    const newOrder: OrderItem & { userId?: string; customerId?: string } = {
       id: `ord-${Date.now()}`,
       orderNumber: `ORD-${Math.floor(10000 + Math.random() * 90000)}`,
+      userId: order.userId || order.customerId,
+      customerId: order.customerId || order.userId,
       customerName: order.customerName || 'Happy Customer',
       customerEmail: order.customerEmail || 'customer@example.com',
       customerPhone: order.customerPhone || '+91 98765 00000',
@@ -1221,6 +1277,73 @@ class LocalDbStore {
     ord.status = status;
     this.saveData(this.data);
     return ord;
+  }
+
+  updateOrderPaymentStatus(id: string, paymentStatus: string): OrderItem | null {
+    const ord = this.data.orders.find((o) => o.id === id || o.orderNumber === id);
+    if (!ord) return null;
+    ord.paymentStatus = paymentStatus;
+    this.saveData(this.data);
+    return ord;
+  }
+
+  updateVendorOrderStatus(
+    vendorId: string,
+    orderId: string,
+    status: string,
+    reason?: string
+  ): { success: boolean; code?: string; message: string; order: OrderItem | null } {
+    const ord = this.data.orders.find((o) => o.id === orderId || o.orderNumber === orderId);
+    if (!ord) {
+      return { success: false, code: 'NOT_FOUND', message: 'Order not found.', order: null };
+    }
+
+    // Verify vendor ownership
+    const hasVendorItems = ord.items.some((it) => (it.vendorId || 'vendor-1') === vendorId);
+    if (!hasVendorItems && vendorId !== 'admin') {
+      return { success: false, code: 'FORBIDDEN', message: 'Access denied: You do not own items in this order.', order: null };
+    }
+
+    const current = String(ord.status || 'Pending').toLowerCase();
+    const target = String(status || '').toLowerCase();
+
+    // Atomic State Transition Guard:
+    // If order is already Accepted, Processing, Shipped, Delivered, or Rejected, Accept/Reject actions must not mutate state.
+    if (current === 'accepted' || current === 'processing' || current === 'shipped' || current === 'delivered') {
+      if (target === 'accepted' || target === 'rejected') {
+        return {
+          success: false,
+          code: 'ALREADY_FINAL',
+          message: `Order is already ${ord.status} and cannot be modified.`,
+          order: ord,
+        };
+      }
+    }
+
+    if (current === 'rejected') {
+      if (target === 'accepted' || target === 'rejected') {
+        return {
+          success: false,
+          code: 'ALREADY_FINAL',
+          message: 'Order was rejected and cannot be modified.',
+          order: ord,
+        };
+      }
+    }
+
+    const formattedStatus =
+      target === 'accepted' ? 'Accepted' : target === 'rejected' ? 'Rejected' : status;
+    ord.status = formattedStatus;
+    if (reason && (target === 'rejected' || formattedStatus === 'Rejected')) {
+      (ord as any).rejectionReason = reason;
+    }
+    this.saveData(this.data);
+
+    return {
+      success: true,
+      message: `Order status updated to ${formattedStatus}`,
+      order: ord,
+    };
   }
 
   // --- BANNERS ---

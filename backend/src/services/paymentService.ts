@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../prisma/client';
+import { dbStore } from '../data/dbStore';
 import { getPaymentProvider, PaymentProvider } from './payment';
 import { logSecurityEvent } from '../utils/security';
 
@@ -40,16 +41,33 @@ export class PaymentService {
     }
 
     // 1. Fetch Order from database
-    const order = await prisma.order.findFirst({
-      where: {
-        OR: [{ id: orderId }, { orderNumber: orderId }],
-      },
-      include: {
-        payments: {
-          orderBy: { createdAt: 'desc' },
-        },
-      },
+    let order = await prisma.order.findUnique({
+      where: { id: orderId },
     });
+
+    if (!order) {
+      // Fallback: check if order exists in dbStore and upsert into Prisma Order
+      const storeOrder = dbStore.getOrders().find((o) => o.id === orderId || o.orderNumber === orderId);
+      if (storeOrder) {
+        order = await prisma.order.upsert({
+          where: { id: storeOrder.id },
+          update: {},
+          create: {
+            id: storeOrder.id,
+            userId: authUser?.userId || 'guest-user',
+            status: 'PENDING',
+            totalAmount: storeOrder.totalAmount,
+            shippingTotal: storeOrder.deliveryFee || 0,
+            shippingAddress: {
+              name: storeOrder.customerName,
+              email: storeOrder.customerEmail,
+              phone: storeOrder.customerPhone,
+              address: storeOrder.shippingAddress,
+            },
+          },
+        });
+      }
+    }
 
     if (!order) {
       throw new Error(`Order not found: ${orderId}`);
@@ -258,24 +276,30 @@ export class PaymentService {
         },
       });
 
-      // Update Order to Paid and Confirmed
+      // Update Order to Confirmed
       const updatedOrder = await tx.order.update({
         where: { id: order.id },
         data: {
-          paymentStatus: 'Paid',
-          status: 'Confirmed',
+          status: 'CONFIRMED',
           updatedAt: new Date(),
         },
       });
 
-      // Update Suborders to CONFIRMED
+      // Update Suborders to PROCESSING
       await tx.sellerSuborder.updateMany({
         where: { orderId: order.id },
-        data: { status: 'CONFIRMED' },
+        data: { status: 'PROCESSING' },
       });
 
       return { updatedAttempt, updatedOrder };
     });
+
+    try {
+      dbStore.updateOrderStatus(order.id, 'Accepted');
+      dbStore.updateOrderPaymentStatus(order.id, 'Paid');
+    } catch (dbErr) {
+      // Non-fatal sync
+    }
 
     logSecurityEvent('PAYMENT_CAPTURED', {
       userId: order.customerId || 'guest',
@@ -339,13 +363,21 @@ export class PaymentService {
       await tx.order.update({
         where: { id: order.id },
         data: {
-          paymentStatus: 'Failed',
           updatedAt: new Date(),
         },
       });
 
       return att;
     });
+
+    try {
+      const storeOrder = dbStore.getOrders().find((o) => o.id === order.id || o.orderNumber === order.orderNumber);
+      if (storeOrder) {
+        storeOrder.paymentStatus = 'Failed';
+      }
+    } catch (dbErr) {
+      // Non-fatal sync
+    }
 
     logSecurityEvent('PAYMENT_FAILED', {
       userId: order.customerId || 'guest',

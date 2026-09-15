@@ -230,6 +230,12 @@ export const registrationRateLimiter = createAuthRateLimiter({
   message: 'Too many account registrations from this network. Please try again later.',
 });
 
+export const newsletterRateLimiter = createAuthRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: 'Too many newsletter subscription attempts from this IP address. Please try again later.',
+});
+
 // ============================================================================
 // 3. INPUT VALIDATION HELPERS
 // ============================================================================

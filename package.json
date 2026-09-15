@@ -4,6 +4,7 @@
   "description": "Unified Kids E-Commerce Platform with Storefront, Admin Dashboard, and Express API",
   "private": true,
   "scripts": {
+    "predev": "npx --yes kill-port 3000 5001 5000",
     "dev": "npx concurrently -n \"BACKEND,ADMIN,WEBSITE\" -c \"blue,magenta,green\" \"npm run dev:backend\" \"npm run dev:admin\" \"npm run dev:frontend\"",
     "dev:backend": "npm --prefix backend run dev",
     "dev:admin": "npm --prefix admin run dev",

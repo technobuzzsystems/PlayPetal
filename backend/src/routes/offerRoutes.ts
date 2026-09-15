@@ -501,7 +501,9 @@ export const marketplaceOfferRouter = Router();
  */
 marketplaceOfferRouter.get('/product/:masterProductId', async (req: Request, res: Response) => {
   try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     const masterProductId = String(req.params.masterProductId);
+    const cleanPincode = req.query.pincode ? String(req.query.pincode).trim() : '';
 
     const masterProduct = await prisma.masterProduct.findFirst({
       where: { OR: [{ id: masterProductId }, { slug: masterProductId }] },
@@ -518,10 +520,21 @@ marketplaceOfferRouter.get('/product/:masterProductId', async (req: Request, res
       return res.status(404).json({ error: 'Master product not found' });
     }
 
-    const buyBox = evaluateBuyBox(masterProduct.id, masterProduct.offers as OfferWithRelations[]);
+    let serviceableSellerIds: Set<string> | undefined = undefined;
+    if (cleanPincode && /^[1-9][0-9]{5}$/.test(cleanPincode)) {
+      const { getServiceableSellerIds } = await import('../services/serviceabilityService');
+      serviceableSellerIds = await getServiceableSellerIds(
+        cleanPincode,
+        masterProduct.offers.map((o) => o.sellerId)
+      );
+    }
+
+    const buyBoxOptions = cleanPincode ? { pincode: cleanPincode, serviceableSellerIds } : undefined;
+    const buyBox = evaluateBuyBox(masterProduct.id, masterProduct.offers as OfferWithRelations[], buyBoxOptions);
 
     const sanitizedOffers = masterProduct.offers.map((o) => {
       const effective = calculateEffectivePrice(o.basePrice, o.salePrice);
+      const isServ = serviceableSellerIds ? serviceableSellerIds.has(o.sellerId) : true;
       return {
         id: o.id,
         masterProductId: o.masterProductId,
@@ -537,6 +550,7 @@ marketplaceOfferRouter.get('/product/:masterProductId', async (req: Request, res
         estimatedDeliveryDays: o.estimatedDeliveryDays,
         returnWindowDays: o.returnWindowDays,
         availableStock: o.inventory?.availableStock ?? 0,
+        isServiceable: isServ,
         seller: {
           id: o.seller.id,
           shopName: o.seller.shopName,
@@ -563,6 +577,7 @@ marketplaceOfferRouter.get('/product/:masterProductId', async (req: Request, res
         maxPrice,
       },
       calculatedAt: buyBox.calculatedAt,
+      pincode: cleanPincode || undefined,
     });
   } catch (error) {
     console.error('Failed to fetch product offers:', error);

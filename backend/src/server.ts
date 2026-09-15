@@ -28,8 +28,18 @@ app.use(
     crossOriginResourcePolicy: false,
   })
 );
-app.use(express.json({ limit: '50mb' }));
+app.use(
+  express.json({
+    limit: '50mb',
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
+import { authenticate } from './middleware/auth';
+
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(authenticate);
 
 // Routes
 import categoryRoutes from './routes/categoryRoutes';
@@ -70,10 +80,28 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 import customerRoutes from './routes/customerRoutes';
+import vendorDeliveryRoutes from './routes/vendorDeliveryRoutes';
+import checkoutRoutes from './routes/checkoutRoutes';
+import shippingRoutes from './routes/shippingRoutes';
+import paymentRoutes from './routes/paymentRoutes';
+import newsletterRoutes from './routes/newsletterRoutes';
+import adminAuthRoutes from './routes/adminAuthRoutes';
+import { adminMarketplaceRouter } from './routes/adminMarketplaceRoutes';
+
+app.use('/api/admin', adminAuthRoutes);
+app.use('/api/admin/marketplace', adminMarketplaceRouter);
 app.use('/api/customers', customerRoutes);
+app.use('/api/customer', shippingRoutes);
+app.use('/api/vendor/delivery-pincodes', vendorDeliveryRoutes);
+app.use('/api/vendors/delivery-pincodes', vendorDeliveryRoutes);
+app.use('/api/checkout', checkoutRoutes);
+app.use('/api/shipping', shippingRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/vendors', vendorRoutes);
+app.use('/api/vendor', vendorRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/brands', brandRouter);
 app.use('/api/age-groups', ageGroupRouter);

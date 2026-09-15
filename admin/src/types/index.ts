@@ -1,5 +1,47 @@
 export type ProductStatus = 'Active' | 'Draft' | 'Out of Stock' | 'APPROVED' | 'PENDING' | 'REJECTED';
 
+export interface BuyBoxCandidate {
+  offerId: string;
+  vendorId: string;
+  vendorName: string;
+  sellerName?: string;
+  price: number;
+  basePrice?: number;
+  salePrice?: number;
+  effectivePrice?: number;
+  inStock: boolean;
+  stockCount: number;
+  fulfillmentType?: string;
+  shippingTimeDays?: number;
+  deliveryDays?: number;
+  estimatedDeliveryDays?: number;
+  ratingScore?: number;
+  sellerRating?: number;
+  onTimeRate?: number;
+  warrantyMonths?: number;
+  warrantyType?: string;
+  scoreBreakdown?: Record<string, number>;
+  scores?: Record<string, number>;
+  totalScore: number;
+}
+
+export interface DisqualifiedOffer {
+  offerId: string;
+  vendorName?: string;
+  sellerName?: string;
+  reason: string;
+}
+
+export interface BuyBoxAuditResult {
+  productId: string;
+  masterProductName: string;
+  masterProductSku?: string;
+  winningOfferId?: string;
+  buyBoxResult?: any;
+  scoredCandidates: BuyBoxCandidate[];
+  disqualifiedOffers: DisqualifiedOffer[];
+}
+
 export interface ProductVariant {
   id: string;
   sku: string;

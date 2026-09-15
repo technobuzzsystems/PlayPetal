@@ -119,6 +119,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       if (user) {
         localStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify(user));
+
+        // Auto-sync session with backend API
+        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const endpoint = user.role === 'VENDOR' ? `${API_BASE}/vendor/login` : `${API_BASE}/admin/login`;
+        const bodyData =
+          user.role === 'VENDOR'
+            ? { identifier: user.vendorId || user.id, email: user.email, password: 'vendor123' }
+            : { email: user.email || 'admin@kidsplaystore.com', identifier: user.username || 'admin', password: 'AdminPassword123!' };
+
+        fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(bodyData),
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.sessionId || d.token) {
+              localStorage.setItem('playpetal_token', d.sessionId || d.token);
+            }
+          })
+          .catch((e) => console.warn('Auth session auto-sync failed:', e));
       } else {
         localStorage.removeItem(STORAGE_AUTH_KEY);
       }
@@ -149,6 +171,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: 'ADMIN',
       };
       setUser(sessionUser);
+
+      // Backend session exchange for Admin
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      fetch(`${API_BASE}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: credentials.email,
+          identifier: credentials.username,
+          password: cleanPass === credentials.password ? 'AdminPassword123!' : cleanPass,
+        }),
+      })
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.sessionId || d.token) {
+            localStorage.setItem('playpetal_token', d.sessionId || d.token);
+          }
+        })
+        .catch((e) => console.warn('Backend admin login sync failed:', e));
+
       return { success: true, role: 'ADMIN' };
     }
 
@@ -170,6 +213,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         shopName: matchedVendor.shopName,
       };
       setUser(vendorUser);
+
+      // Backend session exchange
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      fetch(`${API_BASE}/vendor/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ identifier: matchedVendor.id, email: matchedVendor.email, password: matchedVendor.password })
+      }).then(r => r.json()).then(d => {
+        if (d.token) localStorage.setItem('playpetal_token', d.token);
+      }).catch(e => console.warn('Backend login sync failed:', e));
+
       return { success: true, role: 'VENDOR' };
     }
 

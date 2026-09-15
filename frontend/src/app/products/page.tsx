@@ -28,7 +28,7 @@ function ProductsContent() {
   const [selectedAge, setSelectedAge] = useState(searchParams.get("ageGroup") || "all");
   const [maxPrice, setMaxPrice] = useState<number>(() => {
     const p = searchParams.get("maxPrice");
-    return p && !isNaN(Number(p)) ? Number(p) : 6000;
+    return p && !isNaN(Number(p)) ? Number(p) : 25000;
   });
   const [minPrice, setMinPrice] = useState<number>(() => {
     const p = searchParams.get("minPrice");
@@ -454,7 +454,7 @@ function ProductsContent() {
                   <input
                     type="range"
                     min="100"
-                    max="6000"
+                    max="25000"
                     step="100"
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(Number(e.target.value))}
@@ -462,7 +462,7 @@ function ProductsContent() {
                   />
                   <div className="flex justify-between text-[10px] text-slate-400 font-bold mt-1">
                     <span>₹100</span>
-                    <span>₹6000+</span>
+                    <span>₹25000+</span>
                   </div>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import { ShoppingCart, Users, Package, TrendingUp, TrendingDown } from 'lucide-react';
+import { ShoppingCart, Users, Package, Mail, TrendingUp, TrendingDown } from 'lucide-react';
 
 export interface StatCardProps {
   title: string;
@@ -6,7 +6,7 @@ export interface StatCardProps {
   change: string;
   isPositive?: boolean;
   timeframe?: string;
-  iconName: 'DollarSign' | 'ShoppingCart' | 'Users' | 'Package';
+  iconName: 'DollarSign' | 'ShoppingCart' | 'Users' | 'Package' | 'Mail';
   color?: string;
 }
 
@@ -41,6 +41,7 @@ export const StatCard: React.FC<StatCardProps> = ({
     ShoppingCart: <ShoppingCart className="w-5 h-5 text-[#2196F3]" />,
     Users: <Users className="w-5 h-5 text-[#F7255A]" />,
     Package: <Package className="w-5 h-5 text-[#FF9800]" />,
+    Mail: <Mail className="w-5 h-5 text-indigo-600" />,
   };
 
   const bgMap = {
@@ -48,6 +49,7 @@ export const StatCard: React.FC<StatCardProps> = ({
     ShoppingCart: 'bg-blue-50 border-blue-200',
     Users: 'bg-pink-50 border-pink-200',
     Package: 'bg-amber-50 border-amber-200',
+    Mail: 'bg-indigo-50 border-indigo-200',
   };
 
   return (

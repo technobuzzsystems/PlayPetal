@@ -63,6 +63,10 @@ interface AdminContextType {
   orders: Order[];
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   updateOrderPayment: (orderId: string, paymentStatus: PaymentStatus) => void;
+  refreshOrders: () => Promise<void>;
+  acceptVendorOrder: (vendorId: string, orderId: string) => Promise<boolean>;
+  rejectVendorOrder: (vendorId: string, orderId: string, reason: string) => Promise<boolean>;
+  createShipmentForSuborder: (suborderId: string) => Promise<any>;
 
   // Customers
   customers: Customer[];
@@ -273,6 +277,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             paymentStatus: o.paymentStatus || 'Paid',
             paymentMethod: o.paymentMethod || 'Online Payment',
             date: o.date || o.createdAt || new Date().toISOString(),
+            suborderId: o.suborderId || (o.suborders && o.suborders[0]?.id) || undefined,
+            suborders: o.suborders || [],
+            shipment: o.shipment || null,
             timeline: o.timeline || [
               { status: o.status || 'Pending', timestamp: o.date || 'Recent', description: 'Order created' }
             ],
@@ -688,6 +695,134 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     );
   };
 
+  const refreshOrders = async () => {
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const res = await fetch(`${API_BASE}/orders`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setOrders(data.map((o: any) => ({
+          id: o.id || '',
+          orderNumber: o.orderNumber || `#ORD-${o.id}`,
+          customerName: o.customerName || o.customer?.name || 'Customer',
+          customerEmail: o.customerEmail || o.customer?.email || '',
+          customerPhone: o.customerPhone || o.customer?.phone || '',
+          shippingAddress: typeof o.shippingAddress === 'object' && o.shippingAddress
+            ? o.shippingAddress
+            : { street: typeof o.shippingAddress === 'string' ? o.shippingAddress : '', city: '', state: '', postalCode: '', country: 'India' },
+          productSummary: o.productSummary || (o.items && o.items[0]?.productName) || 'Toy Items',
+          items: o.items || [],
+          subtotal: Number(o.subtotal) || Number(o.totalAmount) || 0,
+          shippingFee: Number(o.shippingFee) || Number(o.deliveryFee) || 0,
+          discount: Number(o.discount) || 0,
+          totalAmount: Number(o.totalAmount) || Number(o.total) || 0,
+          status: o.status || 'Pending',
+          paymentStatus: o.paymentStatus || 'Paid',
+          paymentMethod: o.paymentMethod || 'Online Payment',
+          date: o.date || o.createdAt || new Date().toISOString(),
+          rejectionReason: o.rejectionReason,
+          suborders: o.suborders || [],
+          shipment: o.shipment || null,
+          timeline: o.timeline || [
+            { status: o.status || 'Pending', timestamp: o.date || 'Recent', description: 'Order created' }
+          ],
+        })));
+      }
+    } catch (err) {
+      console.warn('Failed to refresh orders from backend:', err);
+    }
+  };
+
+  const acceptVendorOrder = async (vendorId: string, orderId: string): Promise<boolean> => {
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const res = await fetch(`${API_BASE}/vendor/${vendorId}/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'ACCEPTED' }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        await refreshOrders();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Failed to accept vendor order:', err);
+      return false;
+    }
+  };
+
+  const rejectVendorOrder = async (vendorId: string, orderId: string, reason: string): Promise<boolean> => {
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const res = await fetch(`${API_BASE}/vendor/${vendorId}/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'REJECTED', reason }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        await refreshOrders();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Failed to reject vendor order:', err);
+      return false;
+    }
+  };
+
+  const createShipmentForSuborder = async (suborderId: string): Promise<any> => {
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      let token = localStorage.getItem('playpetal_token') || localStorage.getItem('token') || '';
+
+      const savedAuth = localStorage.getItem('kidsplay_admin_auth');
+      let authUser: any = null;
+      if (savedAuth) {
+        try { authUser = JSON.parse(savedAuth); } catch (e) {}
+      }
+
+      // Auto-session exchange if token is absent from local storage
+      if (!token && authUser) {
+        try {
+          const authEndpoint = authUser.role === 'VENDOR' ? `${API_BASE}/vendor/login` : `${API_BASE}/admin/login`;
+          const loginRes = await fetch(authEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email: authUser.email, identifier: authUser.email || authUser.vendorId || 'vendor-1', password: 'vendor123' })
+          });
+          const loginData = await loginRes.json();
+          if (loginData.token) {
+            token = loginData.token;
+            localStorage.setItem('playpetal_token', token);
+          }
+        } catch (e) {
+          console.warn('Auto session sync failed:', e);
+        }
+      }
+
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${API_BASE}/shipping/suborders/${suborderId}/create`, {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (res.ok) {
+        await refreshOrders();
+      }
+      return data;
+    } catch (err: any) {
+      console.error('Failed to create shipment for suborder:', err);
+      return null;
+    }
+  };
+
   // Customers
   const toggleCustomerStatus = (customerId: string) => {
     setCustomers((prev) =>
@@ -911,6 +1046,10 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         orders,
         updateOrderStatus,
         updateOrderPayment,
+        refreshOrders,
+        acceptVendorOrder,
+        rejectVendorOrder,
+        createShipmentForSuborder,
         customers,
         toggleCustomerStatus,
         banners,

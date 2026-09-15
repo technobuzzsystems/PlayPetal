@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Modal } from '../ui/Modal';
 import { getBuyBoxAudit } from '../../services/api';
-import type { BuyBoxAuditResult } from '../../types';
+import type { BuyBoxAuditResult, BuyBoxCandidate, DisqualifiedOffer } from '../../types';
 import {
   Trophy,
   AlertCircle,
@@ -58,7 +58,7 @@ export const BuyBoxAuditModal: React.FC<BuyBoxAuditModalProps> = ({
     }
   }, [isOpen, productId]);
 
-  const winner = audit?.scoredCandidates.find((c) => c.offerId === audit.winningOfferId);
+  const winner = audit?.scoredCandidates.find((c: BuyBoxCandidate) => c.offerId === audit.winningOfferId);
 
   return (
     <Modal
@@ -155,7 +155,7 @@ export const BuyBoxAuditModal: React.FC<BuyBoxAuditModalProps> = ({
                     <div className="text-xs font-bold text-slate-600 mt-0.5">
                       Composite Score:{' '}
                       <span className="text-indigo-600 font-black">
-                        {Number(winner.scores.totalScore).toFixed(2)}
+                        {Number(winner.scores?.totalScore ?? winner.totalScore ?? 0).toFixed(2)}
                       </span>{' '}
                       / 100
                     </div>
@@ -209,7 +209,7 @@ export const BuyBoxAuditModal: React.FC<BuyBoxAuditModalProps> = ({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {audit.scoredCandidates.map((c, idx) => {
+                      {audit.scoredCandidates.map((c: BuyBoxCandidate, idx: number) => {
                         const isWinner = c.offerId === audit.winningOfferId;
                         return (
                           <tr
@@ -280,7 +280,7 @@ export const BuyBoxAuditModal: React.FC<BuyBoxAuditModalProps> = ({
                             <td className="py-3 px-3">
                               <div className="flex items-center gap-1 text-[11px] font-medium text-slate-700">
                                 <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                                {c.warrantyType.replace(/_/g, ' ')}
+                                {(c.warrantyType || 'Standard').replace(/_/g, ' ')}
                               </div>
                             </td>
 
@@ -290,25 +290,25 @@ export const BuyBoxAuditModal: React.FC<BuyBoxAuditModalProps> = ({
                                   className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-semibold"
                                   title="Price Score (40% weight)"
                                 >
-                                  P:{Math.round(c.scores.priceScore)}
+                                  P:{Math.round(c.scores?.priceScore ?? 0)}
                                 </span>
                                 <span
                                   className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold"
                                   title="Speed Score (25% weight)"
                                 >
-                                  S:{Math.round(c.scores.speedScore)}
+                                  S:{Math.round(c.scores?.speedScore ?? 0)}
                                 </span>
                                 <span
                                   className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold"
                                   title="Trust Score (20% weight)"
                                 >
-                                  T:{Math.round(c.scores.trustScore)}
+                                  T:{Math.round(c.scores?.trustScore ?? 0)}
                                 </span>
                                 <span
                                   className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold"
                                   title="Warranty Score (15% weight)"
                                 >
-                                  W:{Math.round(c.scores.warrantyScore)}
+                                  W:{Math.round(c.scores?.warrantyScore ?? 0)}
                                 </span>
                               </div>
                             </td>
@@ -319,7 +319,7 @@ export const BuyBoxAuditModal: React.FC<BuyBoxAuditModalProps> = ({
                                   isWinner ? 'text-emerald-700' : 'text-slate-800'
                                 }`}
                               >
-                                {Number(c.scores.totalScore).toFixed(2)}
+                                {Number(c.scores?.totalScore ?? c.totalScore ?? 0).toFixed(2)}
                               </span>
                             </td>
                           </tr>
@@ -347,7 +347,7 @@ export const BuyBoxAuditModal: React.FC<BuyBoxAuditModalProps> = ({
                 </div>
 
                 <div className="divide-y divide-rose-100">
-                  {audit.disqualifiedOffers.map((d) => (
+                  {audit.disqualifiedOffers.map((d: DisqualifiedOffer) => (
                     <div
                       key={d.offerId}
                       className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"

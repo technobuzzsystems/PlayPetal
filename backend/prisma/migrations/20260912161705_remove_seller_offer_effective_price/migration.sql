@@ -5,10 +5,12 @@
 
 */
 -- DropIndex
-DROP INDEX "SellerOffer_masterProductId_status_effectivePrice_idx";
+DROP INDEX IF EXISTS "SellerOffer_masterProductId_status_effectivePrice_idx";
 
--- AlterTable
-ALTER TABLE "SellerOffer" DROP COLUMN "effectivePrice";
-
--- CreateIndex
-CREATE INDEX "SellerOffer_masterProductId_status_idx" ON "SellerOffer"("masterProductId", "status");
+DO $$ 
+BEGIN 
+  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'SellerOffer') THEN
+    ALTER TABLE "SellerOffer" DROP COLUMN IF EXISTS "effectivePrice";
+    CREATE INDEX IF NOT EXISTS "SellerOffer_masterProductId_status_idx" ON "SellerOffer"("masterProductId", "status");
+  END IF;
+END $$;
