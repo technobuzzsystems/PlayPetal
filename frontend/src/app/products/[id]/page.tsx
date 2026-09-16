@@ -317,7 +317,7 @@ export default function ProductDetailPage() {
 
   return (
     <div className="w-full bg-[#FFFDF9] min-h-screen py-6 px-3 sm:px-5 lg:px-8 font-sans text-[#202124]">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="w-full space-y-8">
         
         {/* Breadcrumbs */}
         <div className="flex items-center gap-2 text-xs text-slate-500 font-bold mb-1">

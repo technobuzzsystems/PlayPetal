@@ -187,7 +187,7 @@ export default function WishlistPage() {
 
   return (
     <div className="w-full bg-[#FFFDF9] min-h-screen py-10 px-4 sm:px-6 font-sans text-[#202124]">
-      <div className="max-w-6xl mx-auto">
+      <div className="w-full">
         
         {/* Header Title */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">

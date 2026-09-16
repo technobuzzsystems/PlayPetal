@@ -45,7 +45,7 @@ export default function AgePage() {
 
   return (
     <div className="w-full bg-[#FFFDF9] min-h-screen py-8 px-3 sm:px-4 md:px-5 lg:px-6 font-sans text-[#202124]">
-      <div className="w-full max-w-7xl mx-auto">
+      <div className="w-full">
         
         {/* Top Header */}
         <div className="text-center max-w-2xl mx-auto mb-10">

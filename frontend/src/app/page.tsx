@@ -433,7 +433,7 @@ export default function Home() {
         </div>
 
         {/* HAMLEYS CATEGORY GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 w-full">
           {hamleysCategories.map((cat, idx) => (
             <motion.div
               key={idx}
@@ -492,7 +492,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 w-full">
           {[
             { label: "UNDER", amount: "4999", maxPrice: 4999, bg: "bg-blue-50/70 border-blue-200 hover:border-[#2196F3]", btn: "bg-[#2196F3] text-white" },
             { label: "UNDER", amount: "7999", maxPrice: 7999, bg: "bg-purple-50/70 border-purple-200 hover:border-[#9C27B0]", btn: "bg-[#9C27B0] text-white" },
@@ -529,7 +529,7 @@ export default function Home() {
 
       {/* 🎢 3 MIDDLE FEATURED BANNERS 🎢 */}
       <section className="w-full px-3 sm:px-4 md:px-5 lg:px-6 py-8 relative z-10 bg-[#F8F9FC]">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
           
           {/* Card 1: Blue Pilot */}
           <Link href="/shop">
@@ -615,7 +615,7 @@ export default function Home() {
 
       {/* 🛡️ TRUST BADGES BAR 🛡️ */}
       <section className="w-full px-3 sm:px-4 md:px-5 lg:px-6 py-6 relative z-10 bg-[#FFFDF9]">
-        <div className="bg-white rounded-3xl p-6 shadow-md border border-slate-200 grid grid-cols-2 md:grid-cols-5 gap-4 items-center max-w-7xl mx-auto">
+        <div className="bg-white rounded-3xl p-6 shadow-md border border-slate-200 grid grid-cols-2 md:grid-cols-5 gap-4 items-center w-full">
           
           <div className="flex items-center gap-3 p-2 border-r border-slate-100 last:border-none">
             <div className="w-10 h-10 rounded-full bg-red-50 text-[#D90429] flex items-center justify-center flex-shrink-0">
@@ -672,7 +672,7 @@ export default function Home() {
 
       {/* 🎪 5 BOTTOM CALLOUT CARDS 🎪 */}
       <section className="w-full px-3 sm:px-4 md:px-5 lg:px-6 py-6 relative z-10 bg-[#F8F9FC]">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-7xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 w-full">
           
           <Link href="/shop">
             <motion.div 
