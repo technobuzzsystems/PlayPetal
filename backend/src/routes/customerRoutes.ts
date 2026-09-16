@@ -174,7 +174,7 @@ router.post('/google-login', async (req: Request, res: Response) => {
         name: 'Google Account User (Dev)',
       };
     } else {
-      const googleClientId = process.env.GOOGLE_CLIENT_ID || '187700950056-nnjsjv31g3icca81cin2rgj22kcgdqb0.apps.googleusercontent.com';
+      const googleClientId = process.env.GOOGLE_CLIENT_ID || '584727655941-8gac3t261lsnr665kphnlunnkuuf6ndg.apps.googleusercontent.com';
       try {
         const { OAuth2Client } = await import('google-auth-library');
         const client = new OAuth2Client(googleClientId);

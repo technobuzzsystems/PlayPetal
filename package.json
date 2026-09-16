@@ -23,5 +23,8 @@
     "express"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "ssh2": "^1.17.0"
+  }
 }

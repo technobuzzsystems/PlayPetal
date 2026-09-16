@@ -20,7 +20,7 @@ export default function GoogleLoginButton() {
 
   const clientId =
     process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
-    "187700950056-nnjsjv31g3icca81cin2rgj22kcgdqb0.apps.googleusercontent.com";
+    "584727655941-8gac3t261lsnr665kphnlunnkuuf6ndg.apps.googleusercontent.com";
 
   const handleCredentialResponse = async (response: { credential?: string }) => {
     if (!response.credential) {
