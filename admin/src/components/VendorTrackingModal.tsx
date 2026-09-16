@@ -73,7 +73,7 @@ export const VendorTrackingModal: React.FC<VendorTrackingModalProps> = ({
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/vendors/${vendorId}/orders/${suborderId}/tracking`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vendors/${vendorId}/orders/${suborderId}/tracking`, {
         cache: 'no-store',
         credentials: 'include',
       });

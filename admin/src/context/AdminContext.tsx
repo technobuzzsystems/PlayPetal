@@ -192,7 +192,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const refreshProducts = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/products?allStatus=true');
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/products?allStatus=true`);
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
         const backendMapped: Product[] = data
@@ -339,7 +339,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     refreshProducts();
 
-    fetch('http://localhost:5000/api/categories')
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/categories`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
@@ -387,7 +387,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setProducts((prev) => [newProduct, ...prev]);
 
     // Persist to backend database
-    fetch('http://localhost:5000/api/products', {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/products`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -476,7 +476,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const deleteProduct = (id: string) => {
     setProducts((prev) => prev.filter((item) => item.id !== id));
 
-    fetch(`http://localhost:5000/api/products/${id}`, {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/products/${id}`, {
       method: 'DELETE',
     }).catch((err) => console.error('Failed to delete product from backend:', err));
   };
@@ -508,7 +508,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     // Persist to backend database
-    fetch('http://localhost:5000/api/categories', {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/categories`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -552,7 +552,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     setCategories((prev) => updateRecursive(prev));
 
-    fetch(`http://localhost:5000/api/categories/${id}`, {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/categories/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updated),
@@ -570,7 +570,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     setCategories((prev) => deleteRecursive(prev));
 
-    fetch(`http://localhost:5000/api/categories/${id}`, {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/categories/${id}`, {
       method: 'DELETE',
     }).catch((err) => console.error('Failed to delete category in backend:', err));
   };
@@ -661,7 +661,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     );
 
     // Persist stock adjustment to backend database
-    fetch(`http://localhost:5000/api/products/${targetItem.productId}`, {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/products/${targetItem.productId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ stock: safeStock }),
