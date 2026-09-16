@@ -8,15 +8,18 @@ conn.on('ready', () => {
     git stash &&
     git pull origin main &&
     echo "Building backend..." &&
-    cd backend && 
+    cd backend &&
     npm install && 
     echo "PORT=5055" > .env &&
-    echo "DATABASE_URL=\\"postgresql://postgres:root@localhost:5432/kids_ecommerce?schema=public\\"" >> .env &&
+    echo "DATABASE_URL=\\"postgresql://postgres:root@127.0.0.1:5432/kids_ecommerce?schema=public\\"" >> .env &&
+    echo "GOOGLE_CLIENT_ID=584727655941-8gac3t261lsnr665kphnlunnkuuf6ndg.apps.googleusercontent.com" >> .env &&
+    chmod +x node_modules/.bin/prisma &&
     npx prisma generate &&
-    npx prisma migrate deploy &&
+    npx prisma db push --accept-data-loss &&
+    npx prisma db push --accept-data-loss &&
     chmod +x node_modules/.bin/tsc &&
     ./node_modules/.bin/tsc &&
-    pm2 restart playpetal-backend || pm2 restart 14 &&
+    pm2 restart playpetal-backend --update-env || pm2 restart 14 --update-env &&
     
     echo "Building admin..." &&
     cd ../admin && 

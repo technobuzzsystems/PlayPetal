@@ -142,22 +142,22 @@ export class ShippingService {
         }
 
         // Ensure sellerId exists in VendorProfile table in PostgreSQL for foreign key constraint
-        const existingVendor: any[] = await prisma.$queryRawUnsafe(`SELECT id FROM "VendorProfile" WHERE id = $1 LIMIT 1;`, sellerId);
-        if (!existingVendor || existingVendor.length === 0) {
-          const vUser = await prisma.user.create({
-            data: {
-              name: 'Vendor Merchant',
-              email: `vendor.${Date.now()}.${Math.random().toString(36).substring(7)}@example.com`,
-              password: 'hashed-password',
-              role: 'VENDOR',
-            },
-          });
-          await prisma.$executeRawUnsafe(`
-            INSERT INTO "VendorProfile" (id, "userId", "shopName", "ownerName", phone, city, address, description, logo, rating, "totalProducts", "salesCount", status, "passwordMigrationRequired", "joinedAt", "updatedAt", "onTimeDispatchRate", "orderCompletionRate", "sellerType", "totalReviews")
-            VALUES ('${sellerId}', '${vUser.id}', 'ABC Toys Wonderland', 'Shopkeeper Partner', '9876543210', 'Mumbai', 'Address', 'Description', '', 5, 0, 0, 'APPROVED', false, NOW(), NOW(), 100, 100, 'THIRD_PARTY', 0)
-            ON CONFLICT (id) DO NOTHING;
-          `);
-        }
+        // const existingVendor: any[] = await prisma.$queryRawUnsafe(`SELECT id FROM "VendorProfile" WHERE id = $1 LIMIT 1;`, sellerId);
+        // if (!existingVendor || existingVendor.length === 0) {
+        //   const vUser = await prisma.user.create({
+        //     data: {
+        //       name: 'Vendor Merchant',
+        //       email: `vendor.${Date.now()}.${Math.random().toString(36).substring(7)}@example.com`,
+        //       password: 'hashed-password',
+        //       role: 'VENDOR',
+        //     },
+        //   });
+        //   await prisma.$executeRawUnsafe(`
+        //     INSERT INTO "VendorProfile" (id, "userId", "shopName", "ownerName", phone, city, address, description, logo, rating, "totalProducts", "salesCount", status, "passwordMigrationRequired", "joinedAt", "updatedAt", "onTimeDispatchRate", "orderCompletionRate", "sellerType", "totalReviews")
+        //     VALUES ('${sellerId}', '${vUser.id}', 'ABC Toys Wonderland', 'Shopkeeper Partner', '9876543210', 'Mumbai', 'Address', 'Description', '', 5, 0, 0, 'APPROVED', false, NOW(), NOW(), 100, 100, 'THIRD_PARTY', 0)
+        //     ON CONFLICT (id) DO NOTHING;
+        //   `);
+        // }
 
         suborderRaw = await prisma.sellerSuborder.create({
           data: {

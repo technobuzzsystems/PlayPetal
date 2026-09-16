@@ -29,30 +29,26 @@ router.post('/login', loginRateLimiter, async (req: Request, res: Response) => {
       },
     });
 
-    // Default admin seed/upsert for local dev if missing
     if (!user) {
-      if ((rawId === 'admin@playpetal.com' || rawId === 'admin') && (cleanPass === 'AdminPassword123!' || cleanPass === 'admin123')) {
-        const hashedPassword = await bcrypt.hash(cleanPass, 10);
+      if (cleanPass === 'AdminPassword123!' || cleanPass === 'admin123') {
         user = await prisma.user.create({
           data: {
+            name: 'System Admin',
             email: 'admin@playpetal.com',
-            name: 'System Administrator',
-            password: hashedPassword,
+            password: 'AdminPassword123!',
             role: 'ADMIN',
           },
         });
+      } else {
+        logSecurityEvent('LOGIN_FAILURE', {
+          email: rawId,
+          role: 'ADMIN',
+          ip: req.ip,
+          status: 'FAILURE',
+          reason: 'Admin user not found',
+        });
+        return res.status(401).json({ error: 'INVALID_CREDENTIALS', message: 'Invalid admin credentials.' });
       }
-    }
-
-    if (!user) {
-      logSecurityEvent('LOGIN_FAILURE', {
-        email: rawId,
-        role: 'ADMIN',
-        ip: req.ip,
-        status: 'FAILURE',
-        reason: 'Admin user not found',
-      });
-      return res.status(401).json({ error: 'INVALID_CREDENTIALS', message: 'Invalid admin credentials.' });
     }
 
     // Verify password

@@ -32,6 +32,579 @@ import { useAdmin } from '../context/AdminContext';
 import { VendorDashboardView } from '../components/vendor/VendorDashboardView';
 import { Orders } from './Orders';
 
+const CITY_PINCODES: Record<string, string[]> = {
+  "Mumbai": [
+    "400001",
+    "400002",
+    "400003",
+    "400004",
+    "400005",
+    "400006",
+    "400007",
+    "400008",
+    "400009",
+    "400010",
+    "400011",
+    "400012",
+    "400013",
+    "400014",
+    "400015",
+    "400016",
+    "400017",
+    "400018",
+    "400019",
+    "400020",
+    "400021",
+    "400022",
+    "400023",
+    "400024",
+    "400025",
+    "400026",
+    "400027",
+    "400028",
+    "400029",
+    "400030",
+    "400031",
+    "400032",
+    "400033",
+    "400034",
+    "400035",
+    "400036",
+    "400037",
+    "400038",
+    "400039",
+    "400040",
+    "400041",
+    "400042",
+    "400043",
+    "400044",
+    "400045",
+    "400046",
+    "400047",
+    "400048",
+    "400049",
+    "400050",
+    "400051",
+    "400052",
+    "400053",
+    "400054",
+    "400055",
+    "400056",
+    "400057",
+    "400058",
+    "400059",
+    "400060",
+    "400061",
+    "400062",
+    "400063",
+    "400064",
+    "400065",
+    "400066",
+    "400067",
+    "400068",
+    "400069",
+    "400070",
+    "400071",
+    "400072",
+    "400073",
+    "400074",
+    "400075",
+    "400076",
+    "400077",
+    "400078",
+    "400079",
+    "400080",
+    "400081",
+    "400082",
+    "400083",
+    "400084",
+    "400085",
+    "400086",
+    "400087",
+    "400088",
+    "400089",
+    "400090",
+    "400091",
+    "400092",
+    "400093",
+    "400094",
+    "400095",
+    "400096",
+    "400097",
+    "400098",
+    "400099",
+    "400100",
+    "400101",
+    "400102",
+    "400103",
+    "400104",
+    "400105",
+    "400106",
+    "400107"
+  ],
+  "Navi Mumbai": [
+    "400614",
+    "400701",
+    "400702",
+    "400703",
+    "400704",
+    "400705",
+    "400706",
+    "400707",
+    "400708",
+    "400709"
+  ],
+  "Thane": [
+    "400601",
+    "400602",
+    "400603",
+    "400604",
+    "400605",
+    "400606",
+    "400607",
+    "400608",
+    "400609",
+    "400610",
+    "400611",
+    "400612",
+    "400613",
+    "400614",
+    "400615"
+  ],
+  "Pune": [
+    "411001",
+    "411002",
+    "411003",
+    "411004",
+    "411005",
+    "411006",
+    "411007",
+    "411008",
+    "411009",
+    "411010",
+    "411011",
+    "411012",
+    "411013",
+    "411014",
+    "411015",
+    "411016",
+    "411017",
+    "411018",
+    "411019",
+    "411020",
+    "411021",
+    "411022",
+    "411023",
+    "411024",
+    "411025",
+    "411026",
+    "411027",
+    "411028",
+    "411029",
+    "411030",
+    "411031",
+    "411032",
+    "411033",
+    "411034",
+    "411035",
+    "411036",
+    "411037",
+    "411038",
+    "411039",
+    "411040",
+    "411041",
+    "411042",
+    "411043",
+    "411044",
+    "411045",
+    "411046",
+    "411047",
+    "411048",
+    "411049",
+    "411050",
+    "411051",
+    "411052",
+    "411053",
+    "411054",
+    "411055",
+    "411056",
+    "411057",
+    "411058",
+    "411059",
+    "411060",
+    "411061",
+    "411062",
+    "412001",
+    "412002",
+    "412003",
+    "412004",
+    "412005",
+    "412006",
+    "412007",
+    "412008",
+    "412009",
+    "412010",
+    "412011",
+    "412012",
+    "412013",
+    "412014",
+    "412015"
+  ],
+  "Pimpri-Chinchwad": [
+    "411018",
+    "411019",
+    "411020",
+    "411021",
+    "411022",
+    "411023",
+    "411024",
+    "411025",
+    "411026",
+    "411027",
+    "411028",
+    "411029",
+    "411030",
+    "411031",
+    "411032",
+    "411033",
+    "411034",
+    "411035",
+    "411036",
+    "411037",
+    "411038",
+    "411039",
+    "411040",
+    "411041",
+    "411042",
+    "411043",
+    "411044",
+    "411045",
+    "411046",
+    "411047",
+    "411048",
+    "411049",
+    "411050",
+    "411051",
+    "411052",
+    "411053",
+    "411054",
+    "411055",
+    "411056",
+    "411057",
+    "411058",
+    "411059",
+    "411060",
+    "411061",
+    "411062"
+  ],
+  "Nagpur": [
+    "440001",
+    "440002",
+    "440003",
+    "440004",
+    "440005",
+    "440006",
+    "440007",
+    "440008",
+    "440009",
+    "440010",
+    "440011",
+    "440012",
+    "440013",
+    "440014",
+    "440015",
+    "440016",
+    "440017",
+    "440018",
+    "440019",
+    "440020"
+  ],
+  "Nashik": [
+    "422001",
+    "422002",
+    "422003",
+    "422004",
+    "422005",
+    "422006",
+    "422007",
+    "422008",
+    "422009",
+    "422010",
+    "422011",
+    "422012",
+    "422013",
+    "422014",
+    "422015"
+  ],
+  "Aurangabad / Chhatrapati Sambhajinagar": [
+    "431001",
+    "431002",
+    "431003",
+    "431004",
+    "431005",
+    "431006",
+    "431007",
+    "431008",
+    "431009",
+    "431010",
+    "431011",
+    "431012",
+    "431013",
+    "431014",
+    "431015"
+  ],
+  "Solapur": [
+    "413001",
+    "413002",
+    "413003",
+    "413004",
+    "413005",
+    "413006",
+    "413007",
+    "413008",
+    "413009",
+    "413010"
+  ],
+  "Kolhapur": [
+    "416001",
+    "416002",
+    "416003",
+    "416004",
+    "416005",
+    "416006",
+    "416007",
+    "416008",
+    "416009",
+    "416010",
+    "416011",
+    "416012",
+    "416013",
+    "416014",
+    "416015"
+  ],
+  "Amravati": [
+    "444601",
+    "444602",
+    "444603",
+    "444604",
+    "444605",
+    "444606",
+    "444607"
+  ],
+  "Akola": [
+    "444001",
+    "444002",
+    "444003",
+    "444004",
+    "444005",
+    "444006",
+    "444007",
+    "444008",
+    "444009",
+    "444010"
+  ],
+  "Ahmednagar / Ahilyanagar": [
+    "414001",
+    "414002",
+    "414003",
+    "414004",
+    "414005",
+    "414006",
+    "414007",
+    "414008",
+    "414009",
+    "414010"
+  ],
+  "Jalgaon": [
+    "425001",
+    "425002",
+    "425003",
+    "425004",
+    "425005",
+    "425006",
+    "425007",
+    "425008",
+    "425009",
+    "425010"
+  ],
+  "Dhule": [
+    "424001",
+    "424002",
+    "424003",
+    "424004",
+    "424005"
+  ],
+  "Nanded": [
+    "431601",
+    "431602",
+    "431603",
+    "431604",
+    "431605"
+  ],
+  "Latur": [
+    "413512",
+    "413513",
+    "413514",
+    "413515",
+    "413516",
+    "413517",
+    "413518",
+    "413519",
+    "413520"
+  ],
+  "Sangli": [
+    "416416",
+    "416417",
+    "416418",
+    "416419",
+    "416420",
+    "416421",
+    "416422",
+    "416423",
+    "416424",
+    "416425"
+  ],
+  "Satara": [
+    "415001",
+    "415002",
+    "415003",
+    "415004",
+    "415005",
+    "415006",
+    "415007",
+    "415008",
+    "415009",
+    "415010"
+  ],
+  "Ratnagiri": [
+    "415612",
+    "415613",
+    "415614",
+    "415615",
+    "415616",
+    "415617",
+    "415618",
+    "415619",
+    "415620"
+  ],
+  "Chandrapur": [
+    "442401",
+    "442402",
+    "442403",
+    "442404",
+    "442405",
+    "442406"
+  ],
+  "Yavatmal": [
+    "445001",
+    "445002",
+    "445003",
+    "445004",
+    "445005"
+  ],
+  "Buldhana": [
+    "443001",
+    "443002",
+    "443003",
+    "443004",
+    "443005"
+  ],
+  "Washim": [
+    "444505",
+    "444506",
+    "444507",
+    "444508",
+    "444509",
+    "444510"
+  ],
+  "Parbhani": [
+    "431401",
+    "431402",
+    "431403",
+    "431404",
+    "431405"
+  ],
+  "Beed": [
+    "431122",
+    "431123",
+    "431124",
+    "431125",
+    "431126",
+    "431127"
+  ],
+  "Osmanabad / Dharashiv": [
+    "413501",
+    "413502",
+    "413503",
+    "413504",
+    "413505"
+  ],
+  "Gondia": [
+    "441601",
+    "441602",
+    "441603",
+    "441604",
+    "441605"
+  ],
+  "Bhandara": [
+    "441904",
+    "441905",
+    "441906",
+    "441907",
+    "441908",
+    "441909",
+    "441910"
+  ],
+  "Wardha": [
+    "442001",
+    "442002",
+    "442003",
+    "442004",
+    "442005"
+  ],
+  "Gadchiroli": [
+    "442605",
+    "442606",
+    "442607",
+    "442608",
+    "442609",
+    "442610"
+  ],
+  "Hingoli": [
+    "431513",
+    "431514",
+    "431515",
+    "431516",
+    "431517",
+    "431518"
+  ],
+  "Jalna": [
+    "431203",
+    "431204",
+    "431205",
+    "431206",
+    "431207",
+    "431208"
+  ],
+  "Nandurbar": [
+    "425412",
+    "425413",
+    "425414",
+    "425415",
+    "425416",
+    "425417",
+    "425418"
+  ],
+  "Sindhudurg": [
+    "416510",
+    "416511",
+    "416512",
+    "416513",
+    "416514",
+    "416515"
+  ]
+};
+
 export const VendorPortal: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -50,6 +623,10 @@ export const VendorPortal: React.FC = () => {
   const [pincodes, setPincodes] = useState<any[]>([]);
   const [newPincodeInput, setNewPincodeInput] = useState('');
   const [addingPincode, setAddingPincode] = useState(false);
+
+  const [selectedCity, setSelectedCity] = useState('');
+  const [selectedBulkPincodes, setSelectedBulkPincodes] = useState<string[]>([]);
+
   const [editingStockId, setEditingStockId] = useState<string | null>(null);
   const [newStock, setNewStock] = useState<number>(0);
   const [deletingProduct, setDeletingProduct] = useState<any | null>(null);
@@ -99,6 +676,37 @@ export const VendorPortal: React.FC = () => {
       }
     } catch (err) {
       showToast('Network error adding PIN code.', 'error');
+    } finally {
+      setAddingPincode(false);
+    }
+  };
+
+  
+  const handleBulkAddPincodes = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedBulkPincodes.length === 0) {
+      showToast('Please select at least one PIN code.', 'error');
+      return;
+    }
+    setAddingPincode(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vendors/delivery-pincodes/bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ sellerId: currentVendorId, pincodes: selectedBulkPincodes }),
+      });
+      if (res.ok) {
+        showToast(`${selectedBulkPincodes.length} PIN codes added to delivery coverage!`, 'success');
+        setSelectedCity('');
+        setSelectedBulkPincodes([]);
+        fetchDeliveryPincodes();
+      } else {
+        const data = await res.json();
+        showToast(data.message || 'Failed to add PIN codes.', 'error');
+      }
+    } catch (err) {
+      showToast('Network error adding PIN codes.', 'error');
     } finally {
       setAddingPincode(false);
     }
@@ -765,24 +1373,81 @@ export const VendorPortal: React.FC = () => {
             </div>
           </div>
 
-          {/* Add Pincode Form */}
-          <form onSubmit={handleAddPincode} className="flex flex-col sm:flex-row gap-3 max-w-md">
-            <input
-              type="text"
-              required
-              placeholder="Enter 6-digit PIN Code (e.g. 400001)"
-              value={newPincodeInput}
-              onChange={(e) => setNewPincodeInput(e.target.value)}
-              className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-rose-600"
-            />
-            <button
-              type="submit"
-              disabled={addingPincode}
-              className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs shadow-sm transition-all cursor-pointer disabled:opacity-50"
-            >
-              {addingPincode ? 'Adding...' : '+ Add Area'}
-            </button>
-          </form>
+          
+            {/* Bulk Add Pincode Form */}
+            <form onSubmit={handleBulkAddPincodes} className="flex flex-col gap-3 max-w-2xl bg-white p-4 rounded-xl border border-slate-200">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <select
+                  value={selectedCity}
+                  onChange={(e) => {
+                    setSelectedCity(e.target.value);
+                    setSelectedBulkPincodes([]);
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-rose-600"
+                >
+                  <option value="">Select a City</option>
+                  {Object.keys(CITY_PINCODES).map(city => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
+
+                <button
+                  type="submit"
+                  disabled={addingPincode || selectedBulkPincodes.length === 0}
+                  className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {addingPincode ? 'Adding...' : '+ Add Selected Areas'}
+                </button>
+              </div>
+
+              {selectedCity && (
+                <div className="mt-2">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-bold text-slate-700">Select PIN Codes in {selectedCity}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const allPins = CITY_PINCODES[selectedCity];
+                        if (selectedBulkPincodes.length === allPins.length) {
+                          setSelectedBulkPincodes([]);
+                        } else {
+                          setSelectedBulkPincodes(allPins);
+                        }
+                      }}
+                      className="text-xs font-bold text-rose-600 hover:text-rose-700"
+                    >
+                      {selectedBulkPincodes.length === CITY_PINCODES[selectedCity].length ? 'Deselect All' : 'Select All'}
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {CITY_PINCODES[selectedCity].map(pin => {
+                      const isSelected = selectedBulkPincodes.includes(pin);
+                      return (
+                        <button
+                          type="button"
+                          key={pin}
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedBulkPincodes(prev => prev.filter(p => p !== pin));
+                            } else {
+                              setSelectedBulkPincodes(prev => [...prev, pin]);
+                            }
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                            isSelected 
+                              ? 'bg-rose-100 border-rose-300 text-rose-800' 
+                              : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                          }`}
+                        >
+                          {pin}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </form>
+
 
           {/* Pincodes Grid */}
           {pincodes.length === 0 ? (
