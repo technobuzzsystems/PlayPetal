@@ -32,7 +32,7 @@ router.post('/register', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'A shopkeeper with this email already exists.' });
     }
 
-    const newVendor = dbStore.addVendor({
+    const newVendor = dbStore.createVendor({
       name: finalOwnerName,
       shopName: finalShopName,
       email: finalEmail,
